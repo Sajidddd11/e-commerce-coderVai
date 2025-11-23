@@ -57,7 +57,7 @@ const ColorSwatchSelector: React.FC<ColorSwatchSelectorProps> = ({
 
           return (
             <button
-              key={option.id}
+              key={`${option.id}_${option.value}`}
               onClick={() => onColorSelect(option.id, option.value)}
               disabled={disabled}
               className={`relative group flex flex-col items-center ${
