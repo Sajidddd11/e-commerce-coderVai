@@ -1,6 +1,6 @@
 "use client"
 
-import { isManual, isStripeLike } from "@lib/constants"
+import { isManual, isStripeLike, isSslCommerz } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
@@ -30,6 +30,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     case isStripeLike(paymentSession?.provider_id):
       return (
         <StripePaymentButton
+          notReady={notReady}
+          cart={cart}
+          data-testid={dataTestId}
+        />
+      )
+    case isSslCommerz(paymentSession?.provider_id):
+      return (
+        <SSLCommerzPaymentButton
           notReady={notReady}
           cart={cart}
           data-testid={dataTestId}
@@ -146,6 +154,74 @@ const StripePaymentButton = ({
       <ErrorMessage
         error={errorMessage}
         data-testid="stripe-payment-error-message"
+      />
+    </>
+  )
+}
+
+const SSLCommerzPaymentButton = ({
+  cart,
+  notReady,
+  "data-testid": dataTestId,
+}: {
+  cart: HttpTypes.StoreCart
+  notReady: boolean
+  "data-testid"?: string
+}) => {
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const handlePayment = async () => {
+    setSubmitting(true)
+    setErrorMessage(null)
+
+    try {
+      // Find the SSLCommerz payment session
+      const sslSession = cart.payment_collection?.payment_sessions?.find(
+        (session: any) => isSslCommerz(session.provider_id)
+      )
+
+      if (!sslSession) {
+        throw new Error("SSLCommerz payment session not found. Please select a payment method.")
+      }
+
+      const gatewayUrl = sslSession?.data?.gateway_url
+
+      if (!gatewayUrl) {
+        throw new Error(
+          "Unable to retrieve SSLCommerz gateway URL. Please try again."
+        )
+      }
+
+      // Store cart ID in localStorage before redirecting (as backup)
+      // This ensures we can retrieve it even if cookies are cleared
+      if (cart?.id) {
+        localStorage.setItem("_medusa_cart_id_ssl", cart.id)
+        console.log(`[SSLCommerz] Stored cart ID in localStorage: ${cart.id}`)
+      }
+
+      // Redirect to SSLCommerz gateway
+      window.location.href = gatewayUrl
+    } catch (err: any) {
+      setErrorMessage(err.message)
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <>
+      <Button
+        disabled={notReady}
+        isLoading={submitting}
+        onClick={handlePayment}
+        size="large"
+        data-testid={dataTestId}
+      >
+        Place order
+      </Button>
+      <ErrorMessage
+        error={errorMessage}
+        data-testid="sslcommerz-payment-error-message"
       />
     </>
   )

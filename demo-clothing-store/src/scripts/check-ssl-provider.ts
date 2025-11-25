@@ -1,5 +1,5 @@
 import { ExecArgs } from "@medusajs/framework/types"
-import { Modules } from "@medusajs/framework/utils"
+import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 export default async function checkSslProvider({ container }: ExecArgs) {
   const paymentModule = container.resolve(Modules.PAYMENT)
@@ -28,14 +28,14 @@ export default async function checkSslProvider({ container }: ExecArgs) {
     }
     
     // Check regions
-    const linkModule = container.resolve(Modules.LINK)
+    const link = container.resolve(ContainerRegistrationKeys.LINK)
     const regionModule = container.resolve(Modules.REGION)
     
     const regions = await regionModule.listRegions({})
     
     console.log("\n=== Regions and Payment Providers ===")
     for (const region of regions) {
-      const links = await linkModule.list({
+      const links = await (link as any).list({
         region_id: region.id,
       })
       

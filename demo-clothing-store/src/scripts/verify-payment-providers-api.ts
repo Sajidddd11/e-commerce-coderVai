@@ -13,7 +13,7 @@ export default async function verifyPaymentProvidersApi({ container }: ExecArgs)
       logger.info(`\n=== Region: ${region.name} (${region.id}) ===`)
       
       // Get all links for this region
-      const allLinks = await link.list({
+      const allLinks = await (link as any).list({
         region_id: region.id,
       })
       

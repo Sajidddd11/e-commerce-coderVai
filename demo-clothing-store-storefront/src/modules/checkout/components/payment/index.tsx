@@ -89,30 +89,11 @@ const Payment = ({
         })
       }
 
+      // For SSLCommerz, don't redirect immediately - just create the session and go to review
+      // The redirect will happen when user clicks "Place Order" on the review page
       if (requiresRedirect) {
-        const fallbackSessions =
-          activeSession
-            ? [activeSession]
-            : cart.payment_collection?.payment_sessions ?? []
-
-        const sessions =
-          paymentResponse?.payment_collection?.payment_sessions ??
-          fallbackSessions
-
-        const sslSession = sessions.find(
-          (session: any) => session.provider_id === selectedPaymentMethod
-        )
-
-        const gatewayUrl = sslSession?.data?.gateway_url
-
-        if (!gatewayUrl) {
-          throw new Error(
-            "Unable to retrieve SSLCommerz gateway URL. Please try again."
-          )
-        }
-
-        window.location.href = gatewayUrl
-        return
+        // Just ensure the payment session is created, then proceed to review
+        // The redirect to SSLCommerz will happen in the PaymentButton component
       }
 
       if (!shouldInputCard) {

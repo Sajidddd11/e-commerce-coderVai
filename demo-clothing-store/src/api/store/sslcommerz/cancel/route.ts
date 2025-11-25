@@ -5,7 +5,7 @@ import {
   respondWithRedirect,
 } from "../utils"
 
-const respond = (req: MedusaRequest, res: MedusaResponse) => {
+const respond = async (req: MedusaRequest, res: MedusaResponse) => {
   // Add publishable key for SSLCommerz callbacks (they don't send it)
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
   if (publishableKey && !req.headers["x-publishable-api-key"]) {
@@ -15,7 +15,7 @@ const respond = (req: MedusaRequest, res: MedusaResponse) => {
   const payload = extractSslPayload(req)
   const tranId = getTranIdFromPayload(payload)
 
-  return respondWithRedirect(res, "cancelled", tranId)
+  return await respondWithRedirect(req, res, "cancelled", tranId, null)
 }
 
 export const POST = (req: MedusaRequest, res: MedusaResponse) => respond(req, res)

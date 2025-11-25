@@ -42,10 +42,11 @@ type SslCommerzSessionData = {
   payload?: Record<string, unknown>
   provider_response?: Record<string, unknown>
   last_validation?: Record<string, unknown>
+  cart_id?: string
 }
 
-const SUCCESS_STATUSES = new Set(["VALID", "AUTHORIZED", "COMPLETED", "PAID"])
-const FAILURE_STATUSES = new Set(["FAILED", "CANCELLED", "CANCELED"])
+const SUCCESS_STATUSES = new Set(["VALID", "VALIDATED", "AUTHORIZED", "COMPLETED", "PAID"])
+const FAILURE_STATUSES = new Set(["FAILED", "CANCELLED", "CANCELED", "INVALID"])
 
 export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
   static identifier = "sslcommerz"
@@ -69,7 +70,7 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
     }
   }
 
-  protected buildCallbackUrl(url: string | undefined, sessionId: string) {
+  protected buildCallbackUrl(url: string | undefined, sessionId: string, cartId?: string | null) {
     if (!url) {
       return undefined
     }
@@ -77,6 +78,9 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
     try {
       const parsedUrl = new URL(url)
       parsedUrl.searchParams.set("session_id", sessionId)
+      if (cartId) {
+        parsedUrl.searchParams.set("cart_id", cartId)
+      }
       return parsedUrl.toString()
     } catch {
       return url
@@ -84,15 +88,34 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
   }
 
   protected extractCustomerData(context: InitiatePaymentInput["context"]) {
+    // Log the entire context for debugging
+    this.logger_.info(`[SSLCommerz] Extracting customer data from context: ${JSON.stringify(context, null, 2)}`)
+
     const customer = context?.customer
     const address = customer?.billing_address
+
+    // Extract phone number with multiple fallbacks
+    // Medusa v2 might store phone in different places
+    let phoneNumber =
+      customer?.phone ||
+      (customer as any)?.metadata?.phone ||
+      address?.phone ||
+      (address as any)?.phone_number ||
+      (context as any)?.billing_address?.phone ||
+      (context as any)?.shipping_address?.phone ||
+      "01700000000" // Default valid BD phone format
+
+    // Ensure phone is a non-empty string
+    if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.trim() === '') {
+      phoneNumber = "01700000000"
+    }
 
     const fullName =
       `${customer?.first_name ?? ""} ${customer?.last_name ?? ""}`.trim() ||
       customer?.company_name ||
       "Customer"
 
-    return {
+    const customerData = {
       cus_name: fullName,
       cus_email: customer?.email ?? "no-reply@example.com",
       cus_add1: address?.address_1 ?? "Address Line 1",
@@ -103,7 +126,7 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
       cus_country: address?.country_code
         ? address.country_code.toUpperCase()
         : "BD",
-      cus_phone: customer?.phone ?? "00000000000",
+      cus_phone: phoneNumber,
       ship_name: fullName,
       ship_add1: address?.address_1 ?? "Address Line 1",
       ship_add2: address?.address_2 ?? "",
@@ -114,6 +137,9 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
         ? address.country_code.toUpperCase()
         : "BD",
     }
+
+    this.logger_.info(`[SSLCommerz] Extracted customer data: ${JSON.stringify(customerData, null, 2)}`)
+    return customerData
   }
 
   protected async queryTransaction(tranId: string) {
@@ -152,11 +178,14 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
 
     const customerData = this.extractCustomerData(context)
 
+    // Try to get cart ID early so we can include it in callback URLs
+    const cartId = (context as any)?.cart_id || (context as any)?.cart?.id || null
+
     const callbackOverrides = {
-      success_url: this.buildCallbackUrl(process.env.SSL_SUCCESS_URL, sessionId),
-      fail_url: this.buildCallbackUrl(process.env.SSL_FAIL_URL, sessionId),
-      cancel_url: this.buildCallbackUrl(process.env.SSL_CANCEL_URL, sessionId),
-      ipn_url: this.buildCallbackUrl(process.env.SSL_IPN_URL, sessionId),
+      success_url: this.buildCallbackUrl(process.env.SSL_SUCCESS_URL, sessionId, cartId),
+      fail_url: this.buildCallbackUrl(process.env.SSL_FAIL_URL, sessionId, cartId),
+      cancel_url: this.buildCallbackUrl(process.env.SSL_CANCEL_URL, sessionId, cartId),
+      ipn_url: this.buildCallbackUrl(process.env.SSL_IPN_URL, sessionId, cartId),
     }
 
     const payload = withDefaultTransactionData({
@@ -167,21 +196,28 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
       ...callbackOverrides,
     })
 
+    this.logger_.info(`[SSLCommerz] Payment payload: ${JSON.stringify(payload, null, 2)}`)
+
     const client = getSslCommerzClient()
     const response = await client.init(payload)
 
+    console.log("[SSLCommerz] Init response:", JSON.stringify(response, null, 2))
+
     if (!response?.GatewayPageURL) {
+      console.error("[SSLCommerz] Missing GatewayPageURL. Full response:", response)
       throw new MedusaError(
         MedusaError.Types.UNEXPECTED_STATE,
-        "SSLCommerz did not return a GatewayPageURL"
+        `SSLCommerz did not return a GatewayPageURL. Response status: ${response?.status || 'unknown'}`
       )
     }
 
+    // Store cart_id in session data for easy retrieval later
     const sessionData: SslCommerzSessionData = {
       tran_id: sessionId,
       gateway_url: response.GatewayPageURL,
       payload,
       provider_response: response,
+      cart_id: cartId,
     }
 
     return {
@@ -194,24 +230,36 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
   async authorizePayment({
     data,
   }: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
+    this.logger_.info(`[SSLCommerz] authorizePayment called with data: ${JSON.stringify(data, null, 2)}`)
+
     const sessionData = data as SslCommerzSessionData | undefined
     const tranId = sessionData?.tran_id
 
     if (!tranId) {
+      this.logger_.error(`[SSLCommerz] Missing tran_id in session data: ${JSON.stringify(sessionData, null, 2)}`)
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         "Missing tran_id while authorizing SSLCommerz payment"
       )
     }
 
+    this.logger_.info(`[SSLCommerz] Querying transaction ${tranId} from SSLCommerz`)
     const validation = await this.queryTransaction(tranId)
-    const status = this.mapStatus(validation?.status)
+    this.logger_.info(`[SSLCommerz] Validation result: ${JSON.stringify(validation, null, 2)}`)
+
+    // Extract status from the response structure
+    // SSLCommerz returns: { element: [{ status: "VALIDATED", ... }] }
+    const transactionData = validation?.element?.[0]
+    const sslStatus = transactionData?.status || validation?.status
+    const status = this.mapStatus(sslStatus)
+    this.logger_.info(`[SSLCommerz] Mapped status: ${status} (from ${sslStatus})`)
 
     return {
       status,
       data: {
         ...sessionData,
         last_validation: validation,
+        transaction_data: transactionData,
       },
     }
   }
@@ -275,9 +323,12 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
     }
 
     const validation = await this.queryTransaction(tranId)
+    // Extract status from the response structure
+    const transactionData = validation?.element?.[0]
+    const sslStatus = transactionData?.status || validation?.status
 
     return {
-      status: this.mapStatus(validation?.status),
+      status: this.mapStatus(sslStatus),
       data: {
         ...sessionData,
         last_validation: validation,
