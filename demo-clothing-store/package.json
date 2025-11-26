@@ -26,6 +26,7 @@
     "@medusajs/cli": "2.11.3",
     "@medusajs/framework": "2.11.3",
     "@medusajs/medusa": "2.11.3",
+    "@upstash/redis": "^1.35.6",
     "sslcommerz-lts": "^1.2.0"
   },
   "devDependencies": {

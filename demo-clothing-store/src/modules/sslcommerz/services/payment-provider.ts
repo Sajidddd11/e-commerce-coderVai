@@ -31,6 +31,7 @@ import type { BigNumberInput } from "@medusajs/types"
 import type { Logger } from "@medusajs/framework/types"
 import crypto from "crypto"
 import { getSslCommerzClient, withDefaultTransactionData } from "../../../lib/sslcommerz"
+import { upstashRedis } from "../../../lib/redis/upstash"
 
 type InjectedDependencies = {
   logger: Logger
@@ -220,6 +221,18 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
       cart_id: cartId,
     }
 
+    // Cache session data in Redis for 1 hour (3600 seconds)
+    // This ensures we can retrieve cart_id even if context is lost
+    try {
+      await upstashRedis.set(`ssl:session:${sessionId}`, sessionData, 3600)
+      if (cartId) {
+        await upstashRedis.set(`ssl:cart:${cartId}`, sessionId, 3600)
+      }
+      this.logger_.info(`[SSLCommerz] Session ${sessionId} cached in Redis`)
+    } catch (error: any) {
+      this.logger_.warn(`[SSLCommerz] Failed to cache session in Redis: ${error?.message ?? error}`)
+    }
+
     return {
       id: sessionId,
       status: PaymentSessionStatus.PENDING,
@@ -232,7 +245,7 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
   }: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     this.logger_.info(`[SSLCommerz] authorizePayment called with data: ${JSON.stringify(data, null, 2)}`)
 
-    const sessionData = data as SslCommerzSessionData | undefined
+    let sessionData = data as SslCommerzSessionData | undefined
     const tranId = sessionData?.tran_id
 
     if (!tranId) {
@@ -241,6 +254,19 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
         MedusaError.Types.INVALID_DATA,
         "Missing tran_id while authorizing SSLCommerz payment"
       )
+    }
+
+    // Try to restore session data from Redis if not fully available
+    if (!sessionData?.cart_id) {
+      try {
+        const cachedData = await upstashRedis.get<SslCommerzSessionData>(`ssl:session:${tranId}`)
+        if (cachedData) {
+          this.logger_.info(`[SSLCommerz] Restored session data from Redis for ${tranId}`)
+          sessionData = { ...sessionData, ...cachedData }
+        }
+      } catch (error: any) {
+        this.logger_.warn(`[SSLCommerz] Failed to restore session from Redis: ${error?.message ?? error}`)
+      }
     }
 
     this.logger_.info(`[SSLCommerz] Querying transaction ${tranId} from SSLCommerz`)
@@ -312,7 +338,7 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
   async getPaymentStatus({
     data,
   }: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
-    const sessionData = data as SslCommerzSessionData | undefined
+    let sessionData = data as SslCommerzSessionData | undefined
     const tranId = sessionData?.tran_id
 
     if (!tranId) {
@@ -320,6 +346,18 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
         MedusaError.Types.INVALID_DATA,
         "Missing tran_id while retrieving SSLCommerz payment status"
       )
+    }
+
+    // Try to restore session data from Redis if not available
+    if (!sessionData?.cart_id) {
+      try {
+        const cachedData = await upstashRedis.get<SslCommerzSessionData>(`ssl:session:${tranId}`)
+        if (cachedData) {
+          sessionData = { ...sessionData, ...cachedData }
+        }
+      } catch (error: any) {
+        this.logger_.warn(`[SSLCommerz] Failed to restore session from Redis: ${error?.message ?? error}`)
+      }
     }
 
     const validation = await this.queryTransaction(tranId)
@@ -394,6 +432,35 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
         session_id: sessionId,
         amount: Number(data?.amount ?? 0),
       },
+    }
+  }
+
+  /**
+   * Helper method to retrieve cart ID from Redis by session ID
+   * Useful for callback routes and webhooks
+   */
+  async getCartIdBySessionId(sessionId: string): Promise<string | null> {
+    try {
+      const cachedData = await upstashRedis.get<SslCommerzSessionData>(`ssl:session:${sessionId}`)
+      return cachedData?.cart_id || null
+    } catch (error: any) {
+      this.logger_.warn(`[SSLCommerz] Failed to retrieve cart ID from Redis: ${error?.message ?? error}`)
+      return null
+    }
+  }
+
+  /**
+   * Helper method to clean up Redis cache after successful payment
+   */
+  async cleanupSession(sessionId: string, cartId?: string): Promise<void> {
+    try {
+      await upstashRedis.del(`ssl:session:${sessionId}`)
+      if (cartId) {
+        await upstashRedis.del(`ssl:cart:${cartId}`)
+      }
+      this.logger_.info(`[SSLCommerz] Cleaned up session ${sessionId} from Redis`)
+    } catch (error: any) {
+      this.logger_.warn(`[SSLCommerz] Failed to cleanup session from Redis: ${error?.message ?? error}`)
     }
   }
 }
