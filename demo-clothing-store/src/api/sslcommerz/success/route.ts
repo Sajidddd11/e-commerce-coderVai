@@ -61,9 +61,10 @@ const sendOrderSms = async (req: MedusaRequest, sessionId: string) => {
     // Try to fetch the order
     try {
       const orderModuleService = req.scope.resolve(Modules.ORDER)
-      const orders = await orderModuleService.listOrders({
-        cart_id: cartId,
-      })
+      const orders = await orderModuleService.listOrders(
+        { id: cartId },
+        { take: 1 }
+      )
       
       if (orders && orders.length > 0) {
         const order = orders[0]

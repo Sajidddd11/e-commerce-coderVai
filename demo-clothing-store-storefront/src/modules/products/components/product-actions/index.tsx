@@ -4,6 +4,7 @@ import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
+import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import QuantitySelector from "@modules/products/components/quantity-selector"
 import ColorSwatchSelector from "@modules/products/components/color-swatch-selector"
@@ -124,32 +125,17 @@ export default function ProductActions({
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) {
-      console.warn("No variant selected")
-      return
-    }
+    if (!selectedVariant?.id) return null
 
     setIsAdding(true)
 
-    try {
-      const result = await addToCart({
-        variantId: selectedVariant.id,
-        quantity: quantity,
-        countryCode,
-      })
+    await addToCart({
+      variantId: selectedVariant.id,
+      quantity: quantity,
+      countryCode,
+    })
 
-      if (result) {
-        // Successfully added to cart
-        // The server action handles revalidation
-        console.log("Added to cart successfully")
-      }
-    } catch (error) {
-      console.error("Failed to add to cart:", error)
-      // The error will be visible in console, and we can add a toast notification here if needed
-      alert("Failed to add item to cart. Please try again.")
-    } finally {
-      setIsAdding(false)
-    }
+    setIsAdding(false)
   }
 
   // Extract color options if available

@@ -134,8 +134,8 @@ export async function addToCart({
     ...(await getAuthHeaders()),
   }
 
-  try {
-    const result = await sdk.store.cart.createLineItem(
+  await sdk.store.cart
+    .createLineItem(
       cart.id,
       {
         variant_id: variantId,
@@ -144,18 +144,14 @@ export async function addToCart({
       {},
       headers
     )
+    .then(async () => {
+      const cartCacheTag = await getCacheTag("carts")
+      revalidateTag(cartCacheTag)
 
-    const cartCacheTag = await getCacheTag("carts")
-    revalidateTag(cartCacheTag)
-
-    const fulfillmentCacheTag = await getCacheTag("fulfillment")
-    revalidateTag(fulfillmentCacheTag)
-
-    return result
-  } catch (error) {
-    medusaError(error)
-    throw error
-  }
+      const fulfillmentCacheTag = await getCacheTag("fulfillment")
+      revalidateTag(fulfillmentCacheTag)
+    })
+    .catch(medusaError)
 }
 
 export async function updateLineItem({
@@ -246,8 +242,23 @@ export async function initiatePaymentSession(
     ...(await getAuthHeaders()),
   }
 
+  // Pass cart data via data.data (additional_data field)
+  // This gets passed to the payment provider's initiatePayment method
+  const enrichedData = {
+    ...data,
+    data: {
+      ...(data.data || {}),
+      cart: {
+        id: cart.id,
+        email: cart.email,
+        billing_address: cart.billing_address,
+        shipping_address: cart.shipping_address,
+      },
+    },
+  }
+
   return sdk.store.payment
-    .initiatePaymentSession(cart, data, {}, headers)
+    .initiatePaymentSession(cart, enrichedData, {}, headers)
     .then(async (resp) => {
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)

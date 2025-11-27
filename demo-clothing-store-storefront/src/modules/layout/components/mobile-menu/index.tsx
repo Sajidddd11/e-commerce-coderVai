@@ -38,7 +38,7 @@ export default function MobileMenu({
     <div className="small:hidden" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-grey-70 hover:text-grey-90 transition-colors"
+        className="p-2 text-slate-700 hover:text-slate-900 transition-colors"
         aria-label="Menu"
       >
         <svg
@@ -66,25 +66,25 @@ export default function MobileMenu({
           />
 
           {/* Menu */}
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-grey-20 shadow-xl z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-xl z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
             <div className="p-4 space-y-2">
               <LocalizedClientLink
                 href="/store"
-                className="block px-4 py-3 text-grey-70 hover:bg-grey-5 rounded-lg font-medium transition-colors"
+                className="block px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 All Products
               </LocalizedClientLink>
 
-              <div className="border-t border-grey-10 pt-2">
-                <h3 className="px-4 py-2 text-sm font-semibold text-grey-90">
+              <div className="border-t border-slate-100 pt-2">
+                <h3 className="px-4 py-2 text-sm font-semibold text-slate-900">
                   Categories
                 </h3>
                 {topLevelCategories.map((category) => (
                   <LocalizedClientLink
                     key={category.id}
                     href={`/categories/${category.handle}`}
-                    className="block px-6 py-2 text-grey-70 hover:bg-grey-5 text-sm transition-colors"
+                    className="block px-6 py-2 text-slate-700 hover:bg-slate-50 text-sm transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {category.name}
@@ -92,10 +92,10 @@ export default function MobileMenu({
                 ))}
               </div>
 
-              <div className="border-t border-grey-10 pt-2">
+              <div className="border-t border-slate-100 pt-2">
                 <LocalizedClientLink
                   href="/account"
-                  className="block px-4 py-3 text-grey-70 hover:bg-grey-5 rounded-lg font-medium transition-colors"
+                  className="block px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   My Account
@@ -103,14 +103,14 @@ export default function MobileMenu({
               </div>
 
               {regions && regions.length > 1 && (
-                <div className="border-t border-grey-10 pt-2">
-                  <h3 className="px-4 py-2 text-sm font-semibold text-grey-90">
+                <div className="border-t border-slate-100 pt-2">
+                  <h3 className="px-4 py-2 text-sm font-semibold text-slate-900">
                     Region
                   </h3>
                   {regions.map((region) => (
                     <div
                       key={region.id}
-                      className="px-4 py-2 text-grey-70 text-sm"
+                      className="px-4 py-2 text-slate-700 text-sm"
                     >
                       {region.name}
                     </div>
