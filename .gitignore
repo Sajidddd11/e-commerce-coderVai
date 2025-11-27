@@ -1,1 +1,63 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.medusa/
+public/admin/
+
+# Environment variables (KEEP LOCAL ONLY)
+.env
+.env.local
+.env.production
+.env.development
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Config
 .config/
+
+# Database
+*.sqlite
+*.db
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+
+# Misc
+*.pem
+.vercel
