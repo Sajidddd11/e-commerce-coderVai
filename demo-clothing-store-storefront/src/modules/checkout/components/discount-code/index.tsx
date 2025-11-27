@@ -1,7 +1,7 @@
 "use client"
 
 import { Badge, Heading, Input, Label, Text } from "@medusajs/ui"
-import React, { useActionState } from "react"
+import React from "react"
 
 import { applyPromotions } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
@@ -21,29 +21,24 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
   const [errorMessage, setErrorMessage] = React.useState("")
 
   const { promotions = [] } = cart
-
   const removePromotionCode = async (code: string) => {
     const validPromotions = promotions.filter(
       (promotion) => promotion.code !== code
     )
 
-    try {
-      await applyPromotions(
-        validPromotions.filter((p) => p.code !== undefined).map((p) => p.code!)
-      )
-    } catch (e: any) {
-      setErrorMessage(e.message)
-    }
+    await applyPromotions(
+      validPromotions.filter((p) => p.code !== undefined).map((p) => p.code!)
+    )
   }
 
-  const addPromotionCode = async (prevState: unknown, formData: FormData) => {
+  const addPromotionCode = async (formData: FormData) => {
     setErrorMessage("")
 
     const code = formData.get("code")
     if (!code) {
-      return "Please enter a promotion code"
+      return
     }
-
+    const input = document.getElementById("promotion-input") as HTMLInputElement
     const codes = promotions
       .filter((p) => p.code !== undefined)
       .map((p) => p.code!)
@@ -51,30 +46,19 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
 
     try {
       await applyPromotions(codes)
-      const input = document.getElementById("promotion-input") as HTMLInputElement
-      if (input) {
-        input.value = ""
-      }
-      return null
     } catch (e: any) {
-      const errorMsg = e.message || "Failed to apply promotion code"
-      setErrorMessage(errorMsg)
-      return errorMsg
+      setErrorMessage(e.message)
+    }
+
+    if (input) {
+      input.value = ""
     }
   }
-
-  const [state, formAction] = useActionState(addPromotionCode, null)
-
-  React.useEffect(() => {
-    if (state && typeof state === "string") {
-      setErrorMessage(state)
-    }
-  }, [state])
 
   return (
     <div className="w-full bg-white flex flex-col">
       <div className="txt-medium">
-        <form action={formAction} className="w-full mb-5">
+        <form action={(a) => addPromotionCode(a)} className="w-full mb-5">
           <Label className="flex gap-x-1 my-2 items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
