@@ -3,7 +3,7 @@
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
-import { Button, toast } from "@medusajs/ui"
+import { Button } from "@medusajs/ui"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import QuantitySelector from "@modules/products/components/quantity-selector"
 import ColorSwatchSelector from "@modules/products/components/color-swatch-selector"
@@ -40,7 +40,6 @@ export default function ProductActions({
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
@@ -125,30 +124,29 @@ export default function ProductActions({
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
+    if (!selectedVariant?.id) {
+      console.warn("No variant selected")
+      return
+    }
 
     setIsAdding(true)
-    setError(null)
 
     try {
-      await addToCart({
+      const result = await addToCart({
         variantId: selectedVariant.id,
         quantity: quantity,
         countryCode,
       })
 
-      toast.success(`${product.title} added to cart!`, {
-        description: `Quantity: ${quantity}`,
-      })
-
-      // Reset quantity after successful add
-      setQuantity(1)
-    } catch (err: any) {
-      const errorMessage = err?.message || "Failed to add item to cart"
-      setError(errorMessage)
-      toast.error("Error", {
-        description: errorMessage,
-      })
+      if (result) {
+        // Successfully added to cart
+        // The server action handles revalidation
+        console.log("Added to cart successfully")
+      }
+    } catch (error) {
+      console.error("Failed to add to cart:", error)
+      // The error will be visible in console, and we can add a toast notification here if needed
+      alert("Failed to add item to cart. Please try again.")
     } finally {
       setIsAdding(false)
     }

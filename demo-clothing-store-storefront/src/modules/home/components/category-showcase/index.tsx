@@ -157,12 +157,13 @@ async function CategoryProductSection({
   const products = response.products || []
 
   return (
-    <div className="w-full flex flex-col xsmall:flex-row gap-4 xsmall:gap-6">
-      {/* Left: Category Card - Responsive */}
+    <div className="w-full flex gap-6">
+      {/* Left: Category Card - 404x404 */}
       <div
-        className="w-full xsmall:w-48 small:w-56 medium:w-80 flex-shrink-0 relative overflow-hidden shadow-sm rounded-lg"
+        className="flex-shrink-0 relative overflow-hidden shadow-sm"
         style={{
-          aspectRatio: "1",
+          width: "404px",
+          height: "404px",
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
         }}
       >
@@ -174,28 +175,36 @@ async function CategoryProductSection({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div
-          className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-3 xsmall:px-2 small:px-4 py-3 xsmall:py-2 small:py-4"
+          className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-4"
+          style={{
+            height: "60px",
+          }}
         >
-          <h3 className="text-center font-semibold text-white text-lg xsmall:text-sm small:text-xl line-clamp-2">
+          <h3 className="text-center font-semibold text-white text-2xl line-clamp-2">
             {category.name}
           </h3>
         </div>
       </div>
 
-      {/* Right: Product Grid - Responsive */}
-      <div className="flex-1 w-full">
+      {/* Right: Product Grid - 2x4 of 192x192 boxes */}
+      <div className="flex-1">
         <div
-          className="grid gap-2 xsmall:gap-3 small:gap-4"
+          className="grid gap-4"
           style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))",
-            gridAutoRows: "80px",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateRows: "repeat(2, 192px)",
           }}
         >
-          {products.slice(0, 8).map((product) => (
+          {products.map((product) => (
             <LocalizedClientLink
               key={product.id}
               href={`/products/${product.handle}`}
-              className="relative group overflow-hidden shadow-sm bg-gray-100 rounded"
+              className="relative group overflow-hidden shadow-sm bg-gray-100"
+              style={{
+                width: "100%",
+                height: "192px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
+              }}
             >
               {product.images && product.images.length > 0 ? (
                 <Image
@@ -206,7 +215,7 @@ async function CategoryProductSection({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                  <span className="text-gray-400 text-xs">No image</span>
+                  <span className="text-gray-400 text-sm">No image</span>
                 </div>
               )}
             </LocalizedClientLink>
@@ -233,17 +242,22 @@ async function AllProductsRow({
 
   return (
     <div
-      className="grid gap-2 xsmall:gap-3 small:gap-4 w-full"
+      className="grid gap-4 w-full"
       style={{
-        gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-        gridAutoRows: "100px",
+        gridTemplateColumns: "repeat(8, 1fr)",
+        gridAutoRows: "192px",
       }}
     >
       {products.slice(0, 7).map((product) => (
         <LocalizedClientLink
           key={product.id}
           href={`/products/${product.handle}`}
-          className="relative group overflow-hidden shadow-sm bg-gray-100 rounded"
+          className="relative group overflow-hidden shadow-sm bg-gray-100"
+          style={{
+            width: "100%",
+            height: "192px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
+          }}
         >
           {product.images && product.images.length > 0 ? (
             <Image
@@ -254,7 +268,7 @@ async function AllProductsRow({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <span className="text-gray-400 text-xs">No image</span>
+              <span className="text-gray-400 text-sm">No image</span>
             </div>
           )}
         </LocalizedClientLink>
@@ -262,15 +276,20 @@ async function AllProductsRow({
 
       {/* 8th Card - See All Button with Hover Overlay */}
       <div
-        className="relative group overflow-hidden shadow-sm bg-gradient-to-br from-gray-100 to-gray-200 rounded"
+        className="relative group overflow-hidden shadow-sm bg-gradient-to-br from-gray-100 to-gray-200"
+        style={{
+          width: "100%",
+          height: "192px",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
+        }}
       >
         <div className="w-full h-full flex items-center justify-center group-hover:opacity-30 transition-opacity duration-300">
-          <div className="text-center px-2">
-            <h3 className="text-xs small:text-sm font-bold text-gray-900 mb-1">
+          <div className="text-center">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
               See All
             </h3>
-            <p className="text-xs text-gray-600 hidden small:block">
-              View all
+            <p className="text-sm text-gray-600">
+              View all products
             </p>
           </div>
         </div>
@@ -281,11 +300,11 @@ async function AllProductsRow({
           className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
         >
           <div className="text-center px-4">
-            <p className="text-white font-semibold text-sm small:text-base">
+            <p className="text-white font-semibold text-lg">
               See All Products
             </p>
-            <p className="text-white text-xs mt-1 hidden small:block">
-              Browse our collection
+            <p className="text-white text-sm mt-2">
+              Browse our complete collection
             </p>
           </div>
         </LocalizedClientLink>

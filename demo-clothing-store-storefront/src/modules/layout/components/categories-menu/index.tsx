@@ -2,7 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import getCategoryIcon from "../category-icons"
+import { getCategoryIcon } from "../category-icons"
 
 interface CategoriesMenuProps {
   categories: HttpTypes.StoreProductCategory[]

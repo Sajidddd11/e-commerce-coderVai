@@ -21,7 +21,7 @@ export default async function PaginatedProducts({
   categoryId,
   productsIds,
   countryCode,
-  search
+  search,
 }: {
   sortBy?: SortOptions
   page: number
@@ -47,7 +47,7 @@ export default async function PaginatedProducts({
     queryParams["id"] = productsIds
   }
 
-  if(search){
+  if (search) {
     queryParams["q"] = search
   }
 

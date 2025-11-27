@@ -73,7 +73,7 @@ export async function completeOrderAfterSSLCommerz(cartId: string) {
                 console.log("[SSLCommerz] Looking for order with email:", cartEmail)
 
                 if (orders?.orders && Array.isArray(orders.orders) && cartEmail) {
-                    console.log(`[SSLCommerz] Found ${orders.orders.length} orders`)
+                    console.log("[SSLCommerz] Found ${orders.orders.length} orders")
 
                     const matchingOrder = orders.orders.find((order: any) => {
                         const emailMatches = order.email === cartEmail

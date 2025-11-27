@@ -134,8 +134,8 @@ export async function addToCart({
     ...(await getAuthHeaders()),
   }
 
-  await sdk.store.cart
-    .createLineItem(
+  try {
+    const result = await sdk.store.cart.createLineItem(
       cart.id,
       {
         variant_id: variantId,
@@ -144,14 +144,18 @@ export async function addToCart({
       {},
       headers
     )
-    .then(async () => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
 
-      const fulfillmentCacheTag = await getCacheTag("fulfillment")
-      revalidateTag(fulfillmentCacheTag)
-    })
-    .catch(medusaError)
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+
+    return result
+  } catch (error) {
+    medusaError(error)
+    throw error
+  }
 }
 
 export async function updateLineItem({
@@ -242,23 +246,8 @@ export async function initiatePaymentSession(
     ...(await getAuthHeaders()),
   }
 
-  // Pass cart data via data.data (additional_data field)
-  // This gets passed to the payment provider's initiatePayment method
-  const enrichedData = {
-    ...data,
-    data: {
-      ...(data.data || {}),
-      cart: {
-        id: cart.id,
-        email: cart.email,
-        billing_address: cart.billing_address,
-        shipping_address: cart.shipping_address,
-      },
-    },
-  }
-
   return sdk.store.payment
-    .initiatePaymentSession(cart, enrichedData, {}, headers)
+    .initiatePaymentSession(cart, data, {}, headers)
     .then(async (resp) => {
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
@@ -351,7 +340,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     if (!formData) {
       throw new Error("No form data found when setting addresses")
     }
-    const cartId = await getCartId()
+    const cartId = getCartId()
     if (!cartId) {
       throw new Error("No existing cart found when setting addresses")
     }

@@ -11,7 +11,7 @@ const StoreTemplate = ({
   page,
   countryCode,
   search,
-  categoryId
+  categoryId,
 }: {
   sortBy?: SortOptions
   page?: string
@@ -23,16 +23,16 @@ const StoreTemplate = ({
   const sort = sortBy || "created_at"
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-white to-slate-5">
+    <div className="w-full min-h-screen bg-gradient-to-b from-white to-grey-5">
       <div className="content-container py-8 small:py-12">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl small:text-4xl font-bold text-slate-90 mb-3" data-testid="store-page-title">
+          <h1 className="text-3xl small:text-4xl font-bold text-grey-90 mb-3" data-testid="store-page-title">
             {search
               ? `Search Results for "${search}"`
               : categoryId
-                ? "Category Products"
-                : "All Products"}
+              ? "Category Products"
+              : "All Products"}
           </h1>
           <p className="text-grey-60 text-sm small:text-base">
             {search
@@ -45,7 +45,7 @@ const StoreTemplate = ({
         <div className="flex flex-col small:flex-row gap-8">
           {/* Sidebar - Filters */}
           <div className="w-full small:w-64 flex-shrink-0">
-            <div className="sticky top-20 bg-white rounded-lg p-6 border border-slate-20">
+            <div className="sticky top-20 bg-white rounded-lg p-6 border border-grey-20">
               <RefinementList sortBy={sort} />
             </div>
           </div>

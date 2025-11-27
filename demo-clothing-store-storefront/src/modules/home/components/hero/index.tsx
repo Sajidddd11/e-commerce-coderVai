@@ -40,7 +40,7 @@ const Hero = () => {
   }
 
   return (
-    <section className="relative w-full max-h-[300px] overflow-hidden bg-slate-900" role="banner">
+    <section className="relative w-full h-screen overflow-hidden bg-slate-900" role="banner">
       {/* Background Image Carousel */}
       <div className="absolute inset-0 w-full h-full">
         {heroImages.map((img, index) => (
@@ -69,62 +69,62 @@ const Hero = () => {
       <div className="absolute inset-0 opacity-10 bg-gradient-to-r from-transparent via-white to-transparent animate-pulse" />
 
       {/* Content Container */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 small:px-6 py-4 small:py-6">
-        <div className="max-w-4xl mx-auto text-center space-y-2 small:space-y-3 medium:space-y-4">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 small:px-6">
+        <div className="max-w-4xl mx-auto text-center space-y-6 small:space-y-8">
           {/* Promotional Badge */}
-          <div className="hidden small:inline-flex items-center gap-2 px-3 small:px-4 py-1 small:py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
-            <span className="text-xs small:text-sm font-semibold text-white flex items-center gap-1">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+            <span className="text-sm font-semibold text-white flex items-center gap-1">
               🎉 Exclusive Offer
             </span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-2xl small:text-3xl medium:text-4xl font-bold text-white leading-tight animate-fade-in-up">
+          <h1 className="text-4xl small:text-5xl medium:text-6xl font-bold text-white leading-tight animate-fade-in-up">
             Elevate Your Style
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400 text-xl small:text-2xl medium:text-3xl">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400">
               Up to 50% OFF
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xs small:text-sm medium:text-base text-slate-100 max-w-2xl mx-auto leading-tight animate-fade-in-up animation-delay-200 hidden small:block">
+          <p className="text-lg small:text-xl text-slate-100 max-w-2xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200">
             Discover our handpicked selections for this season's must-haves. Premium quality, unbeatable prices, limited time only.
           </p>
 
           {/* Trust Badges */}
-          <div className="hidden small:flex flex-wrap justify-center gap-2 small:gap-4 pt-1 small:pt-2 animate-fade-in-up animation-delay-400">
-            <div className="flex items-center gap-1 text-white">
-              <span className="text-sm small:text-base">🚀</span>
-              <span className="text-xs small:text-sm font-medium">Free Shipping</span>
+          <div className="flex flex-wrap justify-center gap-4 small:gap-6 pt-4 animate-fade-in-up animation-delay-400">
+            <div className="flex items-center gap-2 text-white">
+              <span className="text-lg">🚀</span>
+              <span className="text-sm font-medium">Free Shipping</span>
             </div>
-            <div className="flex items-center gap-1 text-white">
-              <span className="text-sm small:text-base">🛡️</span>
-              <span className="text-xs small:text-sm font-medium">Secure Payment</span>
+            <div className="flex items-center gap-2 text-white">
+              <span className="text-lg">🛡️</span>
+              <span className="text-sm font-medium">Secure Payment</span>
             </div>
-            <div className="flex items-center gap-1 text-white">
-              <span className="text-sm small:text-base">↩️</span>
-              <span className="text-xs small:text-sm font-medium">Easy Returns</span>
+            <div className="flex items-center gap-2 text-white">
+              <span className="text-lg">↩️</span>
+              <span className="text-sm font-medium">Easy Returns</span>
             </div>
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col small:flex-row gap-2 small:gap-3 justify-center pt-2 small:pt-3 animate-fade-in-up animation-delay-600">
+          <div className="flex flex-col small:flex-row gap-4 justify-center pt-6 animate-fade-in-up animation-delay-600">
             <LocalizedClientLink
               href="/store"
-              className="inline-flex items-center justify-center px-4 small:px-6 py-2 small:py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold rounded-lg hover:shadow-xl hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 text-xs small:text-sm medium:text-base whitespace-nowrap"
+              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold rounded-lg hover:shadow-xl hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 text-base small:text-lg whitespace-nowrap"
             >
               Shop Now →
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/store"
-              className="hidden small:inline-flex items-center justify-center px-4 small:px-6 py-2 small:py-3 bg-white/20 backdrop-blur-sm text-white font-bold rounded-lg border-2 border-white hover:bg-white/30 transition-all duration-300 text-xs small:text-sm medium:text-base whitespace-nowrap"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-bold rounded-lg border-2 border-white hover:bg-white/30 transition-all duration-300 text-base small:text-lg whitespace-nowrap"
             >
               View Offers
             </LocalizedClientLink>
           </div>
 
           {/* Countdown Timer (optional) */}
-          <div className="hidden small:block pt-1 small:pt-2 text-white text-xs small:text-sm font-medium animate-fade-in-up animation-delay-800">
+          <div className="pt-4 text-white text-sm small:text-base font-medium animate-fade-in-up animation-delay-800">
             ⏱️ Limited Time Offer - Shop Today!
           </div>
         </div>
