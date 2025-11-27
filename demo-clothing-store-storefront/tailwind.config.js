@@ -23,16 +23,16 @@ module.exports = {
       colors: {
         grey: {
           0: "#FFFFFF",
-          5: "#F9FAFB",
-          10: "#F3F4F6",
-          20: "#E5E7EB",
-          30: "#D1D5DB",
-          40: "#9CA3AF",
-          50: "#6B7280",
-          60: "#4B5563",
-          70: "#374151",
-          80: "#1F2937",
-          90: "#111827",
+          5: "#FAFAFA",
+          10: "#F5F5F5",
+          20: "#ECECEC",
+          30: "#D9D9D9",
+          40: "#B8B8B8",
+          50: "#808080",
+          60: "#595959",
+          70: "#404040",
+          80: "#262626",
+          90: "#121212",
         },
       },
       borderRadius: {
@@ -74,6 +74,16 @@ module.exports = {
         ring: {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
+        },
+        fadeIn: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
         },
         "fade-in-right": {
           "0%": {
@@ -143,6 +153,7 @@ module.exports = {
       },
       animation: {
         ring: "ring 2.2s cubic-bezier(0.5, 0, 0.5, 1) infinite",
+        fadeIn: "fadeIn 0.5s cubic-bezier(0.5, 0, 0.5, 1) forwards",
         "fade-in-right":
           "fade-in-right 0.3s cubic-bezier(0.5, 0, 0.5, 1) forwards",
         "fade-in-top": "fade-in-top 0.2s cubic-bezier(0.5, 0, 0.5, 1) forwards",

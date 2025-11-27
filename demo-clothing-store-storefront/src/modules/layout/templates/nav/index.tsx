@@ -1,66 +1,104 @@
 import { Suspense } from "react"
 
 import { listRegions } from "@lib/data/regions"
-import { listCategories } from "@lib/data/categories"
+import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
-import NavDropdown from "@modules/layout/components/nav-dropdown"
 import MobileMenu from "@modules/layout/components/mobile-menu"
+import CentralSearch from "@modules/layout/components/central-search"
+import CategoriesMenu from "@modules/layout/components/categories-menu"
 
 export default async function Nav() {
   const regions = await listRegions().then((regions: StoreRegion[]) => regions)
-  const categories = await listCategories()
+  const allCategories = await listCategories()
+  const categories = filterCategoriesWithProducts(allCategories)
 
   return (
     <div className="sticky top-0 inset-x-0 z-50">
-      <header className="relative h-16 mx-auto border-b duration-200 bg-white border-slate-200 shadow-sm">
-        <nav className="content-container flex items-center justify-between w-full h-full text-sm">
-          {/* Logo */}
-          <div className="flex items-center gap-4">
-            <MobileMenu regions={regions} categories={categories} />
-            <LocalizedClientLink
-              href="/"
-              className="font-bold text-xl tracking-tight hover:text-slate-600 transition-colors"
-              data-testid="nav-store-link"
-            >
-              ZAHAN
-            </LocalizedClientLink>
-          </div>
+      <header className="bg-white border-b border-grey-20 shadow-sm">
+        <nav className="content-container">
+          {/* Top Row: Logo, Search, Icons */}
+          <div className="flex items-center justify-between h-16 gap-2 small:gap-4">
+            {/* Left: Logo + Mobile Menu */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <MobileMenu regions={regions} categories={categories} />
+              <LocalizedClientLink
+                href="/"
+                className="font-bold text-lg small:text-xl tracking-tight hover:text-grey-60 transition-colors whitespace-nowrap"
+                data-testid="nav-store-link"
+              >
+                ZAHAN
+              </LocalizedClientLink>
+            </div>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden small:flex items-center gap-8">
-            <NavDropdown categories={categories} />
-            <LocalizedClientLink
-              href="/store"
-              className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
-            >
-              All Products
-            </LocalizedClientLink>
-          </div>
+            {/* Center: Search Bar - Hidden on very small screens, 50% width on tablet+ */}
+            <div className="hidden xsmall:flex small:w-1/2 medium:w-1/2 lg:w-1/2">
+              <CentralSearch initialCategories={categories} />
+            </div>
 
-          {/* Right side - Account and Cart */}
-          <div className="flex items-center gap-4 small:gap-6">
-            <LocalizedClientLink
-              className="hidden small:block text-slate-700 hover:text-slate-900 font-medium transition-colors"
-              href="/account"
-              data-testid="nav-account-link"
-            >
-              Account
-            </LocalizedClientLink>
-            <Suspense
-              fallback={
-                <LocalizedClientLink
-                  className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
-                  href="/cart"
-                  data-testid="nav-cart-link"
+            {/* Right: Account + Cart */}
+            <div className="flex items-center gap-2 small:gap-4 flex-shrink-0">
+              <LocalizedClientLink
+                className="hidden small:flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors text-sm font-medium"
+                href="/account"
+                data-testid="nav-account-link"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Cart
-                </LocalizedClientLink>
-              }
-            >
-              <CartButton />
-            </Suspense>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                <span className="hidden medium:inline">Account</span>
+              </LocalizedClientLink>
+
+              <div className="h-6 w-px bg-grey-20 hidden small:block" />
+
+              <Suspense
+                fallback={
+                  <LocalizedClientLink
+                    className="flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors text-sm font-medium"
+                    href="/cart"
+                    data-testid="nav-cart-link"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m10-9l2 9m-9-9h14l-4 8H7l4-8z"
+                      />
+                    </svg>
+                    <span className="hidden medium:inline">Cart</span>
+                  </LocalizedClientLink>
+                }
+              >
+                <CartButton />
+              </Suspense>
+            </div>
+          </div>
+
+          {/* Mobile Search Bar - Shown on very small screens */}
+          <div className="xsmall:hidden border-t border-grey-20 px-0 py-3">
+            <CentralSearch initialCategories={categories} />
+          </div>
+
+          {/* Desktop Navigation Links - Second Row with Categories */}
+          <div className="hidden small:flex items-center border-t border-grey-10 h-12 overflow-x-auto">
+            <CategoriesMenu categories={categories} />
           </div>
         </nav>
       </header>

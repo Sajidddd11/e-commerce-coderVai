@@ -13,9 +13,9 @@ const CartTemplate = ({
   customer: HttpTypes.StoreCustomer | null
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-grey-5">
       <div className="content-container py-8 small:py-12" data-testid="cart-container">
-        <h1 className="text-3xl small:text-4xl font-bold text-slate-900 mb-8">
+        <h1 className="text-3xl small:text-4xl font-bold text-grey-90 mb-8">
           Shopping Cart
         </h1>
         {cart?.items?.length ? (
@@ -30,7 +30,7 @@ const CartTemplate = ({
               <ItemsTemplate cart={cart} />
             </div>
             <div className="relative">
-              <div className="flex flex-col gap-y-6 sticky top-24 bg-white rounded-lg border border-slate-200 p-6">
+              <div className="flex flex-col gap-y-6 sticky top-24 bg-white rounded-lg border border-grey-20 p-6">
                 {cart && cart.region && (
                   <Summary cart={cart as any} />
                 )}

@@ -74,33 +74,6 @@ export default async function RelatedProducts({
           </LocalizedClientLink>
         </div>
       )}
-
-      {/* Alternative Carousel View - Hidden on mobile, shown on larger screens */}
-      {products.length > 4 && (
-        <div className="hidden medium:block pt-8 border-t border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-6">
-            More from This Collection
-          </h3>
-          <div className="relative">
-            {/* Horizontal Carousel */}
-            <div className="overflow-x-auto scrollbar-hide">
-              <div className="flex gap-6 pb-4 min-w-full">
-                {products.slice(0, 6).map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex-shrink-0 w-64"
-                  >
-                    <Product region={region} product={product} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Carousel Gradient Indicators */}
-            <div className="absolute right-0 top-0 bottom-4 w-20 bg-gradient-to-l from-white to-transparent pointer-events-none hidden medium:block" />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

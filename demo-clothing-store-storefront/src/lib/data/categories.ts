@@ -26,6 +26,14 @@ export const listCategories = async (query?: Record<string, any>) => {
     .then(({ product_categories }) => product_categories)
 }
 
+export const filterCategoriesWithProducts = (
+  categories: HttpTypes.StoreProductCategory[]
+): HttpTypes.StoreProductCategory[] => {
+  return categories.filter((category) => {
+    return category.products && category.products.length > 0
+  })
+}
+
 export const getCategoryByHandle = async (categoryHandle: string[]) => {
   const handle = `${categoryHandle.join("/")}`
 
