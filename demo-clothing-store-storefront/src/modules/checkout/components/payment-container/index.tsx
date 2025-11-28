@@ -4,7 +4,7 @@ import React, { useContext, useMemo, type JSX } from "react"
 
 import Radio from "@modules/common/components/radio"
 
-import { isManual } from "@lib/constants"
+import { isManual, isCod } from "@lib/constants"
 import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
 import { CardElement } from "@stripe/react-stripe-js"
 import { StripeCardElementOptions } from "@stripe/stripe-js"
@@ -47,7 +47,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
           <Text className="text-base-regular">
             {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
           </Text>
-          {isManual(paymentProviderId) && isDevelopment && (
+          {(isManual(paymentProviderId) || isCod(paymentProviderId)) && isDevelopment && (
             <PaymentTest className="hidden small:block" />
           )}
         </div>
@@ -55,7 +55,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
           {paymentInfoMap[paymentProviderId]?.icon}
         </span>
       </div>
-      {isManual(paymentProviderId) && isDevelopment && (
+      {(isManual(paymentProviderId) || isCod(paymentProviderId)) && isDevelopment && (
         <PaymentTest className="small:hidden text-[10px]" />
       )}
       {children}

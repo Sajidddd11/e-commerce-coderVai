@@ -38,6 +38,14 @@ export const paymentInfoMap: Record<
     title: "SSLCommerz",
     icon: <CreditCard />,
   },
+  pp_cod_default: {
+    title: "Cash on Delivery",
+    icon: <CreditCard />,
+  },
+  pp_cod_cod: {
+    title: "Cash on Delivery",
+    icon: <CreditCard />,
+  },
   // Add more payment providers here
 }
 
@@ -56,6 +64,9 @@ export const isManual = (providerId?: string) => {
 }
 export const isSslCommerz = (providerId?: string) => {
   return providerId?.startsWith("pp_sslcommerz_")
+}
+export const isCod = (providerId?: string) => {
+  return providerId?.startsWith("pp_cod_")
 }
 
 // Add currencies that don't need to be divided by 100

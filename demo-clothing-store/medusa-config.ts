@@ -76,6 +76,10 @@ module.exports = defineConfig({
             resolve: "./src/modules/sslcommerz",
             id: "default",
           },
+          {
+            resolve: "./src/modules/cod",
+            id: "default",
+          },
         ],
       },
     },
