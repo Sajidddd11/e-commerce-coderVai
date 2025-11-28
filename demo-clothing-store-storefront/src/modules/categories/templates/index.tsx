@@ -37,11 +37,11 @@ export default function CategoryTemplate({
   getParents(category)
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-white to-slate-50">
+    <div className="w-full min-h-screen bg-gradient-to-b from-white to-grey-5">
       <div className="content-container py-8 small:py-12">
         {/* Breadcrumb Navigation */}
-        <div className="mb-8 flex items-center gap-2 text-sm text-slate-600">
-          <LocalizedClientLink href="/" className="hover:text-slate-900 transition-colors">
+        <div className="mb-8 flex items-center gap-2 text-sm text-grey-60">
+          <LocalizedClientLink href="/" className="hover:text-grey-90 transition-colors">
             Home
           </LocalizedClientLink>
           <span>/</span>
@@ -51,7 +51,7 @@ export default function CategoryTemplate({
                 <div key={parent.id} className="flex items-center gap-2">
                   <LocalizedClientLink
                     href={`/categories/${parent.handle}`}
-                    className="hover:text-slate-900 transition-colors"
+                    className="hover:text-grey-90 transition-colors"
                     data-testid="sort-by-link"
                   >
                     {parent.name}
@@ -61,16 +61,16 @@ export default function CategoryTemplate({
               ))}
             </>
           )}
-          <span className="text-slate-900 font-medium">{category.name}</span>
+          <span className="text-grey-90 font-medium">{category.name}</span>
         </div>
 
         {/* Category Header */}
         <div className="mb-12">
-          <h1 className="text-3xl small:text-4xl font-bold text-slate-900 mb-3" data-testid="category-page-title">
+          <h1 className="text-3xl small:text-4xl font-bold text-grey-90 mb-3" data-testid="category-page-title">
             {category.name}
           </h1>
           {category.description && (
-            <p className="text-slate-600 text-base max-w-2xl">
+            <p className="text-grey-60 text-base max-w-2xl">
               {category.description}
             </p>
           )}
@@ -78,20 +78,22 @@ export default function CategoryTemplate({
 
         {/* Subcategories */}
         {category.category_children && category.category_children.length > 0 && (
-          <div className="mb-12 pb-8 border-b border-slate-200">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          <div className="mb-12 pb-8 border-b border-grey-20">
+            <h2 className="text-lg font-semibold text-grey-90 mb-4">
               Subcategories
             </h2>
             <div className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-4">
-              {category.category_children.map((c) => (
-                <InteractiveLink
-                  key={c.id}
-                  href={`/categories/${c.handle}`}
-                  className="px-4 py-3 bg-white border border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all text-sm font-medium text-slate-900"
-                >
-                  {c.name}
-                </InteractiveLink>
-              ))}
+              {category.category_children
+                .filter((c) => c.products && c.products.length > 0)
+                .map((c) => (
+                  <InteractiveLink
+                    key={c.id}
+                    href={`/categories/${c.handle}`}
+                    className="px-4 py-3 bg-white border border-grey-20 rounded-lg hover:border-grey-40 hover:bg-grey-5 transition-all text-sm font-medium text-grey-90"
+                  >
+                    {c.name}
+                  </InteractiveLink>
+                ))}
             </div>
           </div>
         )}
@@ -100,7 +102,7 @@ export default function CategoryTemplate({
         <div className="flex flex-col small:flex-row gap-8">
           {/* Sidebar - Filters */}
           <div className="w-full small:w-64 flex-shrink-0">
-            <div className="sticky top-20 bg-white rounded-lg p-6 border border-slate-200">
+            <div className="sticky top-20 bg-white rounded-lg p-6 border border-grey-20">
               <RefinementList sortBy={sort} data-testid="sort-by-container" />
             </div>
           </div>

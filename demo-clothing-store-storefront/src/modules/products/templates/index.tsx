@@ -83,56 +83,51 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
       />
 
-      <div className="w-full min-h-screen bg-white">
-        <div className="content-container py-8 small:py-12">
+      <div className="w-full min-h-screen bg-gradient-to-b from-white via-slate-50/50 to-white">
+        <div className="content-container py-6 small:py-8">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-8 flex items-center gap-2 text-sm text-slate-600">
-            <a href="/" className="hover:text-slate-900">
+          <nav className="mb-6 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2">
+            <a href="/" className="hover:text-slate-900 transition-colors whitespace-nowrap">
               Home
             </a>
-            <span>/</span>
-            <a href="/store" className="hover:text-slate-900">
+            <span className="text-slate-400">/</span>
+            <a href="/store" className="hover:text-slate-900 transition-colors whitespace-nowrap">
               Store
             </a>
             {product.collection && (
               <>
-                <span>/</span>
+                <span className="text-slate-400">/</span>
                 <a
                   href={`/collections/${product.collection.handle}`}
-                  className="hover:text-slate-900"
+                  className="hover:text-slate-900 transition-colors whitespace-nowrap"
                 >
                   {product.collection.title}
                 </a>
               </>
             )}
-            <span>/</span>
-            <span className="text-slate-900 font-medium">{product.title}</span>
+            <span className="text-slate-400">/</span>
+            <span className="text-slate-900 font-medium whitespace-nowrap truncate">{product.title}</span>
           </nav>
 
           {/* Product Container */}
           <div
-            className="grid grid-cols-1 small:grid-cols-2 gap-8 small:gap-12 mb-16"
+            className="grid grid-cols-1 small:grid-cols-3 gap-6 small:gap-8 mb-12 small:mb-16"
             data-testid="product-container"
           >
-            {/* Product Images */}
-            <div className="flex flex-col gap-4">
+            {/* Product Images - 2/3 width */}
+            <div className="small:col-span-2 flex flex-col gap-4">
               <ImageGallery images={images} />
             </div>
 
-            {/* Product Info and Actions */}
-            <div className="flex flex-col gap-8">
+            {/* Product Info and Actions - 1/3 width */}
+            <div className="flex flex-col gap-6 sticky top-20 small:h-fit">
               {/* Header Info */}
               <div className="flex flex-col gap-4">
                 <ProductInfo product={product} />
               </div>
 
-              {/* Description and Tabs */}
-              <div className="py-8 border-t border-b border-slate-200">
-                <ProductTabs product={product} />
-              </div>
-
               {/* Actions */}
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
                 <ProductOnboardingCta />
                 <Suspense
                   fallback={
@@ -148,11 +143,16 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Description and Tabs - Full Width */}
+          <div className="border-t border-slate-200 pt-8 small:pt-10">
+            <ProductTabs product={product} />
+          </div>
         </div>
       </div>
 
       {/* Related Products Section */}
-      <div className="w-full bg-gradient-to-b from-slate-50 to-white py-16 small:py-24">
+      <div className="w-full bg-gradient-to-b from-slate-50 to-white py-12 small:py-16">
         <div
           className="content-container"
           data-testid="related-products-container"

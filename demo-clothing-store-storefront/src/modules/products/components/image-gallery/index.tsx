@@ -2,7 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 
 type ImageGalleryProps = {
   images: HttpTypes.StoreProductImage[]
@@ -40,12 +40,10 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
     const touchEndX = e.changedTouches[0].clientX
     const diff = touchStartX - touchEndX
 
-    // Swipe left - next image
     if (diff > 50) {
       setSelectedImageIndex((prev) => (prev + 1) % images.length)
     }
 
-    // Swipe right - previous image
     if (diff < -50) {
       setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length)
     }
@@ -53,18 +51,19 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
 
   if (!images || images.length === 0) {
     return (
-      <div className="w-full aspect-square bg-slate-200 rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-square bg-slate-200 rounded-xl flex items-center justify-center">
         <p className="text-slate-500">No images available</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* Main Image with Zoom */}
       <div
         ref={mainImageRef}
-        className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-100 cursor-zoom-in group"
+        className="relative w-full rounded-xl overflow-hidden bg-slate-100 cursor-zoom-in group"
+        style={{ aspectRatio: "4 / 5", maxHeight: "600px" }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
@@ -86,32 +85,41 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
                 }
               : {}
           }
+          quality={90}
         />
 
         {/* Zoom Indicator - Desktop Only */}
         {isZooming && (
-          <div className="hidden small:flex absolute top-4 right-4 bg-black/50 text-white px-3 py-2 rounded text-sm">
-            🔍 Zoom
+          <div className="hidden small:flex absolute top-4 right-4 bg-black/60 backdrop-blur text-white px-3 py-2 rounded-lg text-sm font-medium gap-1">
+            <span>🔍</span>
+            <span>Zoom</span>
           </div>
         )}
 
         {/* Image Counter - Mobile */}
-        <div className="small:hidden absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-xs font-medium">
-          {selectedImageIndex + 1} / {images.length}
+        <div className="small:hidden absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-lg text-xs font-bold">
+          {selectedImageIndex + 1}/{images.length}
         </div>
+
+        {/* Badge */}
+        {images.length > 1 && (
+          <div className="absolute bottom-4 left-4 small:hidden bg-black/70 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+            Swipe to explore
+          </div>
+        )}
       </div>
 
-      {/* Thumbnail Gallery */}
+      {/* Thumbnail Gallery - Horizontal Scroll */}
       {images.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {images.map((image, index) => (
             <button
               key={image.id}
               onClick={() => setSelectedImageIndex(index)}
-              className={`relative flex-shrink-0 w-16 h-16 small:w-20 small:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+              className={`relative flex-shrink-0 w-14 h-14 small:w-16 small:h-16 rounded-lg overflow-hidden border-2 transition-all ${
                 selectedImageIndex === index
-                  ? "border-slate-900"
-                  : "border-slate-300 hover:border-slate-500"
+                  ? "border-slate-900 shadow-lg"
+                  : "border-slate-200 hover:border-slate-400"
               }`}
               aria-label={`View image ${index + 1}`}
             >
@@ -119,19 +127,12 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
                 src={image.url}
                 alt={`Thumbnail ${index + 1}`}
                 fill
-                sizes="80px"
+                sizes="64px"
                 className="object-cover"
               />
             </button>
           ))}
         </div>
-      )}
-
-      {/* Mobile Swipe Instructions */}
-      {images.length > 1 && (
-        <p className="small:hidden text-center text-xs text-slate-500 mt-2">
-          Swipe left or right to view more images
-        </p>
       )}
     </div>
   )

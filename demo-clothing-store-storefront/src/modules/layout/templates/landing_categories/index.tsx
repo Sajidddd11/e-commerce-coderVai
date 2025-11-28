@@ -1,10 +1,11 @@
-import { listCategories } from "@lib/data/categories"
+import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import { Text, clx } from "@medusajs/ui"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export default async function LandingCategories() {
-  const productCategories = await listCategories()
+  const allCategories = await listCategories()
+  const productCategories = filterCategoriesWithProducts(allCategories)
 
   return (
     <div className="text-small-regular mt-10 gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">

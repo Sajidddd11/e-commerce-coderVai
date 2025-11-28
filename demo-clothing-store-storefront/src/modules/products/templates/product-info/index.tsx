@@ -1,7 +1,6 @@
 "use client"
 
 import { HttpTypes } from "@medusajs/types"
-import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductRating from "@modules/products/components/product-rating"
 import ProductPrice from "@modules/products/components/product-price"
@@ -14,64 +13,68 @@ type ProductInfoProps = {
 const ProductInfo = ({ product }: ProductInfoProps) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
-  // Extract features from product description or attributes
   const defaultFeatures = [
-    "Premium quality materials",
+    "Premium quality",
     "Comfortable fit",
-    "Durable construction",
-    "Easy care & maintenance",
+    "Durable",
+    "Easy care",
   ]
 
   const features = product.tags?.map(tag => tag.value) || defaultFeatures
 
+  const inStock = product.variants?.some(
+    (v) => !v.manage_inventory || (v.inventory_quantity || 0) > 0
+  )
+
   return (
-    <div id="product-info" className="flex flex-col gap-6">
-      {/* Collection Breadcrumb */}
+    <div id="product-info" className="flex flex-col gap-4">
+      {/* Collection Link */}
       {product.collection && (
         <LocalizedClientLink
           href={`/collections/${product.collection.handle}`}
-          className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-wide"
+          className="text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors uppercase tracking-widest"
         >
           {product.collection.title}
         </LocalizedClientLink>
       )}
 
       {/* Product Title */}
-      <Heading
-        level="h1"
-        className="text-4xl small:text-5xl font-bold text-slate-900 leading-tight"
-        data-testid="product-title"
-      >
-        {product.title}
-      </Heading>
+      <div>
+        <h1 className="text-2xl small:text-3xl font-bold text-slate-900 leading-tight mb-2">
+          {product.title}
+        </h1>
+        {product.type && (
+          <p className="text-sm text-slate-500">{product.type.value}</p>
+        )}
+      </div>
 
       {/* Rating and Reviews */}
-      <ProductRating averageRating={4.5} reviewCount={24} />
+      <div className="flex items-center gap-2 pb-4 border-b border-slate-200">
+        <ProductRating averageRating={4.5} reviewCount={24} />
+        <span className="text-xs text-slate-500">
+          {inStock ? "✓ In Stock" : "Out of Stock"}
+        </span>
+      </div>
 
-      {/* Price Display */}
-      <div className="border-y border-slate-200 py-4">
-        <div className="flex items-baseline gap-3">
-          <div className="text-3xl small:text-4xl font-bold text-slate-900">
-            <ProductPrice product={product} />
-          </div>
+      {/* Price Display - Compact */}
+      <div className="flex items-baseline gap-3">
+        <div className="text-2xl small:text-3xl font-bold text-slate-900">
+          <ProductPrice product={product} />
         </div>
       </div>
 
       {/* Short Description */}
       {product.description && (
-        <div className="space-y-3">
-          <Text
-            className="text-base text-slate-600 leading-relaxed"
-            data-testid="product-description"
-          >
-            {isDescriptionExpanded || product.description.length < 200
+        <div className="space-y-2">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {isDescriptionExpanded || product.description.length < 150
               ? product.description
-              : `${product.description.substring(0, 200)}...`}
-          </Text>
-          {product.description.length > 200 && (
+              : `${product.description.substring(0, 150)}...`}
+          </p>
+          {product.description.length > 150 && (
             <button
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="text-sm font-medium text-slate-900 hover:text-slate-600 transition-colors"
+              className="text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors"
             >
               {isDescriptionExpanded ? "Show less" : "Show more"}
             </button>
@@ -79,19 +82,16 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         </div>
       )}
 
-      {/* Key Features */}
+      {/* Key Features - Compact */}
       {features && features.length > 0 && (
-        <div className="space-y-3 pt-4">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
-            Key Features
-          </h3>
-          <ul className="grid grid-cols-1 small:grid-cols-2 gap-3">
+        <div className="space-y-2 pt-2">
+          <ul className="grid grid-cols-2 gap-2">
             {features.slice(0, 4).map((feature, index) => (
               <li
                 key={index}
-                className="flex items-start gap-3 text-sm text-slate-700"
+                className="flex items-start gap-2 text-xs text-slate-700"
               >
-                <span className="text-slate-400 mt-1 flex-shrink-0">✓</span>
+                <span className="text-orange-500 font-bold flex-shrink-0">✓</span>
                 <span>{feature}</span>
               </li>
             ))}
@@ -99,44 +99,33 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         </div>
       )}
 
-      {/* Dimensions and Details */}
-      {(product.weight || product.length || product.width || product.height) && (
-        <div className="border-t border-slate-200 pt-4 space-y-2 text-sm">
-          <h4 className="font-semibold text-slate-900">Dimensions & Details</h4>
-          <div className="grid grid-cols-2 gap-3 text-slate-600">
+      {/* Dimensions and Details - Compact */}
+      {(product.weight || product.length || product.width || product.height || product.material) && (
+        <div className="border-t border-slate-200 pt-3 space-y-1 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-slate-600">
             {product.weight && (
               <div>
-                <span className="font-medium">Weight:</span> {product.weight}g
-              </div>
-            )}
-            {product.length && product.width && product.height && (
-              <div>
-                <span className="font-medium">Size:</span> {product.length}L × {product.width}W × {product.height}H
+                <span className="font-semibold">Weight:</span> {product.weight}g
               </div>
             )}
             {product.material && (
               <div>
-                <span className="font-medium">Material:</span> {product.material}
-              </div>
-            )}
-            {product.type?.value && (
-              <div>
-                <span className="font-medium">Type:</span> {product.type.value}
+                <span className="font-semibold">Material:</span> {product.material}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Trust Badges */}
-      <div className="flex items-center gap-4 pt-2 text-xs text-slate-600 border-t border-slate-200">
-        <div className="flex items-center gap-1">
-          <span>✓</span>
-          <span>Free Shipping on orders over $50</span>
+      {/* Trust Badges - Minimal */}
+      <div className="flex flex-col gap-2 pt-2 border-t border-slate-200 text-xs text-slate-600">
+        <div className="flex items-center gap-2">
+          <span className="text-green-600 font-bold">✓</span>
+          <span>Free Shipping</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span>✓</span>
-          <span>30-day returns</span>
+        <div className="flex items-center gap-2">
+          <span className="text-green-600 font-bold">✓</span>
+          <span>30-day Returns</span>
         </div>
       </div>
     </div>
