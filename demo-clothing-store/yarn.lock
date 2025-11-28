@@ -1775,7 +1775,7 @@
   resolved "https://registry.npmjs.org/@medusajs/cache-inmemory/-/cache-inmemory-2.11.3.tgz"
   integrity sha512-UfysaEHQz71pMKlZt5QE/ifp18TgxdqO/hlUn42n3eGcCQ1ZVPK0i1Ga/R5y8ZzGxu4wd2BuyG2AB8S+HItfmw==
 
-"@medusajs/cache-redis@2.11.3":
+"@medusajs/cache-redis@^2.11.3", "@medusajs/cache-redis@2.11.3":
   version "2.11.3"
   resolved "https://registry.npmjs.org/@medusajs/cache-redis/-/cache-redis-2.11.3.tgz"
   integrity sha512-vd0k/7bnAXx/8K5TS5W3ct2ub36g0gO8sG0O9xutKPITI0+DDdGStu4a9/3+UGgR0GuuBrEfuxlWwKw0AXgnwA==
@@ -2012,7 +2012,7 @@
   resolved "https://registry.npmjs.org/@medusajs/icons/-/icons-2.11.3.tgz"
   integrity sha512-WV+ZsjZiY3jQVYejPuyC09MbAb15eisQ+bY63GjGvYs4rirjIPxSH2Y6XADWDYQTdKoj3Ffy7c04hL9FgBQV6w==
 
-"@medusajs/index@2.11.3":
+"@medusajs/index@^2.11.3", "@medusajs/index@2.11.3":
   version "2.11.3"
   resolved "https://registry.npmjs.org/@medusajs/index/-/index-2.11.3.tgz"
   integrity sha512-TDr+RczcmdEKhM/rw/Gj+Ng0H9mdnd6d2a8H7MTX45Z6QMSIRTieT3LMQw/DiNasYtrGobHABXOfCRCT8yzRSQ==

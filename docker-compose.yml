@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: medusa-postgres-local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 00888246
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"  # Using 5433 to avoid conflict with any existing PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase_backup.sql:/docker-entrypoint-initdb.d/backup.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+

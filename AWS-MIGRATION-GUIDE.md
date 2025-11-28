@@ -44,15 +44,30 @@ Password: <your-password>
 **Option A: Using pg_dump (Recommended)**
 
 ```bash
-# 1. Export from Supabase
+# 1. Export from Supabase (includes all indexes, data, and schema)
 pg_dump "postgresql://postgres.wiiqpqzjazblrwfsshrp:00888246@aws-1-ap-south-1.pooler.supabase.com:6543/postgres" \
   --no-owner --no-acl --clean --if-exists \
   -f supabase_backup.sql
 
-# 2. Import to AWS RDS
+# 2. Verify backup includes your performance indexes
+grep -c "idx_product_variant\|idx_inventory\|idx_cart" supabase_backup.sql
+# Should show multiple matches
+
+# 3. Import to AWS RDS
 psql "postgresql://postgres:<password>@your-db.xxxx.ap-south-1.rds.amazonaws.com:5432/medusa" \
   -f supabase_backup.sql
+
+# 4. Verify indexes were created on AWS RDS
+psql "postgresql://postgres:<password>@your-db.xxxx.ap-south-1.rds.amazonaws.com:5432/medusa" \
+  -c "SELECT count(*) FROM pg_indexes WHERE schemaname = 'public' AND indexname LIKE 'idx_%';"
 ```
+
+**What Gets Migrated:**
+- ✅ All tables and data
+- ✅ **All performance indexes** (including the ones you just created)
+- ✅ Constraints and foreign keys
+- ✅ Sequences and auto-increment values
+- ✅ Functions and triggers
 
 **Option B: Using Supabase CLI**
 ```bash
@@ -64,6 +79,35 @@ supabase db dump -f supabase_backup.sql
 
 # Import to AWS
 psql <aws-connection-string> -f supabase_backup.sql
+```
+
+**Post-Migration Verification:**
+```sql
+-- Verify all performance indexes are present
+SELECT 
+  tablename,
+  COUNT(*) as index_count
+FROM pg_indexes
+WHERE schemaname = 'public' 
+  AND indexname LIKE 'idx_%'
+  AND tablename IN (
+    'product_variant', 'inventory_item', 'inventory_level',
+    'cart', 'cart_line_item', 'order', 'product', 'price'
+  )
+GROUP BY tablename
+ORDER BY tablename;
+
+-- Expected output:
+-- product_variant: 5+ indexes
+-- cart: 2+ indexes
+-- cart_line_item: 2+ indexes
+-- inventory_item: 1+ indexes
+-- etc.
+
+-- Test index usage on a slow query
+EXPLAIN ANALYZE 
+SELECT * FROM cart_line_item WHERE cart_id = 'your-cart-id';
+-- Should show "Index Scan using idx_cart_line_item_cart"
 ```
 
 ### Step 4: Setup ElastiCache Redis (Optional but Recommended)

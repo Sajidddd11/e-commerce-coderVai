@@ -53,6 +53,17 @@ temp/
 *.sqlite
 *.db
 
+# Temporary SQL dumps and backups (keep database-indexes.sql)
+temp_*.sql
+full_data.sql
+*_backup.sql
+supabase_backup.sql
+
+# Test scripts
+test-*.ps1
+test-*.sh
+test-*.js
+
 # Cache
 .cache/
 .parcel-cache/
