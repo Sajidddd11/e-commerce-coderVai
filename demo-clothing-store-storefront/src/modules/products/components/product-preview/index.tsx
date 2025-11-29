@@ -51,12 +51,29 @@ export default function ProductPreview({
   )
 
   // Calculate pricing using the formatted strings from getProductPrice
-  const basePrice = cheapestPrice?.original_price_number || cheapestPrice?.calculated_price_number || 0
-  const discountedPrice = cheapestPrice?.calculated_price_number || 0
-  const hasDiscount = basePrice > discountedPrice && discountedPrice > 0
-  const discountPercentage = hasDiscount 
-    ? Math.round(((basePrice - discountedPrice) / basePrice) * 100) 
-    : 0
+  const basePrice =
+    cheapestPrice?.original_price_number ??
+    cheapestPrice?.calculated_price_number ??
+    0
+  const discountedPrice = cheapestPrice?.calculated_price_number ?? 0
+
+  // Use backend-provided percentage diff when available
+  const rawDiscountPercentage = Number(cheapestPrice?.percentage_diff ?? 0)
+
+  // Rounded percentage we show in the UI
+  const discountPercentage = Math.floor(rawDiscountPercentage)
+
+  // Treat as a real discount only when:
+  // - There is a sale price list (price_type === "sale")
+  // - Base price is greater than discounted price
+  // - Discounted price is > 0
+  // - Effective percentage is at least 1%
+  const hasDiscount =
+    !!cheapestPrice &&
+    cheapestPrice.price_type === "sale" &&
+    basePrice > discountedPrice &&
+    discountedPrice > 0 &&
+    discountPercentage >= 1
 
   // Use formatted prices directly
   const formattedBasePrice = cheapestPrice?.original_price || cheapestPrice?.calculated_price || "Contact for price"

@@ -1,6 +1,7 @@
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Image from "next/image"
 
 export default async function Footer() {
   const { collections } = await listCollections({
@@ -109,23 +110,36 @@ export default async function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-grey-80 pt-8 flex flex-col small:flex-row small:items-center small:justify-between gap-4">
-          <p className="text-grey-50 text-sm">
-            © {new Date().getFullYear()} ZAHAN Fashion and Lifestyle. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <a
-              href="#"
-              className="text-grey-50 hover:text-grey-0 transition-colors text-sm"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className="text-grey-50 hover:text-grey-0 transition-colors text-sm"
-            >
-              Terms of Service
-            </a>
+        <div className="border-t border-grey-80 pt-8 flex flex-col gap-6 small:gap-4">
+          {/* Payment methods strip */}
+          <div className="flex justify-center">
+            <Image
+              src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-01.png"
+              alt="Accepted payment methods via SSLCommerz"
+              width={1200}
+              height={150}
+              className="w-full max-w-5xl h-auto object-contain"
+            />
+          </div>
+
+          <div className="flex flex-col small:flex-row small:items-center small:justify-between gap-4">
+            <p className="text-grey-50 text-sm">
+              © {new Date().getFullYear()} ZAHAN Fashion and Lifestyle. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <a
+                href="#"
+                className="text-grey-50 hover:text-grey-0 transition-colors text-sm"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="#"
+                className="text-grey-50 hover:text-grey-0 transition-colors text-sm"
+              >
+                Terms of Service
+              </a>
+            </div>
           </div>
         </div>
       </div>

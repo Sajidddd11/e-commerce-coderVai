@@ -56,13 +56,15 @@ function ProductCardWithPrice({
           </div>
         )}
 
-        {/* Discount Circle Badge - Top Right, 4px outside card */}
-        <div className="absolute -top-1 -right-1 w-12 h-12 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-20">
-          <span className="text-white font-bold text-sm text-center">
-            {discountPercent}%<br />
-            <span className="text-xs">off</span>
-          </span>
-        </div>
+        {/* Discount Circle Badge - Top Right, only when there is a real discount */}
+        {discountPercent > 0 && (
+          <div className="absolute -top-1 -right-1 w-12 h-12 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-20">
+            <span className="text-white font-bold text-sm text-center">
+              {discountPercent}%<br />
+              <span className="text-xs">off</span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Bottom Box - White box with xs shadow, positioned -2px from bottom */}
