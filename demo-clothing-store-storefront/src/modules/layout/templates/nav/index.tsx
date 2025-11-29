@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import Image from "next/image"
 
 import { listRegions } from "@lib/data/regions"
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
@@ -25,10 +26,16 @@ export default async function Nav() {
               <MobileMenu regions={regions} categories={categories} />
               <LocalizedClientLink
                 href="/"
-                className="font-bold text-lg small:text-xl tracking-tight hover:text-grey-60 transition-colors whitespace-nowrap"
+                className="flex items-center hover:opacity-90 transition-opacity whitespace-nowrap"
                 data-testid="nav-store-link"
               >
-                ZAHAN
+                <Image
+                  src="/Final%20Logo%20with%20Text.png"
+                  alt="ZAHAN logo"
+                  width={140}
+                  height={32}
+                  priority
+                />
               </LocalizedClientLink>
             </div>
 
