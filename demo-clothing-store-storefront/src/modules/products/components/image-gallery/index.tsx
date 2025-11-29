@@ -62,8 +62,13 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
       {/* Main Image with Zoom */}
       <div
         ref={mainImageRef}
-        className="relative w-full rounded-xl overflow-hidden bg-slate-100 cursor-zoom-in group"
-        style={{ aspectRatio: "4 / 5", maxHeight: "600px" }}
+        className="relative rounded-xl overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
+        style={{
+          aspectRatio: "1 / 1",
+          width: "100%",
+          maxWidth: "300px",
+          maxHeight: "300px",
+        }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}

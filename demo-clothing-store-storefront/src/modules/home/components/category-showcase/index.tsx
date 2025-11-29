@@ -4,6 +4,8 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 import { listProducts } from "@lib/data/products"
+import ProductCardWithPrice from "./product-card"
+import ResponsiveProductGrid from "./responsive-product-grid"
 
 interface CategoryShowcaseProps {
   categories: HttpTypes.StoreProductCategory[]
@@ -76,9 +78,10 @@ export default async function CategoryShowcase({
             </div>
           </div>
 
-          {/* Featured ZAHAN Section */}
+          {/* Featured ZAHAN Section - Big Card visible only on small screens and above */}
           <div className="w-full pt-12 xsmall:pt-16 small:pt-24">
-            <div className="flex flex-col xsmall:flex-row bg-white overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 rounded-lg">
+            {/* Big Card - Hidden on tablet and smaller */}
+            <div className="hidden small:flex flex-col xsmall:flex-row bg-white overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 rounded-lg">
               {/* Left Section - Full width on mobile, 3/4 on larger screens */}
               <div className="w-full xsmall:w-3/4 p-6 xsmall:p-8 small:p-12 flex flex-col justify-between bg-gradient-to-br from-gray-50 to-white">
                 <div>
@@ -109,6 +112,16 @@ export default async function CategoryShowcase({
                   className="object-cover"
                 />
               </div>
+            </div>
+
+            {/* Title Only - Visible on tablet and smaller */}
+            <div className="small:hidden py-6">
+              <h2 className="text-2xl xsmall:text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                ZAHAN
+              </h2>
+              <p className="text-gray-600 text-sm xsmall:text-base mt-2">
+                Premium Collection
+              </p>
             </div>
           </div>
 
@@ -149,7 +162,8 @@ async function CategoryProductSection({
   const { response } = await listProducts({
     queryParams: {
       category_id: [category.id],
-      limit: 8,
+      limit: 10,
+      fields: "*variants.calculated_price",
     },
     countryCode,
   })
@@ -157,74 +171,52 @@ async function CategoryProductSection({
   const products = response.products || []
 
   return (
-    <div className="w-full flex gap-6">
-      {/* Left: Category Card - 404x404 */}
-      <div
-        className="flex-shrink-0 relative overflow-hidden shadow-sm"
-        style={{
-          width: "404px",
-          height: "404px",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-        }}
-      >
-        <Image
-          src={getRandomImage(imageIndex)}
-          alt={category.name}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div
-          className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-4"
-          style={{
-            height: "60px",
-          }}
-        >
-          <h3 className="text-center font-semibold text-white text-2xl line-clamp-2">
-            {category.name}
-          </h3>
-        </div>
-      </div>
+    <div className="w-full flex flex-col">
+      {/* Category Title - Visible on all devices */}
+      <h3 className="text-xl xsmall:text-2xl small:text-3xl font-bold text-grey-90 mb-4 xsmall:mb-6">
+        {category.name}
+      </h3>
 
-      {/* Right: Product Grid - 2x4 of 192x192 boxes */}
-      <div className="flex-1">
-        <div
-          className="grid gap-4"
+      {/* Main Section */}
+      <div className="w-full flex flex-col small:flex-row gap-4 small:gap-6">
+        {/* Left: Category Card - Hidden on mobile, visible on small and above */}
+        <LocalizedClientLink
+          href={`/categories/${category.handle}`}
+          className="flex-shrink-0 relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group hidden small:block"
           style={{
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gridTemplateRows: "repeat(2, 192px)",
+            width: "404px",
+            height: "404px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
           }}
         >
-          {products.map((product) => (
-            <LocalizedClientLink
-              key={product.id}
-              href={`/products/${product.handle}`}
-              className="relative group overflow-hidden shadow-sm bg-gray-100"
-              style={{
-                width: "100%",
-                height: "192px",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-              }}
-            >
-              {product.images && product.images.length > 0 ? (
-                <Image
-                  src={product.images[0].url}
-                  alt={product.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                  <span className="text-gray-400 text-sm">No image</span>
-                </div>
-              )}
-            </LocalizedClientLink>
-          ))}
+          <Image
+            src={getRandomImage(imageIndex)}
+            alt={category.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div
+            className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-4"
+            style={{
+              height: "60px",
+            }}
+          >
+            <h3 className="text-center font-semibold text-white text-2xl line-clamp-2">
+              {category.name}
+            </h3>
+          </div>
+        </LocalizedClientLink>
+
+        {/* Right: Product Grid - Responsive columns and product count based on device */}
+        <div className="flex-1">
+          <ResponsiveProductGrid products={products} />
         </div>
       </div>
     </div>
   )
 }
+
 
 async function AllProductsRow({
   countryCode,
@@ -233,7 +225,9 @@ async function AllProductsRow({
 }) {
   const { response } = await listProducts({
     queryParams: {
-      limit: 8,
+      limit: 5,
+      fields: "*variants.calculated_price",
+      order: "-created_at",
     },
     countryCode,
   })
@@ -244,34 +238,17 @@ async function AllProductsRow({
     <div
       className="grid gap-4 w-full"
       style={{
-        gridTemplateColumns: "repeat(8, 1fr)",
-        gridAutoRows: "192px",
+        gridTemplateColumns: "repeat(auto-fit, minmax(192px, 1fr))",
+        gridAutoRows: "auto",
       }}
     >
-      {products.slice(0, 7).map((product) => (
-        <LocalizedClientLink
+      {products.map((product) => (
+        <div
           key={product.id}
-          href={`/products/${product.handle}`}
-          className="relative group overflow-hidden shadow-sm bg-gray-100"
-          style={{
-            width: "100%",
-            height: "192px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-          }}
+          className="flex justify-center"
         >
-          {product.images && product.images.length > 0 ? (
-            <Image
-              src={product.images[0].url}
-              alt={product.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <span className="text-gray-400 text-sm">No image</span>
-            </div>
-          )}
-        </LocalizedClientLink>
+          <ProductCardWithPrice product={product} />
+        </div>
       ))}
 
       {/* 8th Card - See All Button with Hover Overlay */}

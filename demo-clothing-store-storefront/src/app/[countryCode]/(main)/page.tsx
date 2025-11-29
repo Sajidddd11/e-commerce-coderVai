@@ -38,12 +38,24 @@ export default async function Home(props: {
 
   return (
     <div className="w-full">
-      <Announcement />
-      <HomeHero />
-      <CategoryShowcase categories={categories} countryCode={countryCode} />
-      <FeaturedProductsShowcase collections={collections} region={region} />
-      <TrustSection />
-      <CTASection />
+      <section data-testid="section-announcement">
+        <Announcement />
+      </section>
+      <section data-testid="section-hero">
+        <HomeHero />
+      </section>
+      <section data-testid="section-categories">
+        <CategoryShowcase categories={categories} countryCode={countryCode} />
+      </section>
+      <section data-testid="section-featured-products">
+        <FeaturedProductsShowcase collections={collections} region={region} />
+      </section>
+      <section data-testid="section-trust">
+        <TrustSection />
+      </section>
+      <section data-testid="section-cta">
+        <CTASection />
+      </section>
     </div>
   )
 }

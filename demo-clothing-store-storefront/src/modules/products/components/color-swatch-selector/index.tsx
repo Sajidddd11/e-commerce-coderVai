@@ -53,7 +53,7 @@ const ColorSwatchSelector: React.FC<ColorSwatchSelectorProps> = ({
       <div className="flex flex-wrap gap-3">
         {colorOptions.map((option) => {
           const hexColor = getColorHex(option.value)
-          const isSelected = selectedColor === option.id
+          const isSelected = selectedColor === option.value
 
           return (
             <button

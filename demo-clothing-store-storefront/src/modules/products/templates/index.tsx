@@ -30,6 +30,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   }
 
   // Generate Schema.org structured data for SEO
+  const futureDate = new Date()
+  futureDate.setDate(futureDate.getDate() + 30)
+
   const productSchema = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -42,7 +45,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     },
     offers: {
       "@type": "Offer",
-      url: typeof window !== "undefined" ? window.location.href : "",
       priceCurrency: region?.currency_code?.toUpperCase() || "USD",
       price: product.variants?.[0]?.prices?.[0]?.amount
         ? (product.variants[0].prices[0].amount / 100).toString()
@@ -52,7 +54,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       )
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
-      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      priceValidUntil: futureDate
         .toISOString()
         .split("T")[0],
     },
@@ -83,10 +85,10 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
       />
 
-      <div className="w-full min-h-screen bg-gradient-to-b from-white via-slate-50/50 to-white">
-        <div className="content-container py-6 small:py-8">
+      <div className="w-full min-h-screen bg-white">
+        <div className="content-container py-4 small:py-6 medium:py-10">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-6 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2">
+          <nav className="mb-6 small:mb-8 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2">
             <a href="/" className="hover:text-slate-900 transition-colors whitespace-nowrap">
               Home
             </a>
@@ -111,23 +113,25 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
           {/* Product Container */}
           <div
-            className="grid grid-cols-1 small:grid-cols-3 gap-6 small:gap-8 mb-12 small:mb-16"
+            className="grid grid-cols-1 small:grid-cols-3 gap-6 small:gap-8 medium:gap-12 mb-12 small:mb-16 medium:mb-20"
             data-testid="product-container"
           >
-            {/* Product Images - 2/3 width */}
+            {/* Product Images - Full width on mobile, 2/3 on desktop */}
             <div className="small:col-span-2 flex flex-col gap-4">
-              <ImageGallery images={images} />
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl small:rounded-2xl p-4 small:p-8 medium:p-12">
+                <ImageGallery images={images} />
+              </div>
             </div>
 
             {/* Product Info and Actions - 1/3 width */}
-            <div className="flex flex-col gap-6 sticky top-20 small:h-fit">
-              {/* Header Info */}
-              <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 small:gap-8">
+              {/* Header Info Section */}
+              <div className="flex flex-col gap-4 small:gap-6 bg-slate-50 rounded-lg small:rounded-xl p-4 small:p-6 border border-slate-200">
                 <ProductInfo product={product} />
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-col gap-4">
+              {/* Actions Section */}
+              <div className="flex flex-col gap-3 small:gap-4 bg-white border-2 border-slate-200 rounded-lg small:rounded-xl p-4 small:p-6">
                 <ProductOnboardingCta />
                 <Suspense
                   fallback={
@@ -145,21 +149,24 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           </div>
 
           {/* Description and Tabs - Full Width */}
-          <div className="border-t border-slate-200 pt-8 small:pt-10">
+          <div className="border-t-2 border-slate-200 pt-8 small:pt-12 medium:pt-16">
             <ProductTabs product={product} />
           </div>
         </div>
       </div>
 
       {/* Related Products Section */}
-      <div className="w-full bg-gradient-to-b from-slate-50 to-white py-12 small:py-16">
+      <div className="w-full bg-gradient-to-b from-slate-50 via-white to-slate-50 py-16 small:py-20 border-t border-slate-200">
         <div
           className="content-container"
           data-testid="related-products-container"
         >
-          <h2 className="text-2xl small:text-3xl font-bold text-slate-900 mb-8">
-            You May Also Like
-          </h2>
+          <div className="mb-10">
+            <h2 className="text-2xl small:text-3xl font-bold text-slate-900 mb-2">
+              You May Also Like
+            </h2>
+            <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-transparent rounded-full"></div>
+          </div>
           <Suspense fallback={<SkeletonRelatedProducts />}>
             <RelatedProducts product={product} countryCode={countryCode} />
           </Suspense>

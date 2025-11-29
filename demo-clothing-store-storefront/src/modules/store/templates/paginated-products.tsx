@@ -72,10 +72,48 @@ export default async function PaginatedProducts({
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
 
+  if (products.length === 0) {
+    return (
+      <div className="w-full py-16 px-4 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="mb-6">
+            <svg
+              className="mx-auto h-16 w-16 text-slate-300 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M20 7l-8-4-8 4m0 0l8 4m-8-4v10l8 4m0-10l8-4m-8 4v10l8-4M7 7l5-2.5 5 2.5"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-slate-900 mb-2">
+            No Products Found
+          </h3>
+          <p className="text-slate-600 mb-6">
+            {search
+              ? "We couldn't find any products matching your search. Try adjusting your search terms or browsing by category."
+              : "There are no products available in this selection. Please check back soon or explore other categories."}
+          </p>
+          <a
+            href="/store"
+            className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+          >
+            Browse All Products
+          </a>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-4 small:gap-6"
+        className="grid w-full grid-cols-1 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-3 large:grid-cols-4 gap-3 small:gap-4 medium:gap-6"
         data-testid="products-list"
       >
         {products.map((p) => {

@@ -13,10 +13,10 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
   const items = cart?.items
   return (
     <div>
-      <div className="pb-3 flex items-center">
+      <div className="pb-3 flex items-center hidden small:flex">
         <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
       </div>
-      <Table>
+      <Table className="hidden small:table">
         <Table.Header className="border-t-0">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
             <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
@@ -41,7 +41,8 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
                     <Item
                       key={item.id}
                       item={item}
-                      currencyCode={cart?.currency_code}
+                      currencyCode={cart?.currency_code || "USD"}
+                      renderMode="desktop"
                     />
                   )
                 })
@@ -50,6 +51,27 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
               })}
         </Table.Body>
       </Table>
+
+      <div className="small:hidden">
+        {items
+          ? items
+              .sort((a, b) => {
+                return (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
+              })
+              .map((item) => {
+                return (
+                  <Item
+                    key={item.id}
+                    item={item}
+                    currencyCode={cart?.currency_code || "USD"}
+                    renderMode="mobile"
+                  />
+                )
+              })
+          : repeat(5).map((i) => {
+              return <SkeletonLineItem key={i} />
+            })}
+      </div>
     </div>
   )
 }
