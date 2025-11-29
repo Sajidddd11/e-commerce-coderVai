@@ -117,7 +117,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <ChevronDown />
                 </div>
               </Button>}
-              <LoadingButton
+              <Button
                 onClick={handleAddToCart}
                 disabled={!inStock || !variant}
                 className="w-full"
@@ -129,7 +129,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   : !inStock
                   ? "Out of stock"
                   : "Add to cart"}
-              </LoadingButton>
+              </Button>
             </div>
           </div>
         </Transition>
