@@ -7,6 +7,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "../thumbnail"
 import OptionSelect from "../product-actions/option-select"
 import ColorSwatchSelector from "../color-swatch-selector"
+import DotSpinner from "@modules/common/components/dot-spinner"
 import { useState, useMemo, useRef } from "react"
 import { isEqual } from "lodash"
 import { useParams, useRouter } from "next/navigation"
@@ -41,6 +42,7 @@ export default function ProductPreview({
   const [imageLoaded, setImageLoaded] = useState(false)
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const isNew = product.created_at &&
@@ -163,15 +165,28 @@ export default function ProductPreview({
 
   // Handle card click - navigate only if not clicking on interactive elements
   const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent multiple clicks
+    if (isNavigating || isAdding) {
+      e.preventDefault()
+      return
+    }
+
     const target = e.target as HTMLElement
-    
+
     // Don't navigate if clicking on interactive elements
     if (target.closest('button') || target.closest('[role="button"]')) {
       return
     }
 
-    // Navigate to product details
-    router.push(`/products/${product.handle}`)
+    // Show loading state during navigation immediately
+    setIsNavigating(true)
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Ensure loading state is visible for a moment before navigation
+    setTimeout(() => {
+      router.push(`/products/${product.handle}`)
+    }, 100)
   }
 
   const hasVariants = (product.variants?.length ?? 0) > 1
@@ -179,8 +194,11 @@ export default function ProductPreview({
   return (
     <div
       ref={cardRef}
-      className="group relative flex flex-col h-full bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className={`group relative flex flex-col h-full w-full bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-grey-20 ${
+        isNavigating ? 'opacity-75' : ''
+      }`}
       onClick={handleCardClick}
+      data-clickable="true"
     >
       {/* Image Container - 1:1 Ratio, Max 300px */}
       <div className="relative mx-auto w-full max-w-[300px] aspect-square bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
@@ -217,6 +235,16 @@ export default function ProductPreview({
         {!inStock && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
             <span className="text-white font-bold text-sm">Out of Stock</span>
+          </div>
+        )}
+
+        {/* Loading Overlay */}
+        {isNavigating && (
+          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg shadow-2xl">
+            <div className="flex flex-col items-center gap-3">
+              <DotSpinner size="lg" color="#262626" />
+              <p className="text-sm font-semibold text-slate-700">Opening...</p>
+            </div>
           </div>
         )}
       </div>
@@ -329,13 +357,20 @@ export default function ProductPreview({
           <button
             onClick={handleAddToCart}
             disabled={!canAddToCart || isAdding}
-            className={`w-full py-2 px-3 rounded-md font-semibold text-sm transition-all ${
+            className={`w-full py-2 px-3 rounded-md font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
               canAddToCart && !isAdding
                 ? "bg-slate-900 text-white hover:bg-slate-800"
                 : "bg-slate-200 text-slate-500 cursor-not-allowed"
             }`}
           >
-            {isAdding ? "Adding..." : "Add to Cart"}
+            {isAdding ? (
+              <>
+                <DotSpinner size="sm" color="#ffffff" />
+                <span>Adding</span>
+              </>
+            ) : (
+              "Add to Cart"
+            )}
           </button>
         </div>
       </div>

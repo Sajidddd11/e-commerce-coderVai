@@ -6,7 +6,7 @@ import { CheckCircleSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text, useToggleState } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
-import Spinner from "@modules/common/icons/spinner"
+import DotSpinner from "@modules/common/components/dot-spinner"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useActionState } from "react"
 import BillingAddress from "../billing_address"
@@ -168,7 +168,7 @@ const Addresses = ({
               </div>
             ) : (
               <div>
-                <Spinner />
+                <DotSpinner size="lg" color="#262626" />
               </div>
             )}
           </div>

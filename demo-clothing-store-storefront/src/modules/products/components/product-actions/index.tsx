@@ -8,6 +8,7 @@ import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import QuantitySelector from "@modules/products/components/quantity-selector"
 import ColorSwatchSelector from "@modules/products/components/color-swatch-selector"
+import LoadingButton from "@modules/common/components/loading-button"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -215,7 +216,7 @@ export default function ProductActions({
         {/* Action Buttons */}
         <div className="flex flex-col gap-3 pt-2">
           {/* Add to Cart Button */}
-          <Button
+          <LoadingButton
             onClick={handleAddToCart}
             disabled={
               !inStock ||
@@ -234,7 +235,7 @@ export default function ProductActions({
               : !inStock || !isValidVariant
               ? "Out of stock"
               : "Add to Cart"}
-          </Button>
+          </LoadingButton>
 
           {/* Buy Now Button */}
           <Button

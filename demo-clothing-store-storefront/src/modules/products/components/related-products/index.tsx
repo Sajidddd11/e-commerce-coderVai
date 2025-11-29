@@ -79,16 +79,16 @@ export default async function RelatedProducts({
   return (
     <div className="w-full">
       {/* Product Grid - Latest 5 Products */}
-      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-5 gap-4 justify-items-center">
+      <ul className="grid grid-cols-2 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-5 gap-3 xsmall:gap-4 small:gap-5 medium:gap-5 w-full">
         {products.map((product) => (
-          <li key={product.id} className="h-full">
+          <li key={product.id} className="h-full w-full flex justify-center">
             <Product region={region} product={product} />
           </li>
         ))}
       </ul>
 
       {/* Explore More Button */}
-      <div className="flex justify-center mt-8">
+      <div className="flex justify-center mt-8 small:mt-10 medium:mt-12">
         <LocalizedClientLink
           href={categoryPath}
           className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-800 transition-colors duration-200"

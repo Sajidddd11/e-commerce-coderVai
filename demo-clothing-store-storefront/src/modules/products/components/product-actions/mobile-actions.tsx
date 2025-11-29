@@ -8,6 +8,7 @@ import X from "@modules/common/icons/x"
 
 import { getProductPrice } from "@lib/util/get-product-price"
 import OptionSelect from "./option-select"
+import LoadingButton from "@modules/common/components/loading-button"
 import { HttpTypes } from "@medusajs/types"
 import { isSimpleProduct } from "@lib/util/product"
 
@@ -116,7 +117,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <ChevronDown />
                 </div>
               </Button>}
-              <Button
+              <LoadingButton
                 onClick={handleAddToCart}
                 disabled={!inStock || !variant}
                 className="w-full"
@@ -128,7 +129,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   : !inStock
                   ? "Out of stock"
                   : "Add to cart"}
-              </Button>
+              </LoadingButton>
             </div>
           </div>
         </Transition>

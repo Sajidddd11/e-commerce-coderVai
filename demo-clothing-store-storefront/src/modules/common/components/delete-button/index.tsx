@@ -1,6 +1,7 @@
 import { deleteLineItem } from "@lib/data/cart"
-import { Spinner, Trash } from "@medusajs/icons"
+import { Trash } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
+import DotSpinner from "@modules/common/components/dot-spinner"
 import { useState } from "react"
 
 const DeleteButton = ({
@@ -35,7 +36,7 @@ const DeleteButton = ({
         className="flex gap-x-1 text-ui-fg-subtle hover:text-ui-fg-base cursor-pointer"
         onClick={() => handleDelete(id)}
       >
-        {isDeleting ? <Spinner className="animate-spin" /> : <Trash />}
+        {isDeleting ? <DotSpinner size="sm" color="currentColor" /> : <Trash />}
         <span>{children}</span>
       </button>
     </div>

@@ -3,6 +3,7 @@ import { Badge, Button, clx } from "@medusajs/ui"
 import { useEffect } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
+import LoadingButton from "@modules/common/components/loading-button"
 import { useFormStatus } from "react-dom"
 
 type AccountInfoProps = {
@@ -120,14 +121,14 @@ const AccountInfo = ({
           <div className="flex flex-col gap-y-2 py-4">
             <div>{children}</div>
             <div className="flex items-center justify-end mt-2">
-              <Button
+              <LoadingButton
                 isLoading={pending}
                 className="w-full small:max-w-[140px]"
                 type="submit"
                 data-testid="save-button"
               >
                 Save changes
-              </Button>
+              </LoadingButton>
             </div>
           </div>
         </Disclosure.Panel>

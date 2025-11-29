@@ -1,8 +1,8 @@
 "use client"
 
-import { Button } from "@medusajs/ui"
 import React from "react"
 import { useFormStatus } from "react-dom"
+import LoadingButton from "@modules/common/components/loading-button"
 
 export function SubmitButton({
   children,
@@ -18,7 +18,7 @@ export function SubmitButton({
   const { pending } = useFormStatus()
 
   return (
-    <Button
+    <LoadingButton
       size="large"
       className={className}
       type="submit"
@@ -27,6 +27,6 @@ export function SubmitButton({
       data-testid={dataTestId}
     >
       {children}
-    </Button>
+    </LoadingButton>
   )
 }

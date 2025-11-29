@@ -13,6 +13,23 @@ export default function PageTransitionLoader() {
   const isLoadingRef = useRef(false)
   const prevPathnameRef = useRef(pathname)
 
+  // Show loader when route changes are detected
+  const showLoader = () => {
+    if (!isLoadingRef.current) {
+      isLoadingRef.current = true
+      setIsVisible(true)
+      setProgress(0)
+
+      // Auto-hide after 2.5 seconds if route hasn't changed yet
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      timeoutRef.current = setTimeout(() => {
+        isLoadingRef.current = false
+        setIsVisible(false)
+        setProgress(0)
+      }, 2500)
+    }
+  }
+
   useEffect(() => {
     // Detect when a link is being clicked by listening to click events
     const handleMouseDown = (e: MouseEvent) => {
@@ -34,27 +51,37 @@ export default function PageTransitionLoader() {
         if (linkOrigin === currentOrigin) {
           const linkPathname = new URL(link.href, currentOrigin).pathname
           if (linkPathname !== pathname) {
-            // Different page - show loader
-            if (!isLoadingRef.current) {
-              isLoadingRef.current = true
-              setIsVisible(true)
-              setProgress(0)
-
-              // Auto-hide after 2.5 seconds if route hasn't changed yet
-              if (timeoutRef.current) clearTimeout(timeoutRef.current)
-              timeoutRef.current = setTimeout(() => {
-                isLoadingRef.current = false
-                setIsVisible(false)
-                setProgress(0)
-              }, 2500)
-            }
+            // Different page - show loader immediately
+            showLoader()
           }
         }
       }
     }
 
+    // Also listen for clicks on any element that might trigger navigation
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+
+      // Check if this is a clickable card or navigation element
+      const clickableCard = target.closest('[data-clickable="true"]') ||
+                           target.closest('[role="button"]') ||
+                           target.closest('button')
+
+      // Show loader for interactive elements that might navigate
+      if (clickableCard && isLoadingRef.current === false) {
+        // Small delay to ensure state updates are visible
+        requestAnimationFrame(() => {
+          showLoader()
+        })
+      }
+    }
+
     document.addEventListener("mousedown", handleMouseDown)
-    return () => document.removeEventListener("mousedown", handleMouseDown)
+    document.addEventListener("click", handleClick)
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown)
+      document.removeEventListener("click", handleClick)
+    }
   }, [pathname])
 
   // Animate progress bar
@@ -77,11 +104,20 @@ export default function PageTransitionLoader() {
     }
   }, [isVisible])
 
-  // Handle route completion
+  // Handle route completion and detect any route changes (including router.push)
   useEffect(() => {
-    if (isLoadingRef.current && pathname !== prevPathnameRef.current) {
-      // Route has actually changed
+    // Check if route actually changed
+    const routeChanged = pathname !== prevPathnameRef.current
+
+    if (routeChanged) {
+      // If loader wasn't already shown by link click, show it now (for router.push cases)
+      if (!isLoadingRef.current) {
+        showLoader()
+      }
+
       prevPathnameRef.current = pathname
+
+      // Complete the loading animation
       setProgress(100)
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
@@ -97,23 +133,23 @@ export default function PageTransitionLoader() {
 
   return (
     <>
-      {/* Top Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-black origin-left transition-transform duration-300 ease-out"
+      {/* Top Progress Bar - More prominent */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-2 bg-gradient-to-r from-black via-slate-800 to-black origin-left transition-transform duration-300 ease-out"
         style={{
           transform: `scaleX(${progress / 100})`,
           opacity: isVisible ? 1 : 0,
         }}
       />
 
-      {/* Page Overlay - Subtle dimming */}
+      {/* Page Overlay - More visible */}
       <div
-        className={`fixed inset-0 z-40 bg-black/5 transition-opacity duration-300 pointer-events-none ${
+        className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-opacity duration-300 pointer-events-none ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       />
 
-      {/* Center Loader - Appears after short delay */}
-      {isVisible && progress > 30 && (
+      {/* Center Loader - Show immediately */}
+      {isVisible && (
         <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
           <div className="flex flex-col items-center gap-4">
             {/* Dot Spinner */}

@@ -59,11 +59,11 @@ export default async function FeaturedProductsShowcase({
 
               {/* Products Grid */}
               {collection.products && collection.products.length > 0 ? (
-                <div className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-3 small:gap-4 medium:gap-5 large:gap-6">
+                <div className="grid grid-cols-2 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-3 xsmall:gap-4 small:gap-4 medium:gap-5 large:gap-6">
                   {collection.products.map((product) => (
                     <div
                       key={product.id}
-                      className="group h-full rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md"
+                      className="group h-full rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg border border-grey-20 shadow-sm"
                     >
                       <ProductPreview
                         product={product}

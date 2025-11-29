@@ -3,10 +3,10 @@
 import { isManual, isStripeLike, isSslCommerz } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
+import LoadingButton from "@modules/common/components/loading-button"
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
@@ -142,7 +142,7 @@ const StripePaymentButton = ({
 
   return (
     <>
-      <Button
+      <LoadingButton
         disabled={disabled || notReady}
         onClick={handlePayment}
         size="large"
@@ -150,7 +150,7 @@ const StripePaymentButton = ({
         data-testid={dataTestId}
       >
         Place order
-      </Button>
+      </LoadingButton>
       <ErrorMessage
         error={errorMessage}
         data-testid="stripe-payment-error-message"
@@ -210,7 +210,7 @@ const SSLCommerzPaymentButton = ({
 
   return (
     <>
-      <Button
+      <LoadingButton
         disabled={notReady}
         isLoading={submitting}
         onClick={handlePayment}
@@ -218,7 +218,7 @@ const SSLCommerzPaymentButton = ({
         data-testid={dataTestId}
       >
         Place order
-      </Button>
+      </LoadingButton>
       <ErrorMessage
         error={errorMessage}
         data-testid="sslcommerz-payment-error-message"
@@ -249,7 +249,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 
   return (
     <>
-      <Button
+      <LoadingButton
         disabled={notReady}
         isLoading={submitting}
         onClick={handlePayment}
@@ -257,7 +257,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         data-testid="submit-order-button"
       >
         Place order
-      </Button>
+      </LoadingButton>
       <ErrorMessage
         error={errorMessage}
         data-testid="manual-payment-error-message"

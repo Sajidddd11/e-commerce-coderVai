@@ -38,7 +38,7 @@ export default function ResponsiveProductGrid({
   const displayProducts = isSmallScreen ? products.slice(0, 8) : products.slice(0, 10)
 
   return (
-    <div className="grid gap-3 small:gap-4 grid-cols-2 small:grid-cols-3 medium:grid-cols-4">
+    <div className="grid gap-3 xsmall:gap-4 small:gap-4 medium:gap-5 grid-cols-2 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5">
       {displayProducts.map((product) => (
         <ProductCardWithPrice key={product.id} product={product} />
       ))}

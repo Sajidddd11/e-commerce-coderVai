@@ -10,7 +10,7 @@ import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Spinner from "@modules/common/icons/spinner"
+import DotSpinner from "@modules/common/components/dot-spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { useState } from "react"
 
@@ -89,7 +89,7 @@ const Item = ({ item, type = "full", currencyCode, renderMode = "desktop" }: Ite
               data-testid="product-quantity-button"
             />
             <DeleteButton id={item.id} data-testid="product-delete-button" />
-            {updating && <Spinner />}
+            {updating && <DotSpinner size="sm" color="#262626" />}
           </div>
 
           <div className="text-right">
@@ -147,7 +147,7 @@ const Item = ({ item, type = "full", currencyCode, renderMode = "desktop" }: Ite
                 data-testid="product-quantity-button"
               />
               <DeleteButton id={item.id} data-testid="product-delete-button" />
-              {updating && <Spinner />}
+              {updating && <DotSpinner size="sm" color="#262626" />}
             </div>
             <ErrorMessage error={error} data-testid="product-error-message" />
           </Table.Cell>

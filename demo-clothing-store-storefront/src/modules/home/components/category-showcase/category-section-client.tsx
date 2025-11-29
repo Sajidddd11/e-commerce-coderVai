@@ -37,7 +37,7 @@ export default function CategorySectionClient({
       {/* Row 1: Category Title Box - Simple Design */}
       <LocalizedClientLink
         href={`/categories/${category.handle}`}
-        className="group bg-white border-b border-slate-200 px-6 small:px-8 py-8 small:py-10 hover:border-slate-400 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col small:flex-row small:items-center small:justify-between gap-6"
+        className="group bg-white border border-grey-20 px-6 small:px-8 py-8 small:py-10 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col small:flex-row small:items-center small:justify-between gap-6 rounded-lg shadow-sm"
       >
         <div className="space-y-3 flex-1">
           {/* Subtitle */}
@@ -70,7 +70,7 @@ export default function CategorySectionClient({
         {isLoading || !products || products.length === 0 ? (
           <ProductGridSkeleton />
         ) : (
-          <div className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-6 gap-3 small:gap-4 h-full">
+          <div className="grid grid-cols-2 xsmall:grid-cols-3 small:grid-cols-4 medium:grid-cols-5 large:grid-cols-6 gap-3 small:gap-4 medium:gap-4 h-full">
             {products.map((product, idx) => (
               <ProductCard key={product.id} product={product} index={idx} />
             ))}
@@ -99,7 +99,7 @@ function ProductCard({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group flex flex-col h-full bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden animate-fadeIn hover:-translate-y-1"
+      className="group flex flex-col h-full bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden animate-fadeIn hover:-translate-y-1 border border-grey-20"
       style={{
         animationDelay: `${index * 50}ms`,
       }}

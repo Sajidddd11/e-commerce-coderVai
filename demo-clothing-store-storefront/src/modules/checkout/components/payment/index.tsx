@@ -4,12 +4,13 @@ import { RadioGroup } from "@headlessui/react"
 import { isSslCommerz, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
-import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
+import { Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
   StripeCardContainer,
 } from "@modules/checkout/components/payment-container"
 import Divider from "@modules/common/components/divider"
+import LoadingButton from "@modules/common/components/loading-button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
@@ -194,7 +195,7 @@ const Payment = ({
             data-testid="payment-method-error-message"
           />
 
-          <Button
+          <LoadingButton
             size="large"
             className="mt-6"
             onClick={handleSubmit}
@@ -208,7 +209,7 @@ const Payment = ({
             {!activeSession && isStripeLike(selectedPaymentMethod)
               ? " Enter card details"
               : "Continue to review"}
-          </Button>
+          </LoadingButton>
         </div>
 
         <div className={isOpen ? "hidden" : "block"}>
