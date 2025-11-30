@@ -60,6 +60,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "Rajdhani",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",

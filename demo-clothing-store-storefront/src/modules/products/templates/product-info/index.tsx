@@ -4,15 +4,12 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductRating from "@modules/products/components/product-rating"
 import { getProductPrice } from "@lib/util/get-product-price"
-import { useState } from "react"
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
 }
 
 const ProductInfo = ({ product }: ProductInfoProps) => {
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
-
   const { cheapestPrice } = getProductPrice({
     product,
   })
@@ -55,14 +52,11 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         <h1 className="text-2xl small:text-3xl font-bold text-slate-900 leading-tight mb-1">
           {product.title}
         </h1>
-        {product.type && (
-          <p className="text-sm text-slate-500">{product.type.value}</p>
-        )}
       </div>
 
       {/* Price - main price + optional discount price and percentage */}
       {cheapestPrice && (
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="flex items-baseline gap-3">
             {/* Main price (current price) */}
             <span className="text-2xl small:text-3xl font-bold text-slate-900">
@@ -83,24 +77,10 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
               -{cheapestPrice.percentage_diff}%
             </div>
           )}
-        </div>
-      )}
 
-      {/* Short Description */}
-      {product.description && (
-        <div className="space-y-2">
-          <p className="text-sm text-slate-600 leading-relaxed">
-            {isDescriptionExpanded || product.description.length < 150
-              ? product.description
-              : `${product.description.substring(0, 150)}...`}
-          </p>
-          {product.description.length > 150 && (
-            <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors"
-            >
-              {isDescriptionExpanded ? "Show less" : "Show more"}
-            </button>
+          {/* Product Category */}
+          {product.type && (
+            <p className="text-sm text-slate-600">{product.type.value}</p>
           )}
         </div>
       )}
