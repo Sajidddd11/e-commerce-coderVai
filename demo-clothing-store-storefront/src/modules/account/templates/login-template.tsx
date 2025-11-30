@@ -32,7 +32,7 @@ const LoginTemplate = () => {
       setPhone(result.phone)
       setCurrentView(LOGIN_VIEW.VERIFY_OTP)
     }
-    return result.error
+    return result
   }
 
   const handleVerifyOTP = async (phoneNumber: string, otp: string) => {
