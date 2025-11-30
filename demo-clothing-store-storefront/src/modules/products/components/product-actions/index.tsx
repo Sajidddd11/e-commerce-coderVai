@@ -253,7 +253,7 @@ export default function ProductActions({
                 isLoading={isAdding}
                 data-testid="add-product-button"
               >
-                {!selectedVariant && !options
+                {!selectedVariant
                   ? "Select variant"
                   : !inStock || !isValidVariant
                     ? "Out of stock"
@@ -279,7 +279,7 @@ export default function ProductActions({
             </div>
           </div>
         </div>
-        
+
 
 
         <MobileActions

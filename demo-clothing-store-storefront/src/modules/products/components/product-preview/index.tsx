@@ -322,6 +322,10 @@ export default function ProductPreview({
                 <DotSpinner size="sm" color="#ffffff" />
                 <span>Adding</span>
               </>
+            ) : hasVariants && !selectedVariant ? (
+              "Select Options"
+            ) : !inStock || (selectedVariant && !isSelectedVariantInStock) ? (
+              "Out of Stock"
             ) : (
               "Add to Cart"
             )}
