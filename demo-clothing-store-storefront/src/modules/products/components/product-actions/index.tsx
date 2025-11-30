@@ -223,8 +223,8 @@ export default function ProductActions({
         </div>
 
         {/* Quantity selector , add to cart, buy now  */}
-        <div className="grid grid-cols-3  items-center gap-3">
-          <div className="col-span-1">
+        <div className="flex flex-col gap-3">
+          <div className="w-[100px]">
             {/* Quantity Selector */}
             {inStock && selectedVariant && (
               <QuantitySelector
@@ -235,7 +235,7 @@ export default function ProductActions({
               />
             )}
           </div>
-          <div className="col-span-2 h-full">
+          <div className="grid grid-cols-2 gap-3 h-full">
             {/* Action Buttons */}
             <div className="flex gap-2 h-full">
               {/* Add to Cart Button */}

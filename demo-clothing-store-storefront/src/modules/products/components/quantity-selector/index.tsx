@@ -35,12 +35,12 @@ const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   }
 
   return (
-    <div className="border flex items-center gap-2">
-      <div className="w-full flex items-center justify-around border border-slate-300 bg-white">
+    <div className="  bg-slate-50  py-1 flex items-center gap-2">
+      <div className="w-full flex items-center justify-around">
         <button
           onClick={handleDecrease}
           disabled={disabled || quantity <= minQuantity}
-          className="pl-2 pr-1 py-1 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+          className="pl-2 pr-1 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
           aria-label="Decrease quantity"
         >
           −
@@ -52,13 +52,13 @@ const QuantitySelector: React.FC<QuantitySelectorProps> = ({
           disabled={disabled}
           min={minQuantity}
           max={maxQuantity}
-          className="w-12 pl-2 py-1 text-center border-0 focus:outline-none bg-transparent font-medium text-slate-900"
+          className="w-12 pl-2 text-center border-0 focus:outline-none bg-transparent font-medium text-slate-900"
           aria-label="Quantity"
         />
         <button
           onClick={handleIncrease}
           disabled={disabled || quantity >= maxQuantity}
-          className="pr-3 py-1 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+          className="pr-3 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
           aria-label="Increase quantity"
         >
           +

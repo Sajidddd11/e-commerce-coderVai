@@ -65,7 +65,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
         className="relative overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
         style={{
           aspectRatio: "1 / 1",
-          width: "75%",
+          width: "100%",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

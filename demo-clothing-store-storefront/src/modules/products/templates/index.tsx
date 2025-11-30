@@ -113,7 +113,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
           {/* Product Container */}
           <div
-            className="grid grid-cols-1 gap-3 small:grid-cols-2 mb-12 small:mb-16 medium:mb-20"
+            className="grid grid-cols-1 gap-3 w-[80%] mx-auto small:grid-cols-2 mb-12 small:mb-16 medium:mb-20"
             data-testid="product-container"
           >
             {/* Product Images - Full width on mobile, 2/3 on desktop */}
@@ -124,14 +124,14 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             </div>
 
             {/* Product Info and Actions */}
-            <div className="flex flex-col gap-4 small:gap-8 ">
+            <div className="flex flex-col gap-2 ">
               {/* Header Info Section */}
-              <div className="flex flex-col gap-4 small:gap-6 bg-slate-50 py-2 px-8">
+              <div className="flex flex-col gap-2 px-4">
                 <ProductInfo product={product} />
               </div>
 
               {/* Actions Section */}
-              <div className="flex flex-col gap-3 small:gap-4 bg-white py-2 px-8">
+              <div className="flex flex-col gap-3 small:gap-4 bg-white py-2 px-4">
                 <ProductOnboardingCta />
                 <Suspense
                   fallback={
