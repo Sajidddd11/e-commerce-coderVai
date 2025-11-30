@@ -51,7 +51,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
 
   if (!images || images.length === 0) {
     return (
-      <div className="w-full aspect-square bg-slate-200 rounded-xl flex items-center justify-center">
+      <div className="w-full aspect-square bg-slate-200 flex items-center justify-center">
         <p className="text-slate-500">No images available</p>
       </div>
     )
@@ -62,12 +62,10 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
       {/* Main Image with Zoom */}
       <div
         ref={mainImageRef}
-        className="relative rounded-xl overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
+        className="relative overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
         style={{
           aspectRatio: "1 / 1",
-          width: "100%",
-          maxWidth: "300px",
-          maxHeight: "300px",
+          width: "75%",
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -80,14 +78,13 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
           fill
           priority
           sizes="(max-width: 576px) 100vw, (max-width: 768px) 90vw, (max-width: 992px) 500px, 600px"
-          className={`object-cover transition-transform duration-300 ${
-            isZooming ? "scale-150" : "scale-100"
-          }`}
+          className={`object-cover transition-transform duration-300 ${isZooming ? "scale-150" : "scale-100"
+            }`}
           style={
             isZooming
               ? {
-                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                }
+                transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+              }
               : {}
           }
           quality={90}
@@ -121,11 +118,10 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
             <button
               key={image.id}
               onClick={() => setSelectedImageIndex(index)}
-              className={`relative flex-shrink-0 w-14 h-14 small:w-16 small:h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                selectedImageIndex === index
-                  ? "border-slate-900 shadow-lg"
-                  : "border-slate-200 hover:border-slate-400"
-              }`}
+              className={`relative flex-shrink-0 w-14 h-14 small:w-16 small:h-16 rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
+                ? "border-slate-900 shadow-lg"
+                : "border-slate-200 hover:border-slate-400"
+                }`}
               aria-label={`View image ${index + 1}`}
             >
               <Image

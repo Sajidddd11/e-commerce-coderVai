@@ -3,7 +3,7 @@
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductRating from "@modules/products/components/product-rating"
-import ProductPrice from "@modules/products/components/product-price"
+import { getProductPrice } from "@lib/util/get-product-price"
 import { useState } from "react"
 
 type ProductInfoProps = {
@@ -12,6 +12,18 @@ type ProductInfoProps = {
 
 const ProductInfo = ({ product }: ProductInfoProps) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+
+  const { cheapestPrice } = getProductPrice({
+    product,
+  })
+
+  const hasDiscount =
+    !!cheapestPrice &&
+    cheapestPrice.price_type === "sale" &&
+    typeof cheapestPrice.percentage_diff !== "undefined" &&
+    Number(cheapestPrice.percentage_diff) > 0 &&
+    cheapestPrice.original_price_number >
+      cheapestPrice.calculated_price_number
 
   const defaultFeatures = [
     "Premium quality",
@@ -40,7 +52,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
 
       {/* Product Title */}
       <div>
-        <h1 className="text-2xl small:text-3xl font-bold text-slate-900 leading-tight mb-2">
+        <h1 className="text-2xl small:text-3xl font-bold text-slate-900 leading-tight mb-1">
           {product.title}
         </h1>
         {product.type && (
@@ -48,12 +60,31 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         )}
       </div>
 
-      {/* Price Display - Compact */}
-      <div className="flex items-baseline gap-3">
-        <div className="text-2xl small:text-3xl font-bold text-slate-900">
-          <ProductPrice product={product} />
+      {/* Price - main price + optional discount price and percentage */}
+      {cheapestPrice && (
+        <div className="space-y-1">
+          <div className="flex items-baseline gap-3">
+            {/* Main price (current price) */}
+            <span className="text-2xl small:text-3xl font-bold text-slate-900">
+              {cheapestPrice.calculated_price}
+            </span>
+
+            {/* Discount/base price - faded black */}
+            {hasDiscount && (
+              <span className="text-sm small:text-base text-slate-400 line-through">
+                {cheapestPrice.original_price}
+              </span>
+            )}
+          </div>
+
+          {/* Discount percentage on its own line */}
+          {hasDiscount && (
+            <div className="text-sm font-semibold text-orange-600">
+              -{cheapestPrice.percentage_diff}%
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Short Description */}
       {product.description && (
@@ -108,18 +139,6 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
           </div>
         </div>
       )}
-
-      {/* Trust Badges - Minimal */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-slate-200 text-xs text-slate-600">
-        <div className="flex items-center gap-2">
-          <span className="text-green-600 font-bold">✓</span>
-          <span>Fast Shipping</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-green-600 font-bold">✓</span>
-          <span>Safe Shoping</span>
-        </div>
-      </div>
     </div>
   )
 }

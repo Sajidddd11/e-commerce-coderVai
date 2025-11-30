@@ -86,9 +86,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       />
 
       <div className="w-full min-h-screen bg-white">
-        <div className="content-container py-4 small:py-6 medium:py-10">
+        <div className="content-container py-2 small:py-2 medium:py-3">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-6 small:mb-8 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2">
+          <nav className="mb-2 small:mb-3 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2">
             <a href="/" className="hover:text-slate-900 transition-colors whitespace-nowrap">
               Home
             </a>
@@ -113,25 +113,25 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
           {/* Product Container */}
           <div
-            className="grid grid-cols-1 small:grid-cols-3 gap-6 small:gap-8 medium:gap-12 mb-12 small:mb-16 medium:mb-20"
+            className="grid grid-cols-1 gap-3 small:grid-cols-2 mb-12 small:mb-16 medium:mb-20"
             data-testid="product-container"
           >
             {/* Product Images - Full width on mobile, 2/3 on desktop */}
-            <div className="small:col-span-2 flex flex-col gap-4">
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl small:rounded-2xl p-4 small:p-8 medium:p-12">
+            <div className="flex flex-col gap-4">
+              <div className="">
                 <ImageGallery images={images} />
               </div>
             </div>
 
-            {/* Product Info and Actions - 1/3 width */}
-            <div className="flex flex-col gap-4 small:gap-8">
+            {/* Product Info and Actions */}
+            <div className="flex flex-col gap-4 small:gap-8 ">
               {/* Header Info Section */}
-              <div className="flex flex-col gap-4 small:gap-6 bg-slate-50 rounded-lg small:rounded-xl p-4 small:p-6 border border-slate-200">
+              <div className="flex flex-col gap-4 small:gap-6 bg-slate-50 py-2 px-8">
                 <ProductInfo product={product} />
               </div>
 
               {/* Actions Section */}
-              <div className="flex flex-col gap-3 small:gap-4 bg-white border-2 border-slate-200 rounded-lg small:rounded-xl p-4 small:p-6">
+              <div className="flex flex-col gap-3 small:gap-4 bg-white py-2 px-8">
                 <ProductOnboardingCta />
                 <Suspense
                   fallback={

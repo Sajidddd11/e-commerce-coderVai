@@ -145,18 +145,18 @@ export default function ProductActions({
   )
   const colorValues = colorOption
     ? product.variants
-        ?.flatMap((v) =>
-          v.options
-            ?.filter((opt) => opt.option_id === colorOption.id)
-            .map((opt) => ({ id: opt.option_id, value: opt.value }))
-        )
-        .filter(Boolean)
-        .reduce((acc: any[], curr: any) => {
-          if (!acc.find((c) => c.value === curr?.value)) {
-            acc.push(curr)
-          }
-          return acc
-        }, [])
+      ?.flatMap((v) =>
+        v.options
+          ?.filter((opt) => opt.option_id === colorOption.id)
+          .map((opt) => ({ id: opt.option_id, value: opt.value }))
+      )
+      .filter(Boolean)
+      .reduce((acc: any[], curr: any) => {
+        if (!acc.find((c) => c.value === curr?.value)) {
+          acc.push(curr)
+        }
+        return acc
+      }, [])
     : []
 
   return (
@@ -198,90 +198,89 @@ export default function ProductActions({
           )}
         </div>
 
-        {/* Price Display */}
-        <div className="border-y border-slate-200 py-4">
-          <ProductPrice product={product} variant={selectedVariant} />
-        </div>
-
-        {/* Quantity Selector */}
-        {inStock && selectedVariant && (
-          <QuantitySelector
-            quantity={quantity}
-            onQuantityChange={setQuantity}
-            maxQuantity={selectedVariant.inventory_quantity || 999}
-            disabled={!!disabled || isAdding}
-          />
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 pt-2">
-          {/* Add to Cart Button */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={
-              !inStock ||
-              !selectedVariant ||
-              !!disabled ||
-              isAdding ||
-              !isValidVariant
-            }
-            variant="primary"
-            className="w-full h-12 text-base font-semibold"
-            isLoading={isAdding}
-            data-testid="add-product-button"
-          >
-            {!selectedVariant && !options
-              ? "Select variant"
-              : !inStock || !isValidVariant
-              ? "Out of stock"
-              : "Add to Cart"}
-          </Button>
-
-          {/* Buy Now Button */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={
-              !inStock ||
-              !selectedVariant ||
-              !!disabled ||
-              isAdding ||
-              !isValidVariant
-            }
-            variant="secondary"
-            className="w-full h-12 text-base font-semibold border-slate-300"
-            data-testid="buy-now-button"
-          >
-            Buy Now
-          </Button>
-        </div>
-
-        {/* Stock Status */}
-        {selectedVariant && (
-          <div className="text-sm">
-            {inStock ? (
-              <p className="text-green-600 font-medium flex items-center gap-2">
-                <span>✓</span>
-                {selectedVariant.manage_inventory
-                  ? `${selectedVariant.inventory_quantity || 0} in stock`
-                  : "In stock"}
-              </p>
-            ) : (
-              <p className="text-red-600 font-medium">Out of stock</p>
+        {/* Price and stock Display */}
+        <div className="flex gap-4 items-center">
+          <div className=" py-1">
+            <ProductPrice product={product} variant={selectedVariant} />
+          </div>
+          <div>
+            {/* Stock Status */}
+            {selectedVariant && (
+              <div className="text-sm">
+                {inStock ? (
+                  <p className="text-green-600 font-medium flex items-center gap-2">
+                    <span>✓</span>
+                    {selectedVariant.manage_inventory
+                      ? `${selectedVariant.inventory_quantity || 0} in stock`
+                      : "In stock"}
+                  </p>
+                ) : (
+                  <p className="text-red-600 font-medium">Out of stock</p>
+                )}
+              </div>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Trust Badges */}
-        <div className="space-y-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg">
-          <div className="flex items-start gap-2">
-            <span>✓</span>
-            <span>Secure checkout with multiple payment options</span>
+        {/* Quantity selector , add to cart, buy now  */}
+        <div className="grid grid-cols-3  items-center gap-3">
+          <div className="col-span-1">
+            {/* Quantity Selector */}
+            {inStock && selectedVariant && (
+              <QuantitySelector
+                quantity={quantity}
+                onQuantityChange={setQuantity}
+                maxQuantity={selectedVariant.inventory_quantity || 999}
+                disabled={!!disabled || isAdding}
+              />
+            )}
           </div>
-          <div className="flex items-start gap-2">
-            <span>✓</span>
-            <span>Money-back guarantee if not satisfied</span>
+          <div className="col-span-2 h-full">
+            {/* Action Buttons */}
+            <div className="flex gap-2 h-full">
+              {/* Add to Cart Button */}
+              <Button
+                onClick={handleAddToCart}
+                disabled={
+                  !inStock ||
+                  !selectedVariant ||
+                  !!disabled ||
+                  isAdding ||
+                  !isValidVariant
+                }
+                variant="primary"
+                className="w-full rounded-none text-base font-semibold"
+                isLoading={isAdding}
+                data-testid="add-product-button"
+              >
+                {!selectedVariant && !options
+                  ? "Select variant"
+                  : !inStock || !isValidVariant
+                    ? "Out of stock"
+                    : "Add to Cart"}
+              </Button>
+
+              {/* Buy Now Button */}
+              <Button
+                onClick={handleAddToCart}
+                disabled={
+                  !inStock ||
+                  !selectedVariant ||
+                  !!disabled ||
+                  isAdding ||
+                  !isValidVariant
+                }
+                variant="secondary"
+                className="w-full rounded-none text-base font-semibold border-slate-300"
+                data-testid="buy-now-button"
+              >
+                Buy Now
+              </Button>
+            </div>
           </div>
         </div>
+        
+
 
         <MobileActions
           product={product}
