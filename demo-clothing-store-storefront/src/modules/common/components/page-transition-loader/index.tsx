@@ -19,14 +19,6 @@ export default function PageTransitionLoader() {
       isLoadingRef.current = true
       setIsVisible(true)
       setProgress(0)
-
-      // Auto-hide after 2.5 seconds if route hasn't changed yet
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => {
-        isLoadingRef.current = false
-        setIsVisible(false)
-        setProgress(0)
-      }, 2500)
     }
   }
 
@@ -58,29 +50,9 @@ export default function PageTransitionLoader() {
       }
     }
 
-    // Also listen for clicks on any element that might trigger navigation
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-
-      // Check if this is a clickable card or navigation element
-      const clickableCard = target.closest('[data-clickable="true"]') ||
-                           target.closest('[role="button"]') ||
-                           target.closest('button')
-
-      // Show loader for interactive elements that might navigate
-      if (clickableCard && isLoadingRef.current === false) {
-        // Small delay to ensure state updates are visible
-        requestAnimationFrame(() => {
-          showLoader()
-        })
-      }
-    }
-
     document.addEventListener("mousedown", handleMouseDown)
-    document.addEventListener("click", handleClick)
     return () => {
       document.removeEventListener("mousedown", handleMouseDown)
-      document.removeEventListener("click", handleClick)
     }
   }, [pathname])
 
