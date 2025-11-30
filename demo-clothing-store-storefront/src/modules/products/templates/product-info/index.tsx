@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductRating from "@modules/products/components/product-rating"
 import { getProductPrice } from "@lib/util/get-product-price"
+import { useState } from "react"
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
@@ -20,7 +21,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
     typeof cheapestPrice.percentage_diff !== "undefined" &&
     Number(cheapestPrice.percentage_diff) > 0 &&
     cheapestPrice.original_price_number >
-      cheapestPrice.calculated_price_number
+    cheapestPrice.calculated_price_number
 
   const defaultFeatures = [
     "Premium quality",
