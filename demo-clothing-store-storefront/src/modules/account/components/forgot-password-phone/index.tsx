@@ -4,13 +4,13 @@ import { SubmitButton } from "@modules/checkout/components/submit-button"
 import ErrorMessage from "@modules/checkout/components/error-message"
 
 type Props = {
-    requestPasswordReset: (phone: string) => Promise<string | null>
+    requestPasswordReset: (email: string) => Promise<{ error: string | null; phone?: string }>
     onSuccess: (phone: string) => void
     onCancel: () => void
 }
 
 const ForgotPasswordPhone = ({ requestPasswordReset, onSuccess, onCancel }: Props) => {
-    const [phone, setPhone] = useState("")
+    const [email, setEmail] = useState("")
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -19,14 +19,17 @@ const ForgotPasswordPhone = ({ requestPasswordReset, onSuccess, onCancel }: Prop
         setError(null)
         setLoading(true)
 
-        const errorMessage = await requestPasswordReset(phone)
+        const result = await requestPasswordReset(email)
 
-        if (errorMessage) {
-            setError(errorMessage)
+        if (result.error) {
+            setError(result.error)
             setLoading(false)
+        } else if (result.phone) {
+            setLoading(false)
+            onSuccess(result.phone) // Pass the phone number from server, not the email!
         } else {
+            setError("Failed to get phone number from server")
             setLoading(false)
-            onSuccess(phone)
         }
     }
 
@@ -37,19 +40,19 @@ const ForgotPasswordPhone = ({ requestPasswordReset, onSuccess, onCancel }: Prop
         >
             <h1 className="text-large-semi uppercase mb-6">Forgot Password</h1>
             <p className="text-center text-base-regular text-ui-fg-base mb-8">
-                Enter your phone number to receive an OTP code
+                Enter your email to receive an OTP code via SMS
             </p>
             <form className="w-full" onSubmit={handleSubmit}>
                 <div className="flex flex-col w-full gap-y-2">
                     <Input
-                        label="Phone Number"
-                        name="phone"
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
-                        data-testid="phone-input"
-                        autoComplete="tel"
+                        data-testid="email-input"
+                        autoComplete="email"
                     />
                 </div>
                 <ErrorMessage error={error} data-testid="forgot-password-error" />

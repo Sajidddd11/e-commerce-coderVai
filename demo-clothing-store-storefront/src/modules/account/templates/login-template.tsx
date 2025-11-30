@@ -26,13 +26,13 @@ const LoginTemplate = () => {
   const [phone, setPhone] = useState("")
   const [resetToken, setResetToken] = useState("")
 
-  const handleRequestPasswordReset = async (phoneNumber: string) => {
-    const error = await requestPasswordReset(phoneNumber)
-    if (!error) {
-      setPhone(phoneNumber)
+  const handleRequestPasswordReset = async (email: string) => {
+    const result = await requestPasswordReset(email)
+    if (!result.error && result.phone) {
+      setPhone(result.phone)
       setCurrentView(LOGIN_VIEW.VERIFY_OTP)
     }
-    return error
+    return result.error
   }
 
   const handleVerifyOTP = async (phoneNumber: string, otp: string) => {

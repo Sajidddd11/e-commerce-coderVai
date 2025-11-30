@@ -1,19 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { getOTPManager } from "../../../../lib/otp/otp-manager"
-import * as crypto from "crypto"
-import { promisify } from "util"
-
-const scrypt = promisify(crypto.scrypt)
-
-/**
- * Hash password using scrypt (same as Medusa's emailpass provider)
- */
-async function hashPassword(password: string): Promise<string> {
-    const salt = crypto.randomBytes(16).toString("hex")
-    const derivedKey = (await scrypt(password, salt, 64)) as Buffer
-    return `${salt}:${derivedKey.toString("hex")}`
-}
 
 /**
  * POST /store/auth/reset-password
@@ -87,43 +74,28 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             })
         }
 
-        // Update password in database
+        // Update password using auth module
         try {
-            // Hash the new password
-            const hashedPassword = await hashPassword(newPassword)
+            console.log("[RESET-PASSWORD] Resetting password for:", customer.email)
 
-            // Get auth module
-            const authModule = req.scope.resolve("auth")
+            // Get auth module service
+            const authModuleService = req.scope.resolve("auth")
 
-            // Get all provider identities for this email
-            const providerIdentities = await authModule.listProviderIdentities({
-                provider: "emailpass",
+            // Use updateProvider method (from Medusa docs)
+            // Pass 'emailpass' as provider, and entity_id + password as providerData
+            await authModuleService.updateProvider("emailpass", {
                 entity_id: customer.email,
-            })
+                password: newPassword,
+            } as any)
 
-            if (!providerIdentities || providerIdentities.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Email/password authentication not found for this account",
-                })
-            }
-
-            const providerIdentity = providerIdentities[0]
-
-            // Update the password hash
-            await authModule.updateProviderIdentities([{
-                id: providerIdentity.id,
-                provider_metadata: {
-                    password_hash: hashedPassword,
-                },
-            }])
+            console.log("[RESET-PASSWORD] Password updated successfully")
 
             return res.status(200).json({
                 success: true,
                 message: "Password reset successfully. You can now log in with your new password.",
             })
         } catch (authError: any) {
-            console.error("Error updating password:", authError)
+            console.error("[RESET-PASSWORD] Error updating password:", authError)
 
             return res.status(500).json({
                 success: false,
@@ -132,7 +104,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             })
         }
     } catch (error: any) {
-        console.error("Error in reset-password:", error)
+        console.error("[RESET-PASSWORD] Error in reset-password:", error)
         return res.status(500).json({
             success: false,
             message: "An error occurred while resetting password",

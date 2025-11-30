@@ -6,7 +6,7 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 /**
  * Request password reset via SMS OTP
  */
-export async function requestPasswordReset(phone: string): Promise<string | null> {
+export async function requestPasswordReset(email: string): Promise<{ error: string | null; phone?: string }> {
     try {
         const response = await fetch(`${BACKEND_URL}/store/auth/request-password-reset`, {
             method: "POST",
@@ -14,19 +14,20 @@ export async function requestPasswordReset(phone: string): Promise<string | null
                 "Content-Type": "application/json",
                 "x-publishable-api-key": PUBLISHABLE_KEY,
             },
-            body: JSON.stringify({ phone }),
+            body: JSON.stringify({ email }),
         })
 
         const data = await response.json()
 
         if (!response.ok || !data.success) {
-            return data.message || "Failed to send OTP. Please try again."
+            return { error: data.message || "Failed to send OTP. Please try again.", phone: undefined }
         }
 
-        return null // Success
+        // Success - return phone number from backend
+        return { error: null, phone: data.phone }
     } catch (error: any) {
         console.error("Error requesting password reset:", error)
-        return "Network error. Please check your connection and try again."
+        return { error: "Network error. Please check your connection and try again.", phone: undefined }
     }
 }
 

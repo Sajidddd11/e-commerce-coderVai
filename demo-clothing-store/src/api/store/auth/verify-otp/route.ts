@@ -27,9 +27,15 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         // Normalize phone number
         const normalizedPhone = phone.replace(/[\s-]/g, "")
 
+        console.log("[VERIFY-OTP] Received phone:", phone)
+        console.log("[VERIFY-OTP] Normalized phone:", normalizedPhone)
+        console.log("[VERIFY-OTP] Received OTP:", otp.trim())
+
         // Verify OTP
         const otpManager = getOTPManager()
         const isValid = await otpManager.verifyOTP(normalizedPhone, otp.trim())
+
+        console.log("[VERIFY-OTP] Verification result:", isValid)
 
         if (!isValid) {
             return res.status(400).json({

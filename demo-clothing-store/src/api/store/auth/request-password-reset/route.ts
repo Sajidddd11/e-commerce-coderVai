@@ -5,73 +5,79 @@ import { getOTPManager } from "../../../../lib/otp/otp-manager"
 
 /**
  * POST /store/auth/request-password-reset
- * Request password reset via SMS OTP
+ * Request password reset via SMS OTP - accepts email,sends OTP to registered phone
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
     try {
-        const { phone } = req.body as { phone: string }
+        const { email } = req.body as { email: string }
 
-        // Validate phone number
-        if (!phone?.trim()) {
+        // Validate email
+        if (!email?.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Phone number is required",
+                message: "Email is required",
             })
         }
 
-        // Normalize phone number (remove spaces, dashes)
-        const normalizedPhone = phone.replace(/[\s-]/g, "")
-
-        // Get query to check if customer exists with this phone
+        // Get customer by email
         const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
         const { data: customers } = await query.graph({
             entity: "customer",
             fields: ["id", "email", "phone", "has_account"],
             filters: {
-                phone: normalizedPhone,
+                email: email.toLowerCase(),
             },
         })
 
         if (!customers || customers.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "No account found with this phone number",
+                message: "No account found with this email address",
             })
         }
 
         const customer = customers[0]
 
-        // Check if customer has an account (password-based login)
+        // Check if customer has an account
         if (!customer.has_account) {
             return res.status(400).json({
                 success: false,
-                message: "This account does not support password login",
+                message: "This email is not registered for login",
+            })
+        }
+
+        // Check if customer has a phone number
+        if (!customer.phone) {
+            return res.status(400).json({
+                success: false,
+                message: "No phone number registered with this account. Please contact support.",
             })
         }
 
         // Rate limiting check
         const otpManager = getOTPManager()
-        const rateLimitCheck = await otpManager.canRequestOTP(normalizedPhone)
+        const canRequest = await otpManager.canRequestOTP(customer.phone)
 
-        if (!rateLimitCheck.allowed) {
+        if (!canRequest) {
             return res.status(429).json({
                 success: false,
-                message: `Too many OTP requests. Please try again in ${rateLimitCheck.remainingTime} minutes`,
+                message: "Too many OTP requests. Please try again in an hour.",
             })
         }
 
         // Generate OTP
-        const otp = await otpManager.createOTP(normalizedPhone, 5) // 5 minutes expiration
+        const otp = await otpManager.createOTP(customer.phone, 5)
 
         // Send SMS
         const smsClient = getBulkSmsClient()
         const storeName = process.env.BULKSMSBD_BRAND_NAME || "Medusa Store"
+        const phoneLastFour = customer.phone.slice(-4)
 
-        const message = `Your ${storeName} password reset OTP: ${otp}\n\nValid for 5 minutes. Do not share this code.`
+        const message = `Your ${storeName} password reset OTP: ${otp}\\n\\nValid for 5 minutes. Do not share this code.`
 
         const smsResult = await smsClient.send({
-            numbers: normalizedPhone,
+            numbers: customer.phone,
             message,
         })
 
@@ -84,12 +90,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         }
 
         // Record OTP request for rate limiting
-        await otpManager.recordOTPRequest(normalizedPhone)
+        await otpManager.recordOTPRequest(customer.phone)
 
         return res.status(200).json({
             success: true,
-            message: "OTP sent to your phone number",
-            phone: normalizedPhone,
+            message: `OTP sent to your registered phone number ending in ${phoneLastFour}`,
+            phone: customer.phone, // Frontend needs this to pass to verify-otp
         })
     } catch (error: any) {
         console.error("Error in request-password-reset:", error)

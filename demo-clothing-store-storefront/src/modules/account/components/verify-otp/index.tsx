@@ -94,7 +94,7 @@ const VerifyOTP = ({ phone, verifyOTP, onSuccess, onResend, onCancel }: Props) =
         >
             <h1 className="text-large-semi uppercase mb-6">Verify OTP</h1>
             <p className="text-center text-base-regular text-ui-fg-base mb-8">
-                Enter the 6-digit code sent to <strong>{phone}</strong>
+                Enter the 6-digit code sent to <strong>***{phone.slice(-4)}</strong>
             </p>
             <form className="w-full" onSubmit={handleSubmit}>
                 <div className="flex gap-2 justify-center mb-4">
