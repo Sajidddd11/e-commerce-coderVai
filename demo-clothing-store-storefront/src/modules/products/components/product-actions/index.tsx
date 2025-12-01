@@ -161,7 +161,7 @@ export default function ProductActions({
 
   return (
     <>
-      <div className="flex flex-col gap-y-6" ref={actionsRef}>
+      <div className="flex flex-col small:gap-y-6" ref={actionsRef}>
         {/* Variant Options */}
         {colorValues && colorValues.length > 0 && (
           <ColorSwatchSelector
@@ -235,9 +235,9 @@ export default function ProductActions({
               />
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3 h-full">
+          <div className="w-full h-full">
             {/* Action Buttons */}
-            <div className="flex gap-2 h-full">
+            <div className="flex flex-col  xsmall:flex-row gap-2 h-full">
               {/* Add to Cart Button */}
               <Button
                 onClick={handleAddToCart}

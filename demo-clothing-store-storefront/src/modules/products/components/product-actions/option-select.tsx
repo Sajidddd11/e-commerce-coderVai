@@ -24,7 +24,7 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   return (
     <div className="flex flex-col pt-1 gap-y-1">
       <div
-        className="grid grid-cols-6 gap-1"
+        className="grid grid-cols-3 xsmall:grid-cols-4 small:grid-cols-6 gap-1"
         data-testid={dataTestId}
       >
         {filteredOptions.map((v) => {
@@ -33,7 +33,7 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
               onClick={() => updateOption(option.id, v)}
               key={v}
               className={clx(
-                "border-ui-border-base border text-small-regular p-1 flex-1 ",
+                "border-ui-border-base border text-xs xsmall:text-md p-1 flex-1 ",
                 {
                   "border-ui-border-interactive": v === current,
                   "hover:shadow-elevation-card-rest transition-shadow ease-in-out duration-150":

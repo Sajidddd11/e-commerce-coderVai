@@ -32,10 +32,8 @@ function ProductCardWithPrice({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group relative rounded-lg overflow-visible shadow-sm hover:shadow-lg transition-all duration-300"
-      style={{
-        aspectRatio: "1 / 1",
-      }}
+      className="group w-full relative overflow-visible shadow-sm hover:shadow-lg transition-all duration-300"
+      
     >
       {/* Image Container - 1:1 ratio */}
       <div className="relative bg-gray-100 overflow-hidden flex-grow" style={{ aspectRatio: "1 / 1" }}>
@@ -66,9 +64,7 @@ function ProductCardWithPrice({
       {/* Bottom Box - White box with xs shadow, positioned -2px from bottom */}
       <div
         className="relative w-full bg-white/80 shadow-xs flex flex-col items-center justify-center px-2 py-1"
-        style={{
-          bottom: "-2px",
-        }}
+        
       >
         {/* Title */}
         <h3 className="text-xs font-semibold text-gray-900 line-clamp-1 text-center w-full">

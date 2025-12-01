@@ -237,10 +237,8 @@ async function AllProductsRow({
 
   return (
     <div
-      className="grid gap-4 w-full"
+      className="grid grid-cols-2 xsmall:grid-cols-3 small:grid-cols-6 gap-1 xsmall:gap-2 small:gap-4 w-full"
       style={{
-        gridTemplateColumns: "repeat(auto-fit, minmax(192px, 1fr))",
-        gridAutoRows: "auto",
       }}
     >
       {products.map((product) => (
@@ -252,14 +250,10 @@ async function AllProductsRow({
         </div>
       ))}
 
-      {/* 8th Card - See All Button with Hover Overlay */}
+      {/* 6th Card - See All Button with Hover Overlay */}
       <div
         className="relative group overflow-hidden shadow-sm bg-gradient-to-br from-gray-100 to-gray-200"
-        style={{
-          width: "100%",
-          height: "192px",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-        }}
+        
       >
         <div className="w-full h-full flex items-center justify-center group-hover:opacity-30 transition-opacity duration-300">
           <div className="text-center">
