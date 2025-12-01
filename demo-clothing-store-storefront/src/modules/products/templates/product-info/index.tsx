@@ -54,7 +54,6 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
           {product.title}
         </h1>
       </div>
-
       {/* Price - main price + optional discount price and percentage */}
       {cheapestPrice && (
         <div className="space-y-2">

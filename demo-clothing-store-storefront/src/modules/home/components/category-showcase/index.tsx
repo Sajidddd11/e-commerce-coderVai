@@ -126,7 +126,7 @@ export default async function CategoryShowcase({
           </div>
 
           {/* Category Products Sections */}
-          <div className="w-full flex flex-col gap-12 pt-8 xsmall:pt-12 small:pt-16 border-t border-grey-20">
+          <div className="w-full flex flex-col gap-12 pt-8 xsmall:pt-12 small:pt-16">
             {topLevelCategories.map((category, categoryIndex) => (
               <CategoryProductSection
                 key={category.id}
@@ -210,8 +210,8 @@ async function CategoryProductSection({
 
 
         {/* Right: Product Grid - Responsive columns and product count based on device */}
-        <div className="col-span-4">
-          <ResponsiveProductGrid products={products} />
+        <div className="col-span-4 ">
+          <ResponsiveProductGrid products={products} categoryHandle={category.handle} />
         </div>
       </div>
     </div>
