@@ -178,38 +178,39 @@ async function CategoryProductSection({
       </h3>
 
       {/* Main Section */}
-      <div className="w-full flex flex-col small:flex-row gap-4 small:gap-6">
+      <div className="w-full small:grid small:grid-cols-6 gap-4 small:gap-6">
         {/* Left: Category Card - Hidden on mobile, visible on small and above */}
-        <LocalizedClientLink
-          href={`/categories/${category.handle}`}
-          className="flex-shrink-0 relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group hidden small:block"
-          style={{
-            width: "404px",
-            height: "404px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-          }}
-        >
-          <Image
-            src={getRandomImage(imageIndex)}
-            alt={category.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div
-            className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-4"
+        <div className="col-span-2">
+          <LocalizedClientLink
+            href={`/categories/${category.handle}`}
+            className="w-full h-full flex-shrink-0 relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group hidden small:block"
             style={{
-              height: "60px",
+              aspectRatio: "1 / 1",
             }}
           >
-            <h3 className="text-center font-semibold text-white text-2xl line-clamp-2">
-              {category.name}
-            </h3>
-          </div>
-        </LocalizedClientLink>
+            <Image
+              src={getRandomImage(imageIndex)}
+              alt={category.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div
+              className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-4"
+              style={{
+                height: "60px",
+              }}
+            >
+              <h3 className="text-center font-semibold text-white text-2xl line-clamp-2">
+                {category.name}
+              </h3>
+            </div>
+          </LocalizedClientLink>
+        </div>
+
 
         {/* Right: Product Grid - Responsive columns and product count based on device */}
-        <div className="flex-1">
+        <div className="col-span-4">
           <ResponsiveProductGrid products={products} />
         </div>
       </div>

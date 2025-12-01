@@ -38,12 +38,12 @@ const EmptyCartMessage = () => {
 
         {/* Buttons */}
         <div className="flex flex-col small:flex-row gap-3 justify-center">
-          <InteractiveLink
+          <a
             href="/store"
             className="inline-block px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium text-sm"
           >
             Start Shopping
-          </InteractiveLink>
+          </a>
           <a
             href="/"
             className="inline-block px-6 py-3 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors font-medium text-sm"

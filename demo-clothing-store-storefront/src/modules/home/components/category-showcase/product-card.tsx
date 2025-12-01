@@ -32,12 +32,8 @@ function ProductCardWithPrice({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group relative flex flex-col w-48 h-48 max-w-xs max-h-xs rounded-lg overflow-visible shadow-sm hover:shadow-lg transition-all duration-300"
+      className="group relative rounded-lg overflow-visible shadow-sm hover:shadow-lg transition-all duration-300"
       style={{
-        width: "192px",
-        height: "192px",
-        maxWidth: "192px",
-        maxHeight: "192px",
         aspectRatio: "1 / 1",
       }}
     >

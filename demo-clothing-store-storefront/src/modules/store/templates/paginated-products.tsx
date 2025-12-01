@@ -74,7 +74,7 @@ export default async function PaginatedProducts({
 
   if (products.length === 0) {
     return (
-      <div className="w-full py-16 px-4 text-center">
+      <div className="w-full py-16 px-4 text-center ">
         <div className="max-w-md mx-auto">
           <div className="mb-6">
             <svg
@@ -113,7 +113,7 @@ export default async function PaginatedProducts({
   return (
     <>
       <ul
-        className="grid w-full grid-cols-1 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-3 large:grid-cols-4 gap-3 small:gap-4 medium:gap-6"
+        className="grid w-full grid-cols-2 xsmall:grid-cols-3 small:grid-cols-4 medium:grid-cols-4 large:grid-cols-4 gap-1 small:gap-3 medium:gap-3"
         data-testid="products-list"
       >
         {products.map((p) => {
