@@ -1,18 +1,39 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
-const CAROUSEL_IMAGE = "https://i.ibb.co.com/3PZXtjJ/Screenshot-2025-11-27-at-12-42-52-AM.png"
+interface Slide {
+  image: string
+  alt: string
+  link: string
+}
 
 export default function HomeHero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlay, setIsAutoPlay] = useState(true)
 
-  const slides = [
-    CAROUSEL_IMAGE,
-    CAROUSEL_IMAGE,
-    CAROUSEL_IMAGE,
-    CAROUSEL_IMAGE,
+  const slides: Slide[] = [
+    {
+      image: "/banners/all.png",
+      alt: "Shop All Categories",
+      link: "/store",
+    },
+    {
+      image: "/banners/headphone.jpg",
+      alt: "Headphones Collection",
+      link: "/categories/headphones",
+    },
+    {
+      image: "/banners/snicker.jpg",
+      alt: "Sneakers Collection",
+      link: "/categories/sneakers",
+    },
+    {
+      image: "/banners/watch.jpg",
+      alt: "Watches Collection",
+      link: "/categories/watches",
+    },
   ]
 
   useEffect(() => {
@@ -47,16 +68,20 @@ export default function HomeHero() {
         {/* Slides */}
         {slides.map((slide, index) => (
           <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
+            key={`slide-${index}`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              }`}
           >
-            <img
-              src={slide}
-              alt={`Carousel slide ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
+            <LocalizedClientLink
+              href={slide.link}
+              className="block w-full h-full"
+            >
+              <img
+                src={slide.image}
+                alt={slide.alt}
+                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-700"
+              />
+            </LocalizedClientLink>
           </div>
         ))}
 
@@ -112,11 +137,10 @@ export default function HomeHero() {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`transition-all duration-300 rounded-full ${
-                index === currentSlide
-                  ? "bg-grey-0 w-6 h-1.5 xsmall:w-8 xsmall:h-2 small:w-10 small:h-2.5"
-                  : "bg-grey-0/50 hover:bg-grey-0/70 w-1.5 h-1.5 xsmall:w-2 xsmall:h-2 small:w-2.5 small:h-2.5"
-              }`}
+              className={`transition-all duration-300 rounded-full ${index === currentSlide
+                ? "bg-grey-0 w-6 h-1.5 xsmall:w-8 xsmall:h-2 small:w-10 small:h-2.5"
+                : "bg-grey-0/50 hover:bg-grey-0/70 w-1.5 h-1.5 xsmall:w-2 xsmall:h-2 small:w-2.5 small:h-2.5"
+                }`}
               aria-label={`Go to slide ${index + 1}`}
               aria-current={index === currentSlide}
             />
