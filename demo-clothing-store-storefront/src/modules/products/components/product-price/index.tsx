@@ -26,15 +26,11 @@ export default function ProductPrice({
     typeof selectedPrice.percentage_diff !== "undefined" &&
     Number(selectedPrice.percentage_diff) > 0 &&
     selectedPrice.original_price_number >
-      selectedPrice.calculated_price_number
+    selectedPrice.calculated_price_number
 
   return (
     <div className="flex flex-col text-ui-fg-base">
-      <span
-        className={clx("text-xl-semi", {
-          "text-ui-fg-interactive": hasValidDiscount,
-        })}
-      >
+      <span className="text-3xl font-bold text-slate-900">
         <span
           data-testid="product-price"
           data-value={selectedPrice.calculated_price_number}

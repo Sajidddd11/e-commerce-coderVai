@@ -36,6 +36,22 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
     (v) => !v.manage_inventory || (v.inventory_quantity || 0) > 0
   )
 
+  // Check if variants have different prices
+  const hasPriceDifference = (() => {
+    if (!product.variants || product.variants.length <= 1) {
+      return false
+    }
+
+    // Get unique prices from all variants
+    const prices = product.variants
+      .map(v => v.calculated_price?.calculated_amount)
+      .filter(price => price !== undefined && price !== null)
+
+    // Check if there are different prices
+    const uniquePrices = new Set(prices)
+    return uniquePrices.size > 1
+  })()
+
   return (
     <div id="product-info" className="flex flex-col gap-4">
       {/* Collection Link */}
@@ -57,22 +73,27 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
       {/* Price - main price + optional discount price and percentage */}
       {cheapestPrice && (
         <div className="space-y-2">
-          <div className="flex items-baseline gap-3">
-            {/* Main price (current price) */}
-            <span className="text-2xl small:text-3xl font-bold text-slate-900">
-              {cheapestPrice.calculated_price}
-            </span>
+          {/* "Starting from" segment - only when variants have different prices */}
+          {hasPriceDifference && (
+            <div className="flex items-baseline gap-3">
+              <span className="text-sm text-slate-600">Starting from</span>
 
-            {/* Discount/base price - faded black */}
-            {hasDiscount && (
-              <span className="text-sm small:text-base text-slate-400 line-through">
-                {cheapestPrice.original_price}
+              {/* Main price (current price) - Blue color */}
+              <span className="text-2xl small:text-3xl font-bold text-blue-600">
+                {cheapestPrice.calculated_price}
               </span>
-            )}
-          </div>
+
+              {/* Discount/base price - faded black */}
+              {hasDiscount && (
+                <span className="text-sm small:text-base text-slate-400 line-through">
+                  {cheapestPrice.original_price}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Discount percentage on its own line */}
-          {hasDiscount && (
+          {hasPriceDifference && hasDiscount && (
             <div className="text-sm font-semibold text-orange-600">
               -{cheapestPrice.percentage_diff}%
             </div>
