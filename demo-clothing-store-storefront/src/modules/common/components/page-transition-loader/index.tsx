@@ -12,6 +12,7 @@ export default function PageTransitionLoader() {
   const intervalRef = useRef<NodeJS.Timeout>()
   const isLoadingRef = useRef(false)
   const prevPathnameRef = useRef(pathname)
+  const loaderTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Show loader when route changes are detected
   const showLoader = () => {
@@ -19,12 +20,26 @@ export default function PageTransitionLoader() {
       isLoadingRef.current = true
       setIsVisible(true)
       setProgress(0)
+
+      // Safety timeout: force hide loader after 5 seconds if no route change occurs
+      if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
+      loaderTimeoutRef.current = setTimeout(() => {
+        isLoadingRef.current = false
+        setIsVisible(false)
+        setProgress(0)
+      }, 5000)
     }
   }
 
   useEffect(() => {
     // Detect when a link is being clicked by listening to click events
-    const handleMouseDown = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
+      // Only handle left-click (button === 0)
+      if (e.button !== 0) return
+
+      // Skip double-clicks (detail === 2 means double-click)
+      if (e.detail === 2) return
+
       const target = e.target as HTMLElement
       const link = target.closest("a")
 
@@ -50,9 +65,9 @@ export default function PageTransitionLoader() {
       }
     }
 
-    document.addEventListener("mousedown", handleMouseDown)
+    document.addEventListener("click", handleClick)
     return () => {
-      document.removeEventListener("mousedown", handleMouseDown)
+      document.removeEventListener("click", handleClick)
     }
   }, [pathname])
 
@@ -82,6 +97,9 @@ export default function PageTransitionLoader() {
     const routeChanged = pathname !== prevPathnameRef.current
 
     if (routeChanged) {
+      // Clear the safety timeout since route actually changed
+      if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
+
       // If loader wasn't already shown by link click, show it now (for router.push cases)
       if (!isLoadingRef.current) {
         showLoader()
