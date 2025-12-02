@@ -6,7 +6,7 @@ import Refresh from "@modules/common/icons/refresh"
 import ReviewsSection from "@modules/products/components/reviews-section"
 import Accordion from "./accordion"
 import { HttpTypes } from "@medusajs/types"
-import ProductDescriptionSection from "../product-description-section"
+import ReactMarkdown from "react-markdown"
 
 type ProductTabsProps = {
   product: HttpTypes.StoreProduct
@@ -53,11 +53,93 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
 const ProductDescriptionTab = ({ product }: ProductTabsProps) => {
   return (
     <div className="text-sm-regular py-8 space-y-4">
-      {product.description ?
-        <ProductDescriptionSection product={product} />
-        : (
-          <p className="text-slate-500">No description available.</p>
-        )}
+      {product.description ? (
+        <div className="prose prose-sm max-w-none text-slate-700">
+          <ReactMarkdown
+            components={{
+              // Headings
+              h1: ({ children }) => (
+                <h1 className="text-xl font-bold text-slate-900 mt-4 mb-2">
+                  {children}
+                </h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="text-lg font-bold text-slate-900 mt-4 mb-2">
+                  {children}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="text-base font-bold text-slate-900 mt-3 mb-2">
+                  {children}
+                </h3>
+              ),
+              // Paragraphs
+              p: ({ children }) => (
+                <p className="mb-3 leading-relaxed text-slate-700">
+                  {children}
+                </p>
+              ),
+              // Links
+              a: ({ href, children }) => (
+                <a
+                  href={href}
+                  className="text-blue-600 hover:text-blue-700 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {children}
+                </a>
+              ),
+              // Lists
+              ul: ({ children }) => (
+                <ul className="list-disc list-inside mb-3 space-y-1 text-slate-700">
+                  {children}
+                </ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="list-decimal list-inside mb-3 space-y-1 text-slate-700">
+                  {children}
+                </ol>
+              ),
+              li: ({ children }) => (
+                <li className="ml-2">{children}</li>
+              ),
+              // Code blocks
+              code: ({ inline, children }: any) => {
+                if (inline) {
+                  return (
+                    <code className="bg-slate-100 text-slate-900 px-2 py-1 rounded font-mono text-sm">
+                      {children}
+                    </code>
+                  )
+                }
+                return (
+                  <code className="block bg-slate-100 text-slate-900 p-3 rounded font-mono text-sm overflow-x-auto my-3 border border-slate-200">
+                    {children}
+                  </code>
+                )
+              },
+              pre: ({ children }) => (
+                <pre className="bg-slate-100 p-3 rounded overflow-x-auto my-3 border border-slate-200">
+                  {children}
+                </pre>
+              ),
+              // Blockquotes
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-3">
+                  {children}
+                </blockquote>
+              ),
+              // Horizontal rule
+              hr: () => <hr className="my-4 border-slate-200" />,
+            }}
+          >
+            {product.description}
+          </ReactMarkdown>
+        </div>
+      ) : (
+        <p className="text-slate-500">No description available.</p>
+      )}
 
       {product.tags && product.tags.length > 0 && (
         <div className="mt-6 pt-6 border-t border-slate-200">
@@ -85,8 +167,8 @@ const SpecificationsTab = ({ product }: ProductTabsProps) => {
     { label: "Dimensions", value: product.length && product.width && product.height ? `${product.length}L × ${product.width}W × ${product.height}H` : null },
     { label: "Type", value: product.type?.value },
     { label: "Country of Origin", value: product.origin_country },
-    { label: "SKU", value: product.sku },
-    { label: "Barcode", value: product.ean },
+    { label: "SKU", value: (product as any).sku || product.variants?.[0]?.sku },
+    { label: "Barcode", value: (product as any).ean || product.variants?.[0]?.barcode },
     { label: "Status", value: product.status },
   ]
 
@@ -129,8 +211,8 @@ const SpecificationsTab = ({ product }: ProductTabsProps) => {
                 </div>
                 <span
                   className={`text-sm font-medium ${variant.manage_inventory && (variant.inventory_quantity || 0) > 0
-                      ? "text-green-600"
-                      : "text-slate-500"
+                    ? "text-green-600"
+                    : "text-slate-500"
                     }`}
                 >
                   {variant.manage_inventory

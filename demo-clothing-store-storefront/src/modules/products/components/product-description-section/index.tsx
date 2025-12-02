@@ -10,35 +10,22 @@ interface ProductDescriptionSectionProps {
 export default function ProductDescriptionSection({
   product,
 }: ProductDescriptionSectionProps) {
-  if (!product.description) {
+  // Check for subtitle in multiple possible locations
+  const subtitle = (product as any).subtitle || product.metadata?.subtitle
+
+  if (!subtitle) {
     return null
   }
 
   return (
     <div className="w-full border-t border-slate-200 pt-6 mt-6">
       <h3 className="text-lg small:text-xl font-bold text-slate-900 mb-4">
-        Product Description
+        About This Product
       </h3>
-      
+
       <div className="prose prose-sm max-w-none text-slate-700">
         <ReactMarkdown
           components={{
-            // Headings
-            h1: ({ children }) => (
-              <h1 className="text-xl font-bold text-slate-900 mt-4 mb-2">
-                {children}
-              </h1>
-            ),
-            h2: ({ children }) => (
-              <h2 className="text-lg font-bold text-slate-900 mt-4 mb-2">
-                {children}
-              </h2>
-            ),
-            h3: ({ children }) => (
-              <h3 className="text-base font-bold text-slate-900 mt-3 mb-2">
-                {children}
-              </h3>
-            ),
             // Paragraphs
             p: ({ children }) => (
               <p className="mb-3 leading-relaxed text-slate-700">
@@ -70,60 +57,17 @@ export default function ProductDescriptionSection({
             li: ({ children }) => (
               <li className="ml-2">{children}</li>
             ),
-            // Code blocks
-            code: ({ inline, children }) => {
-              if (inline) {
-                return (
-                  <code className="bg-slate-100 text-slate-900 px-2 py-1 rounded font-mono text-sm">
-                    {children}
-                  </code>
-                )
-              }
-              return (
-                <code className="block bg-slate-100 text-slate-900 p-3 rounded font-mono text-sm overflow-x-auto my-3 border border-slate-200">
-                  {children}
-                </code>
-              )
-            },
-            pre: ({ children }) => (
-              <pre className="bg-slate-100 p-3 rounded overflow-x-auto my-3 border border-slate-200">
-                {children}
-              </pre>
+            // Strong/Bold
+            strong: ({ children }) => (
+              <strong className="font-semibold text-slate-900">{children}</strong>
             ),
-            // Blockquotes
-            blockquote: ({ children }) => (
-              <blockquote className="border-l-4 border-slate-300 pl-4 italic text-slate-600 my-3">
-                {children}
-              </blockquote>
-            ),
-            // Horizontal rule
-            hr: () => <hr className="my-4 border-slate-200" />,
-            // Tables
-            table: ({ children }) => (
-              <table className="w-full border-collapse border border-slate-200 my-3">
-                {children}
-              </table>
-            ),
-            thead: ({ children }) => (
-              <thead className="bg-slate-100">{children}</thead>
-            ),
-            tbody: ({ children }) => <tbody>{children}</tbody>,
-            tr: ({ children }) => (
-              <tr className="border border-slate-200">{children}</tr>
-            ),
-            th: ({ children }) => (
-              <th className="border border-slate-200 px-3 py-2 text-left font-semibold text-slate-900">
-                {children}
-              </th>
-            ),
-            td: ({ children }) => (
-              <td className="border border-slate-200 px-3 py-2 text-slate-700">
-                {children}
-              </td>
+            // Emphasis/Italic
+            em: ({ children }) => (
+              <em className="italic">{children}</em>
             ),
           }}
         >
-          {product.description}
+          {subtitle}
         </ReactMarkdown>
       </div>
     </div>
