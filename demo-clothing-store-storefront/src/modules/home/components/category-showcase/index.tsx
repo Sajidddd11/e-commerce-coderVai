@@ -100,7 +100,7 @@ export default async function CategoryShowcase({
                   </p>
                 </div>
                 <LocalizedClientLink
-                  href="/categories"
+                  href="/store"
                   className="inline-block text-sm xsmall:text-base font-semibold text-black hover:text-gray-600 transition-colors mt-4 xsmall:mt-0"
                 >
                   Shop Now →

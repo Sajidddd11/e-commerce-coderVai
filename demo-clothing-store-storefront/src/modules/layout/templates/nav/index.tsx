@@ -17,8 +17,8 @@ export default async function Nav() {
 
   return (
     <div className="sticky top-0 inset-x-0 z-50">
-      <header className="bg-white border-b border-grey-20 shadow-sm">
-        <nav className="content-container">
+      <header className="bg-white shadow-sm">
+        <nav className="content-container w-full ">
           {/* Top Row: Logo, Search, Icons */}
           <div className="flex items-center justify-between h-16 gap-2 small:gap-4">
             {/* Left: Logo + Mobile Menu */}
@@ -102,9 +102,10 @@ export default async function Nav() {
           <div className="xsmall:hidden border-t border-grey-20 px-0 py-3">
             <CentralSearch initialCategories={categories} />
           </div>
-
+        </nav>
+        <nav style={{ backgroundColor: '#F1F5F9' }}>
           {/* Desktop Navigation Links - Second Row with Categories */}
-          <div className="hidden small:flex items-center border-t border-grey-10 h-12 overflow-x-auto">
+          <div className="hidden content-container w-full small:flex items-center h-12 overflow-x-auto">
             <CategoriesMenu categories={categories} />
           </div>
         </nav>
