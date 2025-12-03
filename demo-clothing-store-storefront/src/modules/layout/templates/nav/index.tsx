@@ -29,12 +29,12 @@ export default async function Nav() {
                 className="flex items-center hover:opacity-90 transition-opacity whitespace-nowrap"
                 data-testid="nav-store-link"
               >
-                <Image
-                  src="/Final%20Logo%20with%20Text.png"
+                <img
+                  src="/Zahan Fashion.svg"
                   alt="ZAHAN logo"
                   width={140}
                   height={32}
-                  priority
+                  className="h-auto"
                 />
               </LocalizedClientLink>
             </div>

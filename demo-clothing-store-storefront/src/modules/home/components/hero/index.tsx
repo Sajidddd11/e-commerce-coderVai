@@ -57,6 +57,7 @@ const Hero = () => {
               className="object-cover"
               priority={index === 0}
               quality={85}
+              sizes="100vw"
             />
           </div>
         ))}

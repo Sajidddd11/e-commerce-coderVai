@@ -68,6 +68,7 @@ export default async function CategoryShowcase({
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       style={{ aspectRatio: "1 / 1" }}
+                      sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-2 xsmall:px-4 py-1 xsmall:py-4">
@@ -113,6 +114,7 @@ export default async function CategoryShowcase({
                   alt="ZAHAN"
                   fill
                   className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 25vw"
                 />
               </div>
             </div>
@@ -186,6 +188,7 @@ async function CategoryProductSection({
               alt={category.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 1024px) 50vw, 33vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div
