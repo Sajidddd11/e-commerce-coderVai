@@ -6,7 +6,7 @@ import "styles/globals.css"
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
   icons: {
-    icon: "/Final Logo BW.png",
+    icon: "/Zahan Fashion.svg",
   },
 }
 
