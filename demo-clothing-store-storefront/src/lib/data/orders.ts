@@ -110,3 +110,39 @@ export const declineTransferRequest = async (id: string, token: string) => {
     .then(({ order }) => ({ success: true, error: null, order }))
     .catch((err) => ({ success: false, error: err.message, order: null }))
 }
+
+/**
+ * Triggers an SMS notification for a given order, using the store
+ * endpoint backed by Bulk SMS BD integration.
+ */
+export const sendOrderSms = async (orderId: string) => {
+  if (!orderId) {
+    return { success: false, message: "orderId is required" }
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  try {
+    const response = await sdk.client.fetch<any>(`/store/orders/send-sms`, {
+      method: "POST",
+      headers,
+      body: {
+        order_id: orderId,
+      },
+      cache: "no-store",
+    })
+
+    return {
+      success: !!response?.sent,
+      message: response?.message ?? "OK",
+    }
+  } catch (err: any) {
+    // Don't block checkout UX if SMS fails – just surface a best-effort result
+    return {
+      success: false,
+      message: err?.message || "Failed to send SMS",
+    }
+  }
+}

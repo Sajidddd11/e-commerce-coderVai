@@ -3,6 +3,7 @@
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
+import { sendOrderSms } from "./orders"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import {
@@ -455,14 +456,24 @@ export async function placeOrder(cartId?: string) {
     .catch(medusaError)
 
   if (cartRes?.type === "order") {
+    const order = cartRes.order
+
+    // Best-effort: trigger SMS notification for non-redirect flows
+    // (e.g. Cash on Delivery / manual and Stripe-like payments)
+    try {
+      await sendOrderSms(order.id)
+    } catch {
+      // Swallow errors – checkout success should not fail due to SMS issues
+    }
+
     const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
+      order.shipping_address?.country_code?.toLowerCase()
 
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag)
 
     removeCartId()
-    redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
+    redirect(`/${countryCode}/order/${order.id}/confirmed`)
   }
 
   return cartRes.cart
