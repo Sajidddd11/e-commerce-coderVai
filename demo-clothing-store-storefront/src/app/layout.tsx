@@ -6,14 +6,14 @@ import "styles/globals.css"
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
   icons: {
-    icon: "/Zahan Fashion.svg",
+    icon: "/Final Logo BW.png",
   },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
-      <body className="m-0 p-0">
+      <body className="m-0 p-0" suppressHydrationWarning>
         <RootProvider>
           <main className="relative m-0 p-0">{props.children}</main>
         </RootProvider>
