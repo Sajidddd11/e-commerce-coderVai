@@ -21,8 +21,8 @@ export default function CategoriesMenu({ categories }: CategoriesMenuProps) {
   }
 
   return (
-    <div className="w-full flex justify-center" style={{ backgroundColor: '#F1F5F9' }}>
-      <div className="flex items-center w-full border justify-between overflow-x-auto scrollbar-hide">
+    <div className="w-full flex items-center justify-center">
+      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
         {topLevelCategories.length > 0 ? (
           topLevelCategories.map((category) => {
             const IconComponent = getCategoryIcon(category.name)
