@@ -14,7 +14,7 @@ export default async function Footer() {
     <footer className="w-full bg-[#58595B] text-grey-0 border-t border-grey-80">
       <div className="pt-14 pb-10 bg-[#F3F3F3]">
         {/* Bottom Bar */}
-        <div className=" grid grid-cols-3 gap-3 small:gap-8 max-w-6xl mx-auto">
+        <div className=" grid grid-cols-1 px-2 xsmall:grid-cols-3 gap-3 small:gap-8 max-w-6xl mx-auto">
           {/* Payment methods strip */}
           <div className="flex w-full  flex-col gap-2">
             <span className=" w-fit mx-auto "><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#373A3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-icon lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg></span>
@@ -49,28 +49,31 @@ export default async function Footer() {
           </div>
         </div>
       </div>
-      <div className="py-10 bg-[#37383F] grid grid-cols-2">
-        <div className="flex flex-col max-w-6xl mx-auto">
-          <div className="flex gap-2 items-center">
+      <div className="py-10 pl-3 bg-[#37383F]">
+        <div className=" grid grid-cols-1 xsmall:grid-cols-2 gap-3 xsmall:max-w-4xl xsmall:mx-auto">
+
+          <div className="flex flex-col">
+            <div className="flex gap-2 items-center">
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F7941E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></svg>
+              </div>
+              <div><h1 className="text-md xsmall:text-xl text-[#EBEBEB] font-semibold">GET SPECIAL DISCOUNTS IN YOUR INBOX</h1></div>
+            </div>
             <div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F7941E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-            </div>
-            <div><h1 className="text-xl text-[#EBEBEB] font-semibold">GET SPECIAL DISCOUNTS IN YOUR INBOX</h1></div>
-          </div>
-          <div>
-            <div className="flex gap-3 items-center py-3">
-              <div className=" p-2 bg-[#F7941E]/70 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-facebook-icon lucide-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg></div>
-              <div className=" p-2 bg-[#F7941E]/70 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram-icon lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg></div>
-              <div className=" p-2 bg-[#F7941E]/70 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube-icon lucide-youtube"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" /><path d="m10 15 5-3-5-3z" /></svg></div>
+              <div className="flex gap-3 items-center py-3">
+                <div className=" p-2 bg-[#F7941E]/70 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-facebook-icon lucide-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg></div>
+                <div className=" p-2 bg-[#F7941E]/70 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram-icon lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg></div>
+                <div className=" p-2 bg-[#F7941E]/70 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube-icon lucide-youtube"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" /><path d="m10 15 5-3-5-3z" /></svg></div>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#F7941E" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-icon lucide-phone"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></svg></div>
-          <div>
-            <p className="text-xl text-[#EBEBEB] font-semibold">FOR ANY HELP YOU MAY CALL US AT</p>
-            <p className="text-xl text-[#AAAAAA]">+8809677666888</p>
-            <p className="text-xl text-[#AAAAAA]">Open 24 Hours a Day, 7 Days a week</p>
+          <div className="flex gap-2">
+            <div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#F7941E" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-icon lucide-phone"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></svg></div>
+            <div>
+              <p className="text-md xsmall:text-xl text-[#EBEBEB] font-semibold">FOR ANY HELP YOU MAY CALL US AT</p>
+              <p className="text-xl text-[#AAAAAA]">+8809677666888</p>
+              <p className="text-xl text-[#AAAAAA]">Open 24 Hours a Day, 7 Days a week</p>
+            </div>
           </div>
         </div>
       </div>
