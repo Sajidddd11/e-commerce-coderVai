@@ -11,10 +11,10 @@ export default async function Footer() {
   const productCategories = filterCategoriesWithProducts(allCategories)
 
   return (
-    <footer className="w-full bg-[#58595B] text-grey-0 border-t border-grey-80">
-      <div className="pt-14 pb-10 bg-[#F3F3F3]">
+    <footer className="w-full bg-[#58595B] text-grey-0">
+      <div className="pt-10 pb-10 bg-[#F3F3F3]">
         {/* Bottom Bar */}
-        <div className=" grid grid-cols-1 px-2 xsmall:grid-cols-3 gap-3 small:gap-8 max-w-6xl mx-auto">
+        <div className=" grid grid-cols-1 px-2 xsmall:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Payment methods strip */}
           <div className="flex w-full  flex-col gap-2">
             <span className=" w-fit mx-auto "><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#373A3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-icon lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg></span>
@@ -49,8 +49,8 @@ export default async function Footer() {
           </div>
         </div>
       </div>
-      <div className="py-10 pl-3 bg-[#37383F]">
-        <div className=" grid grid-cols-1 xsmall:grid-cols-2 gap-3 xsmall:max-w-4xl xsmall:mx-auto">
+      <div className="py-10 bg-[#37383F]">
+        <div className=" w-fit mx-auto grid grid-cols-1 xsmall:grid-cols-2 gap-8 xsmall:max-w-4xl xsmall:mx-auto">
 
           <div className="flex flex-col">
             <div className="flex gap-2 items-center">
