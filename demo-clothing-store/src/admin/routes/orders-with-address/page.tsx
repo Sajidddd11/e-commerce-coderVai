@@ -1,5 +1,5 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Text, Table } from "@medusajs/ui"
+import { Container, Heading, Text, Table, Select } from "@medusajs/ui"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -109,6 +109,61 @@ const OrdersWithAddressPage = () => {
     }
   }
 
+  // Status options for dropdown
+  const STATUS_OPTIONS = [
+    { value: 'pending', label: 'Pending', color: 'text-gray-600 bg-gray-100' },
+    { value: 'processing', label: 'Processing', color: 'text-yellow-700 bg-yellow-100' },
+    { value: 'shipped', label: 'Shipped', color: 'text-blue-600 bg-blue-100' },
+    { value: 'delivered', label: 'Delivered', color: 'text-green-600 bg-green-100' },
+    { value: 'canceled', label: 'Cancelled', color: 'text-red-600 bg-red-100' },
+    { value: 'refunded', label: 'Refunded', color: 'text-amber-700 bg-amber-100' },
+  ]
+
+  // Get current status (priority: custom_status > official status)
+  const getCurrentStatus = (order: any) => {
+    return order.metadata?.custom_status || order.status
+  }
+
+  // Get status color classes
+  const getStatusColor = (status: string) => {
+    const option = STATUS_OPTIONS.find(opt => opt.value === status)
+    return option?.color || 'text-gray-600 bg-gray-100'
+  }
+
+  // Handle status change
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      setUpdatingOrderId(orderId)
+
+      const response = await fetch(`/admin/orders/${orderId}/custom-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ customStatus: newStatus })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to update status')
+      }
+
+      // Refresh orders
+      const result = await fetch(
+        `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
+        { credentials: 'include' }
+      )
+      const updatedData = await result.json()
+      setData(updatedData)
+    } catch (error) {
+      console.error('Error updating status:', error)
+      alert('Failed to update order status')
+    } finally {
+      setUpdatingOrderId(null)
+    }
+  }
+
 
   if (isLoading) {
     return (
@@ -205,18 +260,24 @@ const OrdersWithAddressPage = () => {
                     <Table.Cell>
                       <Text size="small">{order.email || order.customer?.email || "N/A"}</Text>
                     </Table.Cell>
-                    <Table.Cell>
-                      <Text
+                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                      <Select
                         size="small"
-                        className={`capitalize ${order.status === "completed"
-                          ? "text-green-600"
-                          : order.status === "canceled"
-                            ? "text-red-600"
-                            : "text-blue-600"
-                          }`}
+                        value={getCurrentStatus(order)}
+                        onValueChange={(value) => handleStatusChange(order.id, value)}
+                        disabled={updatingOrderId === order.id}
                       >
-                        {order.status}
-                      </Text>
+                        <Select.Trigger className={`capitalize px-2 py-1 rounded ${getStatusColor(getCurrentStatus(order))}`}>
+                          {getCurrentStatus(order)}
+                        </Select.Trigger>
+                        <Select.Content>
+                          {STATUS_OPTIONS.map(opt => (
+                            <Select.Item key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select>
                     </Table.Cell>
                     <Table.Cell>
                       <Text size="small" className="whitespace-normal">
