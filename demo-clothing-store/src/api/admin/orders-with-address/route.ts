@@ -109,19 +109,38 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           },
         })
 
-        // Create a map of order_id -> provider_id
+        // Fetch payment collection statuses
+        const paymentCollections = await remoteQuery({
+          entryPoint: "payment_collection",
+          fields: ["id", "status"],
+          variables: {
+            filters: {
+              id: paymentCollectionIds,
+            },
+          },
+        })
+
+        // Create maps for payment provider and status
         const orderPaymentMap: Record<string, string> = {}
+        const orderPaymentStatusMap: Record<string, string> = {}
+
         paymentData.forEach((link: any) => {
           const payment = payments.find((p: any) => p.payment_collection_id === link.payment_collection_id)
+          const paymentCollection = paymentCollections.find((pc: any) => pc.id === link.payment_collection_id)
+
           if (payment && link.order_id) {
             orderPaymentMap[link.order_id] = payment.provider_id
           }
+          if (paymentCollection && link.order_id) {
+            orderPaymentStatusMap[link.order_id] = paymentCollection.status
+          }
         })
 
-        // Enrich orders with payment provider
+        // Enrich orders with payment provider and status
         orders = orders.map(order => ({
           ...order,
           payment_provider: orderPaymentMap[order.id] || null,
+          payment_status: orderPaymentStatusMap[order.id] || null,
         }))
       }
     } catch (paymentError) {

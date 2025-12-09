@@ -130,6 +130,31 @@ const OrdersWithAddressPage = () => {
     return option?.color || 'text-gray-600 bg-gray-100'
   }
 
+  // Helper function to get payment status square color
+  const getPaymentStatusSquareColor = (status: string) => {
+    const colors: Record<string, string> = {
+      authorized: 'bg-orange-500',
+      captured: 'bg-green-500',
+      completed: 'bg-green-500',  // Medusa returns 'completed' for captured payments
+      canceled: 'bg-red-500',
+      awaiting: 'bg-gray-400',
+      not_paid: 'bg-gray-400',
+      pending: 'bg-blue-500',
+    }
+    return colors[status] || 'bg-gray-400'
+  }
+
+  // Helper function to format payment status label
+  const formatPaymentStatus = (status: string | null) => {
+    if (!status) return 'N/A'
+    // Map 'completed' to 'Captured' to match Medusa's prebuilt pages
+    if (status === 'completed') return 'Captured'
+    // Capitalize first letter of each word and replace underscores with spaces
+    return status.split('_').map(word =>
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ')
+  }
+
   // Handle status change
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
 
@@ -208,6 +233,7 @@ const OrdersWithAddressPage = () => {
               <Table.HeaderCell>Mobile Number</Table.HeaderCell>
               <Table.HeaderCell>Email</Table.HeaderCell>
               <Table.HeaderCell>Status</Table.HeaderCell>
+              <Table.HeaderCell>Payment</Table.HeaderCell>
               <Table.HeaderCell>Address</Table.HeaderCell>
               <Table.HeaderCell>Payment Method</Table.HeaderCell>
               <Table.HeaderCell>Total</Table.HeaderCell>
@@ -278,6 +304,12 @@ const OrdersWithAddressPage = () => {
                           ))}
                         </Select.Content>
                       </Select>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-sm ${getPaymentStatusSquareColor(order.payment_status || '')}`}></div>
+                        <Text size="small">{formatPaymentStatus(order.payment_status)}</Text>
+                      </div>
                     </Table.Cell>
                     <Table.Cell>
                       <Text size="small" className="whitespace-normal">
