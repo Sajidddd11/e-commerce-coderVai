@@ -90,7 +90,7 @@ export default function CentralSearch({
       {/* Right Section: All Products Button */}
       <LocalizedClientLink
         href="/store"
-        className="px-3 py-2 hidden small:inline bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition-colors text-xs small:text-sm font-medium border-2 whitespace-nowrap flex-shrink-0 animate-neon-rgb-border"
+        className="px-3 py-2 hidden small:inline bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition-colors text-xs small:text-sm font-medium border-2 whitespace-nowrap flex-shrink-0"
         aria-label="View all products"
       >
         <span className="hidden small:inline">Exclusive Collections</span>

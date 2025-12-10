@@ -52,9 +52,9 @@ export default async function Footer() {
         </div>
       </div>
       <div className="py-10 bg-[#37383F]">
-        <div className=" w-fit mx-auto grid grid-cols-1 xsmall:grid-cols-2 gap-8 xsmall:max-w-4xl xsmall:mx-auto">
+        <div className="w-fit xsmall:w-full gap-5 mx-auto flex flex-col xsmall:flex-row xsmall:max-w-5xl xsmall:mx-auto justify-between">
 
-          <div className="flex flex-col">
+          <div className="flex flex-col w-fit">
             <div className="flex gap-2 items-center">
               <div>
                 <MailIcon size={28} color="#F7941E" />
@@ -93,7 +93,7 @@ export default async function Footer() {
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2  w-fit">
             <div><PhoneIcon size={20} color="#F7941E" /></div>
             <div>
               <p className="text-md xsmall:text-xl text-[#EBEBEB] font-semibold">FOR ANY HELP YOU MAY CALL US AT</p>
@@ -103,17 +103,17 @@ export default async function Footer() {
           </div>
         </div>
       </div>
-      <div className="content-container max-w-6xl py-16">
-        <div className="grid grid-cols-2 small:grid-cols-5 gap-8 mb-12">
+      <div className="max-w-6xl py-5 px-5 xsmall:py-16 mx-auto w-fit xsmall:w-full">
+        <div className="grid grid-cols-2 small:grid-cols-5 gap-3 mb-12">
           {/* Brand */}
           <div className="col-span-2">
             <LocalizedClientLink
               href="/"
-              className="font-medium text-xl text-[#F7941E] block mb-4"
+              className="font-medium text-xl text-[#F7941E] block mb-2 xsmall:mb-4"
             >
               ZAHAN Fashion and Lifestyle
             </LocalizedClientLink>
-            <p className="text-[#EBEBEB] text-xl font-light leading-relaxed">
+            <p className="text-[#EBEBEB] text-lg xsmall:text-xl font-light leading-relaxed">
               Discover our curated collection of premium clothing and accessories. Quality, style, and elegance in every piece.
             </p>
           </div>
@@ -121,7 +121,7 @@ export default async function Footer() {
           {/* Categories */}
           {productCategories && productCategories.length > 0 && (
             <div className="">
-              <h3 className="font-medium text-xl text-white mb-4">Categories</h3>
+              <h3 className="font-medium text-lg xsmall:text-xl text-white mb-4">Categories</h3>
               <ul className="space-y-2" data-testid="footer-categories">
                 {productCategories
                   .filter((c) => !c.parent_category)
@@ -130,7 +130,7 @@ export default async function Footer() {
                     <li key={c.id}>
                       <LocalizedClientLink
                         href={`/categories/${c.handle}`}
-                        className="text-[#EBEBEB] text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                        className="text-[#EBEBEB] text-lg xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                         data-testid="category-link"
                       >
                         {c.name}
@@ -144,13 +144,13 @@ export default async function Footer() {
           {/* Collections */}
           {collections && collections.length > 0 && (
             <div className="">
-              <h3 className="font-medium text-xl text-white mb-4">Collections</h3>
+              <h3 className="font-medium text-lg xsmall:text-xl text-white mb-4">Collections</h3>
               <ul className="space-y-2">
                 {collections.slice(0, 5).map((c) => (
                   <li key={c.id}>
                     <LocalizedClientLink
                       href={`/collections/${c.handle}`}
-                      className="text-[#EBEBEB] text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                      className="text-[#EBEBEB] text-lg xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                     >
                       {c.title}
                     </LocalizedClientLink>
@@ -162,12 +162,12 @@ export default async function Footer() {
 
           {/* Support & Info */}
           <div className="">
-            <h3 className="font-medium text-xl text-white mb-4">Support</h3>
+            <h3 className="font-medium text-lg xsmall:text-xl text-white mb-4">Support</h3>
             <ul className="space-y-2">
               <li>
                 <LocalizedClientLink
                   href="/account"
-                  className="text-[#EBEBEB] text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="text-[#EBEBEB] text-lg xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   My Account
                 </LocalizedClientLink>
@@ -199,7 +199,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/privacy-policy"
-                  className=" text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="text-[#EBEBEB] text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Privacy Policy
                 </LocalizedClientLink>
@@ -207,7 +207,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/terms-of-service"
-                  className=" text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="text-[#EBEBEB] text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Terms of Service
                 </LocalizedClientLink>
@@ -215,8 +215,6 @@ export default async function Footer() {
             </ul>
           </div>
         </div>
-
-
       </div>
       <div className=" bg-[#EBEBEB] py-1 xsmall:py-5">
         <div className="flex text-black w-fit mx-auto flex-col small:flex-row small:items-center gap-4">
