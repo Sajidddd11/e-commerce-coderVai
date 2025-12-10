@@ -12,11 +12,15 @@ const ShippingAddress = ({
   cart,
   checked,
   onChange,
+  onDeliveryTypeChange,
+  onDistrictChange,
 }: {
   customer: HttpTypes.StoreCustomer | null
   cart: HttpTypes.StoreCart | null
   checked: boolean
   onChange: () => void
+  onDeliveryTypeChange?: (type: "home" | "pickup") => void
+  onDistrictChange?: (district: string) => void
 }) => {
   const [formData, setFormData] = useState<Record<string, any>>({
     "shipping_address.full_name":
@@ -29,6 +33,8 @@ const ShippingAddress = ({
     "shipping_address.phone": cart?.shipping_address?.phone || "",
     email: cart?.email || "",
   })
+
+  const [deliveryType, setDeliveryType] = useState<"home" | "pickup">("home")
 
   const countriesInRegion = useMemo(
     () => cart?.region?.countries?.map((c) => c.iso_2),
@@ -78,6 +84,19 @@ const ShippingAddress = ({
       setFormAddress(undefined, customer.email)
     }
   }, [cart]) // Add cart as a dependency
+
+  // Notify parent when delivery type changes
+  useEffect(() => {
+    onDeliveryTypeChange?.(deliveryType)
+  }, [deliveryType, onDeliveryTypeChange])
+
+  // Notify parent when district changes
+  useEffect(() => {
+    const district = formData["shipping_address.city"]
+    if (district) {
+      onDistrictChange?.(district)
+    }
+  }, [formData, onDistrictChange])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -145,6 +164,35 @@ const ShippingAddress = ({
           />
         </Container>
       )}
+
+      {/* Delivery Type Selector */}
+      <div className="mb-6">
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="delivery_type"
+              value="home"
+              checked={deliveryType === "home"}
+              onChange={() => setDeliveryType("home")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">Home Delivery</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="delivery_type"
+              value="pickup"
+              checked={deliveryType === "pickup"}
+              onChange={() => setDeliveryType("pickup")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">Collect From Store Pickup</span>
+          </label>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 small:grid-cols-2 gap-4">
         <Input
           label="Full Name"

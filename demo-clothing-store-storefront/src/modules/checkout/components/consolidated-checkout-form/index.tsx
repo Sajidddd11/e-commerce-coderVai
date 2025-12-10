@@ -43,6 +43,8 @@ export default function ConsolidatedCheckoutForm({
     >(null)
     const [cardComplete, setCardComplete] = useState(false)
     const [selectedShippingCost, setSelectedShippingCost] = useState<number>(0)
+    const [deliveryType, setDeliveryType] = useState<"home" | "pickup">("home")
+    const [selectedDistrict, setSelectedDistrict] = useState<string>("")
 
     // Restore form state from localStorage on mount (for coupon application refreshes)
     useEffect(() => {
@@ -86,6 +88,40 @@ export default function ConsolidatedCheckoutForm({
         fetchMethods()
     }, [cart.id, cart.region?.id])
 
+    // Auto-select shipping method based on delivery type and district
+    useEffect(() => {
+        if (!shippingMethods || shippingMethods.length === 0) return
+
+        let methodToSelect: string | null = null
+
+        if (deliveryType === "pickup") {
+            // Select "Collect From Store" method
+            const pickupMethod = shippingMethods.find(m =>
+                m.name?.toLowerCase().includes("collect from store") ||
+                m.name?.toLowerCase().includes("pickup") ||
+                m.name?.toLowerCase().includes("store")
+            )
+            if (pickupMethod) {
+                methodToSelect = pickupMethod.id
+            }
+        } else if (deliveryType === "home" && selectedDistrict) {
+            // Select based on district
+            const isDhaka = selectedDistrict.toLowerCase() === "dhaka"
+            const targetMethod = shippingMethods.find(m =>
+                isDhaka
+                    ? m.name?.toLowerCase().includes("inside dhaka")
+                    : m.name?.toLowerCase().includes("outside dhaka")
+            )
+            if (targetMethod) {
+                methodToSelect = targetMethod.id
+            }
+        }
+
+        if (methodToSelect && methodToSelect !== selectedShippingMethod) {
+            handleShippingMethodChange(methodToSelect)
+        }
+    }, [deliveryType, selectedDistrict, shippingMethods])
+
     // Handle shipping method change with optimistic UI update
     const handleShippingMethodChange = (shippingMethodId: string) => {
         setSelectedShippingMethod(shippingMethodId)
@@ -127,66 +163,20 @@ export default function ConsolidatedCheckoutForm({
                         checked={true}
                         onChange={() => { }}
                         cart={cart}
+                        onDeliveryTypeChange={setDeliveryType}
+                        onDistrictChange={setSelectedDistrict}
                     />
                 </div>
                 <Divider />
             </div>
 
-            {/* Section 2: Shipping Method */}
-            <div className="bg-white mb-6">
-                <Heading
-                    level="h2"
-                    className="flex flex-row text-3xl-regular gap-x-2 items-baseline mb-6"
-                >
-                    Delivery Method
-                </Heading>
-
-                {shippingMethods ? (
-                    <div className="pb-8">
-                        <RadioGroup
-                            value={selectedShippingMethod}
-                            onChange={handleShippingMethodChange}
-                        >
-                            {shippingMethods.map((option) => (
-                                <Radio
-                                    key={option.id}
-                                    value={option.id}
-                                    className={clx(
-                                        "flex items-center justify-between text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
-                                        {
-                                            "border-ui-border-interactive":
-                                                option.id === selectedShippingMethod,
-                                        }
-                                    )}
-                                >
-                                    <div className="flex items-center gap-x-4">
-                                        <MedusaRadio
-                                            checked={option.id === selectedShippingMethod}
-                                        />
-                                        <span className="text-base-regular">{option.name}</span>
-                                    </div>
-                                    <span className="justify-self-end text-ui-fg-base">
-                                        {convertToLocale({
-                                            amount: option.amount!,
-                                            currency_code: cart?.currency_code,
-                                        })}
-                                    </span>
-                                </Radio>
-                            ))}
-                        </RadioGroup>
-                        <input
-                            type="hidden"
-                            name="shipping_method_id"
-                            value={selectedShippingMethod || ""}
-                        />
-                    </div>
-                ) : (
-                    <div className="pb-8">
-                        <Text className="text-ui-fg-subtle">Loading shipping methods...</Text>
-                    </div>
-                )}
-                <Divider />
-            </div>
+            {/* Section 2: Shipping Method - Hidden but functional */}
+            {/* Hidden input for shipping method */}
+            <input
+                type="hidden"
+                name="shipping_method_id"
+                value={selectedShippingMethod || ""}
+            />
 
             {/* Section 3: Payment Method */}
             <div className="bg-white mb-6">
