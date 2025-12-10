@@ -38,11 +38,11 @@ export default function MobileMenu({
     <div className="small:hidden" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-slate-700 hover:text-slate-900 transition-colors"
+        className="p-2 text-slate-700 hover:text-slate-900 transition-colors duration-300"
         aria-label="Menu"
       >
         <svg
-          className={`w-6 h-6 transition-transform ${isOpen ? "rotate-90" : ""}`}
+          className={`w-6 h-6 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "rotate-90" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -57,70 +57,90 @@ export default function MobileMenu({
       </button>
 
       {/* Mobile Menu Panel */}
-      {isOpen && (
-        <>
-          {/* Overlay */}
+      <>
+        {/* Overlay */}
+        {isOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-40 top-16"
+            className="fixed inset-0 bg-black/50 z-40 top-16 transition-opacity duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             onClick={() => setIsOpen(false)}
           />
+        )}
 
-          {/* Menu */}
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-xl z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
-            <div className="p-4 space-y-2">
-              <LocalizedClientLink
-                href="/store"
-                className="block px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-colors"
-                onClick={() => setIsOpen(false)}
+        {/* Menu */}
+        <div className={`absolute top-full left-0 right-0 bg-white border-b border-slate-200 z-50 max-h-[calc(100vh-64px)] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform ${isOpen ? "translate-x-0 opacity-100 shadow-2xl" : "-translate-x-full opacity-0 pointer-events-none shadow-none"}`}>
+          <div className="p-4 space-y-2">
+            <LocalizedClientLink
+              href="/store"
+              className={`block px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+              style={{
+                transitionDelay: isOpen ? "50ms" : "0ms",
+              }}
+              onClick={() => setIsOpen(false)}
+            >
+              All Products
+            </LocalizedClientLink>
+
+            <div className="border-t border-slate-100 pt-2">
+              <h3 className={`px-4 py-2 text-sm font-semibold text-slate-900 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                style={{
+                  transitionDelay: isOpen ? "100ms" : "0ms",
+                }}
               >
-                All Products
-              </LocalizedClientLink>
-
-              <div className="border-t border-slate-100 pt-2">
-                <h3 className="px-4 py-2 text-sm font-semibold text-slate-900">
-                  Categories
-                </h3>
-                {topLevelCategories.map((category) => (
-                  <LocalizedClientLink
-                    key={category.id}
-                    href={`/categories/${category.handle}`}
-                    className="block px-6 py-2 text-slate-700 hover:bg-slate-50 text-sm transition-colors"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {category.name}
-                  </LocalizedClientLink>
-                ))}
-              </div>
-
-              <div className="border-t border-slate-100 pt-2">
+                Categories
+              </h3>
+              {topLevelCategories.map((category, index) => (
                 <LocalizedClientLink
-                  href="/account"
-                  className="block px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-colors"
+                  key={category.id}
+                  href={`/categories/${category.handle}`}
+                  className={`block px-6 py-2 text-slate-700 hover:bg-slate-50 text-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                  style={{
+                    transitionDelay: isOpen ? `${150 + index * 25}ms` : "0ms",
+                  }}
                   onClick={() => setIsOpen(false)}
                 >
-                  My Account
+                  {category.name}
                 </LocalizedClientLink>
-              </div>
-
-              {regions && regions.length > 1 && (
-                <div className="border-t border-slate-100 pt-2">
-                  <h3 className="px-4 py-2 text-sm font-semibold text-slate-900">
-                    Region
-                  </h3>
-                  {regions.map((region) => (
-                    <div
-                      key={region.id}
-                      className="px-4 py-2 text-slate-700 text-sm"
-                    >
-                      {region.name}
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
+
+            <div className="border-t border-slate-100 pt-2">
+              <LocalizedClientLink
+                href="/account"
+                className={`block px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                style={{
+                  transitionDelay: isOpen ? `${400 + topLevelCategories.length * 25}ms` : "0ms",
+                }}
+                onClick={() => setIsOpen(false)}
+              >
+                My Account
+              </LocalizedClientLink>
+            </div>
+
+            {regions && regions.length > 1 && (
+              <div className="border-t border-slate-100 pt-2">
+                <h3 className={`px-4 py-2 text-sm font-semibold text-slate-900 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                  style={{
+                    transitionDelay: isOpen ? `${450 + topLevelCategories.length * 25}ms` : "0ms",
+                  }}
+                >
+                  Region
+                </h3>
+                {regions.map((region, index) => (
+                  <div
+                    key={region.id}
+                    className={`px-4 py-2 text-slate-700 text-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                    style={{
+                      transitionDelay: isOpen ? `${500 + topLevelCategories.length * 25 + index * 25}ms` : "0ms",
+                    }}
+                  >
+                    {region.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </>
-      )}
+        </div>
+      </>
     </div>
   )
 }

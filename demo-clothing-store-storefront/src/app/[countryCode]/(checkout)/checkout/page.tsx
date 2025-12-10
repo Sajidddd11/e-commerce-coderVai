@@ -32,11 +32,11 @@ export default async function Checkout({
           Checkout
         </h1>
         {isReviewStep ? (
-          <div className="grid grid-cols-1 small:grid-cols-[1fr_380px] gap-6 small:gap-8">
-            <div>
+          <div className="flex flex-col-reverse small:grid  small:grid-cols-[1fr_380px] gap-6 small:gap-8">
+            <div className="">
               <Review cart={cart} />
             </div>
-            <div className="bg-white rounded-lg border border-slate-200 p-5 small:p-6 h-fit sticky top-20 small:top-24">
+            <div className="bg-white rounded-lg border border-slate-200 p-5 small:p-6 h-fit small:sticky top-20 small:top-24">
               <CheckoutSummary cart={cart} />
             </div>
           </div>

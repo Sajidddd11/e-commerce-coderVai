@@ -16,6 +16,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
+import "./cart-animation.css"
 
 const CartDropdown = ({
   cart: cartState,
@@ -26,6 +27,7 @@ const CartDropdown = ({
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
@@ -37,6 +39,7 @@ const CartDropdown = ({
 
   const subtotal = cartState?.subtotal ?? 0
   const itemRef = useRef<number>(totalItems || 0)
+  const previousCountRef = useRef<number>(0)
 
   const timedOpen = () => {
     open()
@@ -73,6 +76,26 @@ const CartDropdown = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalItems, itemRef.current])
 
+  // Trigger zoom + vibrate animation when count increases
+  useEffect(() => {
+    if (totalItems > previousCountRef.current) {
+      setIsAnimating(true)
+
+      // Trigger vibration if available
+      if (navigator.vibrate) {
+        navigator.vibrate([10, 20, 10])
+      }
+
+      // Remove animation after it completes (600ms)
+      const timer = setTimeout(() => {
+        setIsAnimating(false)
+      }, 600)
+
+      return () => clearTimeout(timer)
+    }
+    previousCountRef.current = totalItems
+  }, [totalItems])
+
   return (
     <div
       className="h-full z-50"
@@ -82,19 +105,19 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base flex items-center gap-2 relative"
+            className="flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors text-sm font-medium relative"
             href="/cart"
             data-testid="nav-cart-link"
           >
             {/* Shopping Cart Icon */}
-            <div className="relative">
+            <div className={`relative ${isAnimating ? "cart-icon-animate" : ""}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-6 h-6"
+                className="w-5 h-5"
               >
                 <path
                   strokeLinecap="round"
@@ -109,7 +132,7 @@ const CartDropdown = ({
                 </span>
               )}
             </div>
-            <span>Cart</span>
+            <span className="hidden medium:inline">Cart</span>
           </LocalizedClientLink>
         </PopoverButton>
         <Transition

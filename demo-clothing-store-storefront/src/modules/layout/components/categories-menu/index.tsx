@@ -32,9 +32,9 @@ export default function CategoriesMenu({ categories }: CategoriesMenuProps) {
               <LocalizedClientLink
                 key={category.id}
                 href={`/categories/${category.handle}`}
-                className={`flex items-center gap-1 small:gap-2 px-5 py-2 transition-all group whitespace-nowrap flex-shrink-0 text-xs small:text-sm font-medium ${isActive
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-900 hover:bg-white hover:shadow-sm"
+                className={`flex items-center gap-1 small:gap-2 px-5 py-2 whitespace-nowrap flex-shrink-0 text-xs small:text-sm font-medium transition-all duration-500 ease-in-out ${isActive
+                  ? "bg-[#d9d2d2] text-slate-900 rounded-md shadow-sm"
+                  : "text-slate-900 hover:bg-[#d9d2d291] hover:rounded-md hover:shadow-sm"
                   }`}
                 title={category.name}
               >

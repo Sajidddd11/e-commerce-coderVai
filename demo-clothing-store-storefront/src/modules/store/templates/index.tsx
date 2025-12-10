@@ -2,6 +2,7 @@ import { Suspense } from "react"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
+import MobileFilterDropdown from "@modules/store/components/mobile-filter-dropdown"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 import PaginatedProducts from "./paginated-products"
@@ -41,10 +42,13 @@ const StoreTemplate = ({
           </p>
         </div>
 
+        {/* Mobile Filter Dropdown */}
+        <MobileFilterDropdown sortBy={sort} />
+
         {/* Layout Container - Filters and Products */}
         <div className="flex flex-col small:flex-row gap-6 small:gap-8">
-          {/* Sidebar - Filters - Sticky on desktop, collapsible on mobile */}
-          <div className="w-full small:w-56 medium:w-64 flex-shrink-0">
+          {/* Sidebar - Filters - Desktop only */}
+          <div className="hidden small:block w-full small:w-56 medium:w-64 flex-shrink-0">
             <div className="sticky top-20 small:top-24 bg-white rounded-lg p-4 small:p-6 border border-grey-20">
               <RefinementList sortBy={sort} />
             </div>

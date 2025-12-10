@@ -44,7 +44,7 @@ export default async function Nav() {
               <CentralSearch initialCategories={categories} />
             </div>
 
-            {/* Right: Account + Cart */}
+            {/* Right: Account (Desktop only) + Cart (Mobile + Desktop) */}
             <div className="flex items-center gap-2 small:gap-4 flex-shrink-0">
               <LocalizedClientLink
                 className="hidden small:flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors text-sm font-medium"
@@ -66,9 +66,7 @@ export default async function Nav() {
                 </svg>
                 <span className="hidden medium:inline">Account</span>
               </LocalizedClientLink>
-
               <div className="h-6 w-px bg-grey-20 hidden small:block" />
-
               <Suspense
                 fallback={
                   <LocalizedClientLink

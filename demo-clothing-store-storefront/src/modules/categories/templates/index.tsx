@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
+import MobileFilterDropdown from "@modules/store/components/mobile-filter-dropdown"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -98,10 +99,13 @@ export default function CategoryTemplate({
           </div>
         )}
 
+        {/* Mobile Filter Dropdown */}
+        <MobileFilterDropdown sortBy={sort} />
+
         {/* Layout Container */}
         <div className="flex flex-col small:flex-row gap-8">
-          {/* Sidebar - Filters */}
-          <div className="w-full small:w-64 flex-shrink-0">
+          {/* Sidebar - Filters - Desktop only */}
+          <div className="hidden small:block w-full small:w-64 flex-shrink-0">
             <div className="sticky top-20 bg-white rounded-lg p-6 border border-grey-20">
               <RefinementList sortBy={sort} data-testid="sort-by-container" />
             </div>
