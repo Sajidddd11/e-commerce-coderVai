@@ -5,7 +5,7 @@ import DiscountCode from "@modules/checkout/components/discount-code"
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
 
-const CheckoutSummary = ({ cart, shippingOverride }: { cart: any; shippingOverride?: number }) => {
+const CheckoutSummary = ({ cart, shippingOverride, showDiscountCode = true }: { cart: any; shippingOverride?: number; showDiscountCode?: boolean }) => {
   return (
     <div className="flex flex-col-reverse small:flex-col gap-y-6 small:gap-y-8 py-6 small:py-0">
       <div className="w-full bg-white flex flex-col">
@@ -19,9 +19,11 @@ const CheckoutSummary = ({ cart, shippingOverride }: { cart: any; shippingOverri
         <Divider className="my-4 small:my-6" />
         <CartTotals totals={cart} shippingOverride={shippingOverride} />
         <ItemsPreviewTemplate cart={cart} />
-        <div className="my-4 small:my-6">
-          <DiscountCode cart={cart} />
-        </div>
+        {showDiscountCode && (
+          <div className="my-4 small:my-6">
+            <DiscountCode cart={cart} />
+          </div>
+        )}
       </div>
     </div>
   )

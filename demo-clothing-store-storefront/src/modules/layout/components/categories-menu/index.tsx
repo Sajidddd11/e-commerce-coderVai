@@ -32,16 +32,13 @@ export default function CategoriesMenu({ categories }: CategoriesMenuProps) {
               <LocalizedClientLink
                 key={category.id}
                 href={`/categories/${category.handle}`}
-                className={`flex items-center gap-1 small:gap-2 px-5 py-2 whitespace-nowrap flex-shrink-0 text-xs small:text-sm font-medium transition-all duration-500 ease-in-out ${isActive
-                  ? "bg-[#d9d2d2] text-slate-900 rounded-md shadow-sm"
-                  : "text-slate-900 hover:bg-[#d9d2d291] hover:rounded-md hover:shadow-sm"
+                className={`group flex items-center gap-1 small:gap-2 px-5 py-2 whitespace-nowrap flex-shrink-0 text-xs small:text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105 hover:font-bold rounded-lg ${isActive
+                  ? "bg-black text-white shadow-md"
+                  : "text-slate-900 hover:text-black hover:bg-grey-5"
                   }`}
                 title={category.name}
               >
-                <div className={`flex-shrink-0 transition-all ${isActive
-                  ? "text-slate-900"
-                  : "text-slate-900 group-hover:scale-110"
-                  }`}>
+                <div className="flex-shrink-0 transition-all">
                   <IconComponent className="" size={16} />
                 </div>
                 <div className="hidden small:inline text-xs small:text-sm font-medium">

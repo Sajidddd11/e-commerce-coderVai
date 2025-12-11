@@ -90,10 +90,23 @@ export default function CentralSearch({
       {/* Right Section: All Products Button */}
       <LocalizedClientLink
         href="/store"
-        className="px-3 py-2 hidden small:inline bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition-colors text-xs small:text-sm font-medium border-2 whitespace-nowrap flex-shrink-0"
+        className="px-3 py-2 hidden small:inline-flex items-center gap-2 bg-black text-white rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-colors text-xs small:text-sm font-medium border-2 border-black whitespace-nowrap flex-shrink-0"
         aria-label="View all products"
       >
-        <span className="hidden small:inline">Exclusive Collections</span>
+        <svg
+          className="w-4 h-4 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+          />
+        </svg>
+        <span>Exclusive Collections</span>
       </LocalizedClientLink>
     </div>
   )

@@ -25,13 +25,24 @@ export default function LoadingButton({
 }: LoadingButtonProps) {
   const isDisabled = disabled || isLoading
 
+  // Clean styling for large primary buttons
+  const enhancedLargePrimary = variant === "primary" && size === "large"
+
   return (
     <Button
       {...props}
       variant={variant}
       size={size}
       disabled={isDisabled}
-      className={clx("relative", className)}
+      className={clx(
+        "relative",
+        enhancedLargePrimary && [
+          "w-full",
+          "py-4",
+          "text-base font-semibold",
+        ],
+        className
+      )}
     >
       {isLoading ? (
         <div className="flex items-center justify-center gap-2">
