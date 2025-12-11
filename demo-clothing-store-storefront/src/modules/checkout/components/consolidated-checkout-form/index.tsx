@@ -25,12 +25,14 @@ type ConsolidatedCheckoutFormProps = {
     cart: HttpTypes.StoreCart
     customer: HttpTypes.StoreCustomer | null
     onShippingCostChange?: (cost: number) => void
+    onDistrictChange?: (district: string) => void
 }
 
 export default function ConsolidatedCheckoutForm({
     cart,
     customer,
     onShippingCostChange,
+    onDistrictChange,
 }: ConsolidatedCheckoutFormProps) {
     const [message, formAction] = useActionState(prepareCheckout, null)
     const [shippingMethods, setShippingMethods] = useState<
@@ -88,6 +90,12 @@ export default function ConsolidatedCheckoutForm({
         fetchMethods()
     }, [cart.id, cart.region?.id])
 
+    // Calculate shipping cost based on district
+    const calculateShippingCost = (district: string): number => {
+        const isDhaka = district.toLowerCase() === "dhaka"
+        return isDhaka ? 80 : 130
+    }
+
     // Auto-select shipping method based on delivery type and district
     useEffect(() => {
         if (!shippingMethods || shippingMethods.length === 0) return
@@ -121,6 +129,22 @@ export default function ConsolidatedCheckoutForm({
             handleShippingMethodChange(methodToSelect)
         }
     }, [deliveryType, selectedDistrict, shippingMethods])
+
+    // Update shipping cost when district changes (for home delivery)
+    useEffect(() => {
+        if (deliveryType === "home" && selectedDistrict) {
+            const shippingCost = calculateShippingCost(selectedDistrict)
+            setSelectedShippingCost(shippingCost)
+            onShippingCostChange?.(shippingCost)
+        }
+    }, [selectedDistrict, deliveryType, onShippingCostChange])
+
+    // Notify parent about district change for cart summary update
+    useEffect(() => {
+        if (selectedDistrict) {
+            onDistrictChange?.(selectedDistrict)
+        }
+    }, [selectedDistrict, onDistrictChange])
 
     // Handle shipping method change with optimistic UI update
     const handleShippingMethodChange = (shippingMethodId: string) => {

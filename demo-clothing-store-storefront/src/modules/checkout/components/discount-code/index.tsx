@@ -55,48 +55,48 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
     }
   }
 
+  const hasAppliedCoupons = promotions.length > 0
+
   return (
     <div className="w-full bg-white flex flex-col">
+      <Heading className="txt-medium text-xl mb-2">Coupon Code</Heading>
+
       <div className="txt-medium">
-        <form action={(a) => addPromotionCode(a)} className="w-full mb-5">
-          
-          <Label className="flex gap-x-1 my-2 items-center">
-            <div className="flex w-full gap-x-2">
-              <Input
-                className="size-full"
-                id="promotion-input"
-                name="code"
-                type="text"
-                autoFocus={false}
-                data-testid="discount-input"
+        {!hasAppliedCoupons ? (
+          <form action={(a) => addPromotionCode(a)} className="w-full">
+            <Label className="flex gap-x-1 my-2 items-center">
+              <div className="flex w-full gap-x-2">
+                <Input
+                  className="size-full"
+                  id="promotion-input"
+                  name="code"
+                  type="text"
+                  placeholder="Enter coupon code"
+                  autoFocus={false}
+                  data-testid="discount-input"
+                />
+                <SubmitButton
+                  variant="secondary"
+                  data-testid="discount-apply-button"
+                >
+                  Apply
+                </SubmitButton>
+              </div>
+
+              <ErrorMessage
+                error={errorMessage}
+                data-testid="discount-error-message"
               />
-              <SubmitButton
-                variant="secondary"
-                data-testid="discount-apply-button"
-              >
-                Apply
-              </SubmitButton>
-            </div>
-
-            <ErrorMessage
-              error={errorMessage}
-              data-testid="discount-error-message"
-            />
-          </Label>
-        </form>
-
-        {promotions.length > 0 && (
+            </Label>
+          </form>
+        ) : (
           <div className="w-full flex items-center">
-            <div className="flex flex-col w-full">
-              <Heading className="txt-medium mb-2">
-                Promotion(s) applied:
-              </Heading>
-
+            <div className="flex flex-col w-full gap-y-3">
               {promotions.map((promotion) => {
                 return (
                   <div
                     key={promotion.id}
-                    className="flex items-center justify-between w-full max-w-full mb-2"
+                    className="flex items-center justify-between w-full max-w-full p-3 bg-green-50 rounded-lg border border-green-200"
                     data-testid="discount-row"
                   >
                     <Text className="flex gap-x-1 items-baseline txt-small-plus w-4/5 pr-1">
@@ -124,16 +124,11 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                             </>
                           )}
                         )
-                        {/* {promotion.is_automatic && (
-                          <Tooltip content="This promotion is automatically applied">
-                            <InformationCircleSolid className="inline text-zinc-400" />
-                          </Tooltip>
-                        )} */}
                       </span>
                     </Text>
                     {!promotion.is_automatic && (
                       <button
-                        className="flex items-center"
+                        className="flex items-center hover:text-red-600 transition-colors"
                         onClick={() => {
                           if (!promotion.code) {
                             return

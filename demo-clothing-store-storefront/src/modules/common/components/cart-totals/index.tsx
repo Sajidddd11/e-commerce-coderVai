@@ -12,6 +12,10 @@ type CartTotalsProps = {
     item_subtotal?: number | null
     shipping_subtotal?: number | null
     discount_subtotal?: number | null
+    shipping_address?: {
+      city?: string
+      [key: string]: any
+    }
   }
   shippingOverride?: number // For instant UI update when selecting shipping
 }
@@ -24,6 +28,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, shippingOverride }) => 
     item_subtotal,
     shipping_subtotal,
     discount_subtotal,
+    shipping_address,
   } = totals
 
   // If shippingOverride is provided, use it instead of server shipping_subtotal
@@ -37,6 +42,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, shippingOverride }) => 
     }
     return total ?? 0
   }, [shippingOverride, item_subtotal, displayShipping, discount_subtotal, tax_total, total])
+
+  // Determine delivery days based on city
+  const isDhaka = shipping_address?.city?.toLowerCase().includes('dhaka')
+  const deliveryDays = isDhaka ? '2-3' : '5-7'
 
   return (
     <div>
@@ -89,7 +98,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, shippingOverride }) => 
       </div>
       <div className="h-px w-full border-b border-grey-20 my-4" />
       <div className="font-medium w-full text-sm text-center">
-        You will get delivery<br /><span className="font-semibold text-lg text-green-500">within 5-7 Days</span> after confirmation
+        You will get delivery<br /><span className="font-semibold text-lg text-green-500">within {deliveryDays} Days</span> after confirmation
       </div>
       <div className="h-px w-full border-b border-grey-20 mt-4" />
     </div>
