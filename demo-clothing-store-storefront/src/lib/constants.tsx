@@ -32,11 +32,23 @@ export const paymentInfoMap: Record<
   },
   pp_system_default: {
     title: "Cash on Delivery",
-    icon: <CreditCard />,
+    icon: (
+      <img
+        src="/3796142.png"
+        alt="Cash on Delivery"
+        className="h-8 w-auto object-contain"
+      />
+    ),
   },
   pp_sslcommerz_default: {
     title: "SSLCommerz",
-    icon: <CreditCard />,
+    icon: (
+      <img
+        src="/payment logo.png"
+        alt="SSLCommerz"
+        className="h-8 w-auto object-contain"
+      />
+    ),
   },
   // Add more payment providers here
 }
