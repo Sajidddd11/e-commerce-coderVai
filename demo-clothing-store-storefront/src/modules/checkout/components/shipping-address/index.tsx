@@ -2,7 +2,7 @@ import { HttpTypes } from "@medusajs/types"
 import { Container } from "@medusajs/ui"
 import Input from "@modules/common/components/input"
 import { mapKeys } from "lodash"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 import DistrictSelect from "../district-select"
@@ -35,6 +35,8 @@ const ShippingAddress = ({
   })
 
   const [deliveryType, setDeliveryType] = useState<"home" | "pickup">("home")
+  const isInitialMount = useRef(true)
+  const isSyncingFromCart = useRef(false)  // Track when updating from cart to prevent autosave
 
   const countriesInRegion = useMemo(
     () => cart?.region?.countries?.map((c) => c.iso_2),
@@ -75,6 +77,9 @@ const ShippingAddress = ({
   }
 
   useEffect(() => {
+    // Mark that we're syncing from cart to prevent autosave from triggering
+    isSyncingFromCart.current = true
+
     // Ensure cart is not null and has a shipping_address before setting form data
     if (cart && cart.shipping_address) {
       setFormAddress(cart?.shipping_address, cart?.email)
@@ -83,6 +88,11 @@ const ShippingAddress = ({
     if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
+
+    // Reset after a brief delay to allow state updates to complete
+    setTimeout(() => {
+      isSyncingFromCart.current = false
+    }, 100)
   }, [cart]) // Add cart as a dependency
 
   // Notify parent when delivery type changes
@@ -111,6 +121,17 @@ const ShippingAddress = ({
 
   // Auto-save address to cart with debouncing (1 second after last keystroke)
   useEffect(() => {
+    // Skip autosave on initial mount to prevent infinite render loop
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
+    // Skip autosave when we're syncing data from cart to prevent loop
+    if (isSyncingFromCart.current) {
+      return
+    }
+
     const timer = setTimeout(async () => {
       // Only auto-save if we have essential fields filled
       if (formData["shipping_address.full_name"] &&
