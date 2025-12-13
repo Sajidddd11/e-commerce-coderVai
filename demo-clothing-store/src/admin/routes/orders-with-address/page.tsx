@@ -19,6 +19,88 @@ const OrdersWithAddressPage = () => {
   const [orderStatus, setOrderStatus] = useState('all')
   const [paymentStatus, setPaymentStatus] = useState('all')
 
+  // Column visibility state
+  const STORAGE_KEY = 'orders_visible_columns'
+
+  const columnDefinitions = [
+    { key: 'orderNumber', label: 'Order #' },
+    { key: 'name', label: 'Name' },
+    { key: 'mobile', label: 'Mobile Number' },
+    { key: 'email', label: 'Email' },
+    { key: 'status', label: 'Status' },
+    { key: 'payment', label: 'Payment' },
+    { key: 'address', label: 'Address' },
+    { key: 'paymentMethod', label: 'Payment Method' },
+    { key: 'total', label: 'Total' },
+    { key: 'date', label: 'Date' },
+    { key: 'printStatus', label: 'Print Status' },
+    { key: 'print', label: 'Print' },
+  ]
+
+  // Initialize visible columns from localStorage or default to all visible
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    }
+    // Default: all columns visible
+    return columnDefinitions.reduce((acc, col) => {
+      acc[col.key] = true
+      return acc
+    }, {} as Record<string, boolean>)
+  })
+
+  // Save visible columns to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(visibleColumns))
+    }
+  }, [visibleColumns])
+
+  // Toggle column visibility
+  const toggleColumn = (columnKey: string) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnKey]: !prev[columnKey]
+    }))
+  }
+
+  // Show all columns
+  const showAllColumns = () => {
+    const allVisible = columnDefinitions.reduce((acc, col) => {
+      acc[col.key] = true
+      return acc
+    }, {} as Record<string, boolean>)
+    setVisibleColumns(allVisible)
+  }
+
+  // Hide all columns
+  const hideAllColumns = () => {
+    const allHidden = columnDefinitions.reduce((acc, col) => {
+      acc[col.key] = false
+      return acc
+    }, {} as Record<string, boolean>)
+    setVisibleColumns(allHidden)
+  }
+
+  // Column visibility dropdown state
+  const [showColumnSelector, setShowColumnSelector] = useState(false)
+
+  // Close column selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (showColumnSelector && !target.closest('.column-selector-container')) {
+        setShowColumnSelector(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showColumnSelector])
+
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -608,6 +690,25 @@ const OrdersWithAddressPage = () => {
         document.body.removeChild(iframe)
       }, 1000)
 
+      // Mark order as printed
+      try {
+        await fetch(`/admin/orders/${order.id}/mark-printed`, {
+          method: 'POST',
+          credentials: 'include',
+        })
+
+        // Refresh orders to show updated print status
+        const response = await fetch(
+          `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
+          { credentials: 'include' }
+        )
+        const updatedData = await response.json()
+        setData(updatedData)
+      } catch (error) {
+        console.error("Error marking order as printed:", error)
+        // Don't show error to user - printing was successful
+      }
+
     } catch (error) {
       console.error("Error printing order:", error)
       alert("Failed to print order")
@@ -632,9 +733,58 @@ const OrdersWithAddressPage = () => {
     <Container>
       <div className="flex items-center justify-between mb-6">
         <Heading level="h1">Orders Manager</Heading>
-        <Text size="small" className="text-gray-500">
-          Total: {count}
-        </Text>
+        <div className="flex items-center gap-4">
+          <Text size="small" className="text-gray-500">
+            Total: {count}
+          </Text>
+          {/* Column Visibility Selector */}
+          <div className="relative column-selector-container">
+            <Button
+              size="small"
+              variant="secondary"
+              onClick={() => setShowColumnSelector(!showColumnSelector)}
+            >
+              Columns
+            </Button>
+            {showColumnSelector && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="p-3 border-b border-gray-200">
+                  <Text size="small" weight="plus" className="mb-2">Show/Hide Columns</Text>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={showAllColumns}
+                      className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Show All
+                    </button>
+                    <button
+                      onClick={hideAllColumns}
+                      className="text-xs px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    >
+                      Hide All
+                    </button>
+                  </div>
+                </div>
+                <div className="p-2 max-h-96 overflow-y-auto">
+                  {columnDefinitions.map(column => (
+                    <label
+                      key={column.key}
+                      className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visibleColumns[column.key] || false}
+                        onChange={() => toggleColumn(column.key)}
+                        className="rounded border-gray-300"
+                      />
+                      <Text size="small">{column.label}</Text>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Filter Section */}
@@ -753,23 +903,24 @@ const OrdersWithAddressPage = () => {
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Order #</Table.HeaderCell>
-              <Table.HeaderCell>Name</Table.HeaderCell>
-              <Table.HeaderCell>Mobile Number</Table.HeaderCell>
-              <Table.HeaderCell>Email</Table.HeaderCell>
-              <Table.HeaderCell>Status</Table.HeaderCell>
-              <Table.HeaderCell>Payment</Table.HeaderCell>
-              <Table.HeaderCell>Address</Table.HeaderCell>
-              <Table.HeaderCell>Payment Method</Table.HeaderCell>
-              <Table.HeaderCell>Total</Table.HeaderCell>
-              <Table.HeaderCell>Date</Table.HeaderCell>
-              <Table.HeaderCell>Print</Table.HeaderCell>
+              {visibleColumns.orderNumber && <Table.HeaderCell>Order #</Table.HeaderCell>}
+              {visibleColumns.name && <Table.HeaderCell>Name</Table.HeaderCell>}
+              {visibleColumns.mobile && <Table.HeaderCell>Mobile Number</Table.HeaderCell>}
+              {visibleColumns.email && <Table.HeaderCell>Email</Table.HeaderCell>}
+              {visibleColumns.status && <Table.HeaderCell>Status</Table.HeaderCell>}
+              {visibleColumns.payment && <Table.HeaderCell>Payment</Table.HeaderCell>}
+              {visibleColumns.address && <Table.HeaderCell>Address</Table.HeaderCell>}
+              {visibleColumns.paymentMethod && <Table.HeaderCell>Payment Method</Table.HeaderCell>}
+              {visibleColumns.total && <Table.HeaderCell>Total</Table.HeaderCell>}
+              {visibleColumns.date && <Table.HeaderCell>Date</Table.HeaderCell>}
+              {visibleColumns.printStatus && <Table.HeaderCell>Print Status</Table.HeaderCell>}
+              {visibleColumns.print && <Table.HeaderCell>Print</Table.HeaderCell>}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {isLoading ? (
               <Table.Row>
-                <td colSpan={11} className="text-center py-8">
+                <td colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-8">
                   <Text size="small" className="text-gray-500">
                     Loading...
                   </Text>
@@ -777,7 +928,7 @@ const OrdersWithAddressPage = () => {
               </Table.Row>
             ) : orders.length === 0 ? (
               <Table.Row>
-                <td colSpan={11} className="text-center py-8">
+                <td colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-8">
                   <Text size="small" className="text-gray-500">
                     No orders found
                   </Text>
@@ -806,92 +957,133 @@ const OrdersWithAddressPage = () => {
                     className="cursor-pointer hover:bg-gray-50"
                     onClick={() => navigate(`/orders/${order.id}`)}
                   >
-                    <Table.Cell>
-                      <Text size="small" weight="plus" className="text-blue-600 hover:underline">
-                        #{order.display_id || order.id.slice(0, 8)}
-                      </Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small">{formatName(address)}</Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small">{formatPhone(address)}</Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small">{order.email || order.customer?.email || "N/A"}</Text>
-                    </Table.Cell>
-                    <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Select
-                        size="small"
-                        value={getCurrentStatus(order)}
-                        onValueChange={(value) => handleStatusChange(order.id, value)}
-                        disabled={updatingOrderId === order.id}
-                      >
-                        <Select.Trigger className={`capitalize px-2 py-1 rounded ${getStatusColor(getCurrentStatus(order))}`}>
-                          {getCurrentStatus(order)}
-                        </Select.Trigger>
-                        <Select.Content>
-                          {STATUS_OPTIONS.map(opt => (
-                            <Select.Item key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-sm ${getPaymentStatusSquareColor(order.payment_status || '')}`}></div>
-                        <Text size="small">{formatPaymentStatus(order.payment_status)}</Text>
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small" className="whitespace-normal">
-                        {formatAddress(address)}
-                      </Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small">{formatPaymentMethod(order)}</Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small" weight="plus">
-                        {total > 0 ? (
-                          // Amounts are already in whole units (e.g., 1630 = 1630 BDT)
-                          // Format with proper currency symbol
-                          new Intl.NumberFormat("en-US", {
-                            style: "currency",
-                            currency: currency,
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }).format(total)
+                    {visibleColumns.orderNumber && (
+                      <Table.Cell>
+                        <Text size="small" weight="plus" className="text-blue-600 hover:underline">
+                          #{order.display_id || order.id.slice(0, 8)}
+                        </Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.name && (
+                      <Table.Cell>
+                        <Text size="small">{formatName(address)}</Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.mobile && (
+                      <Table.Cell>
+                        <Text size="small">{formatPhone(address)}</Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.email && (
+                      <Table.Cell>
+                        <Text size="small">{order.email || order.customer?.email || "N/A"}</Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.status && (
+                      <Table.Cell onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          size="small"
+                          value={getCurrentStatus(order)}
+                          onValueChange={(value) => handleStatusChange(order.id, value)}
+                          disabled={updatingOrderId === order.id}
+                        >
+                          <Select.Trigger className={`capitalize px-2 py-1 rounded ${getStatusColor(getCurrentStatus(order))}`}>
+                            {getCurrentStatus(order)}
+                          </Select.Trigger>
+                          <Select.Content>
+                            {STATUS_OPTIONS.map(opt => (
+                              <Select.Item key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.payment && (
+                      <Table.Cell>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-sm ${getPaymentStatusSquareColor(order.payment_status || '')}`}></div>
+                          <Text size="small">{formatPaymentStatus(order.payment_status)}</Text>
+                        </div>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.address && (
+                      <Table.Cell>
+                        <Text size="small" className="whitespace-normal">
+                          {formatAddress(address)}
+                        </Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.paymentMethod && (
+                      <Table.Cell>
+                        <Text size="small">{formatPaymentMethod(order)}</Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.total && (
+                      <Table.Cell>
+                        <Text size="small" weight="plus">
+                          {total > 0 ? (
+                            // Amounts are already in whole units (e.g., 1630 = 1630 BDT)
+                            // Format with proper currency symbol
+                            new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: currency,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }).format(total)
+                          ) : (
+                            <span className="text-gray-400">N/A</span>
+                          )}
+                        </Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.date && (
+                      <Table.Cell>
+                        <Text size="small">
+                          {order.created_at
+                            ? new Date(order.created_at).toLocaleString("en-US", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                            : "N/A"}
+                        </Text>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.printStatus && (
+                      <Table.Cell>
+                        {order.metadata?.printed_at ? (
+                          <div className="flex items-center gap-1">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                              ✓
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(order.metadata.printed_at).toLocaleString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </div>
                         ) : (
-                          <span className="text-gray-400">N/A</span>
+                          <span className="text-xs text-gray-400">—</span>
                         )}
-                      </Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Text size="small">
-                        {order.created_at
-                          ? new Date(order.created_at).toLocaleString("en-US", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })
-                          : "N/A"}
-                      </Text>
-                    </Table.Cell>
-                    <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        size="small"
-                        variant="secondary"
-                        onClick={(e) => handlePrint(order, e)}
-                      >
-                        Print
-                      </Button>
-                    </Table.Cell>
+                      </Table.Cell>
+                    )}
+                    {visibleColumns.print && (
+                      <Table.Cell onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="small"
+                          variant="secondary"
+                          onClick={(e) => handlePrint(order, e)}
+                        >
+                          Print
+                        </Button>
+                      </Table.Cell>
+                    )}
                   </Table.Row>
                 )
               })
