@@ -398,31 +398,48 @@ const OrdersWithAddressPage = () => {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
-    try {
-      setUpdatingOrderId(orderId)
+    setUpdatingOrderId(orderId)
 
-      const response = await fetch(`/admin/orders/${orderId}/custom-status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ customStatus: newStatus })
+    try {
+      // Optimistic update - update local state immediately
+      const updatedOrders = data.orders.map((o: any) => {
+        if (o.id === orderId) {
+          return {
+            ...o,
+            metadata: {
+              ...o.metadata,
+              custom_status: newStatus
+            }
+          }
+        }
+        return o
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to update status')
-      }
+      setData({ ...data, orders: updatedOrders })
 
-      // Refresh orders
-      const result = await fetch(
+      // Then update on backend
+      await fetch(`/admin/orders/${orderId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          metadata: {
+            custom_status: newStatus,
+          },
+        }),
+      })
+    } catch (error) {
+      console.error("Error updating order status:", error)
+      alert("Failed to update order status")
+      // Revert on error - refresh from server
+      const response = await fetch(
         `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
         { credentials: 'include' }
       )
-      const updatedData = await result.json()
-      setData(updatedData)
-    } catch (error) {
-      console.error('Error updating status:', error)
-      alert('Failed to update order status')
+      const freshData = await response.json()
+      setData(freshData)
     } finally {
       setUpdatingOrderId(null)
     }
@@ -710,26 +727,91 @@ const OrdersWithAddressPage = () => {
 
       // Mark order as printed
       try {
+        // Optimistic update - update local state immediately
+        const updatedOrders = data.orders.map((o: any) => {
+          if (o.id === order.id) {
+            return {
+              ...o,
+              metadata: {
+                ...o.metadata,
+                printed_at: new Date().toISOString()
+              }
+            }
+          }
+          return o
+        })
+
+        setData({ ...data, orders: updatedOrders })
+
+        // Then update on backend
         await fetch(`/admin/orders/${order.id}/mark-printed`, {
           method: 'POST',
           credentials: 'include',
         })
-
-        // Refresh orders to show updated print status
-        const response = await fetch(
-          `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
-          { credentials: 'include' }
-        )
-        const updatedData = await response.json()
-        setData(updatedData)
       } catch (error) {
         console.error("Error marking order as printed:", error)
         // Don't show error to user - printing was successful
       }
 
+
     } catch (error) {
       console.error("Error printing order:", error)
       alert("Failed to print order")
+    }
+  }
+
+  // Handle manual print status toggle
+  const handleTogglePrintStatus = async (order: any, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent row click navigation
+
+    try {
+      // Optimistic update - update local state immediately
+      const updatedOrders = data.orders.map((o: any) => {
+        if (o.id === order.id) {
+          return {
+            ...o,
+            metadata: {
+              ...o.metadata,
+              printed_at: o.metadata?.printed_at ? null : new Date().toISOString()
+            }
+          }
+        }
+        return o
+      })
+
+      setData({ ...data, orders: updatedOrders })
+
+      // Then update on backend
+      if (order.metadata?.printed_at) {
+        // Unmark as printed - clear the metadata
+        await fetch(`/admin/orders/${order.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            metadata: {
+              ...order.metadata,
+              printed_at: null
+            }
+          })
+        })
+      } else {
+        // Mark as printed
+        await fetch(`/admin/orders/${order.id}/mark-printed`, {
+          method: 'POST',
+          credentials: 'include',
+        })
+      }
+    } catch (error) {
+      console.error("Error toggling print status:", error)
+      alert("Failed to update print status")
+      // Revert on error - refresh from server
+      const response = await fetch(
+        `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
+        { credentials: 'include' }
+      )
+      const freshData = await response.json()
+      setData(freshData)
     }
   }
 
@@ -1101,7 +1183,11 @@ const OrdersWithAddressPage = () => {
                       </Table.Cell>
                     )}
                     {visibleColumns.printStatus && (
-                      <Table.Cell>
+                      <Table.Cell
+                        onClick={(e) => handleTogglePrintStatus(order, e)}
+                        className="cursor-pointer hover:bg-gray-50"
+                        title="Click to toggle print status"
+                      >
                         {order.metadata?.printed_at ? (
                           <div className="flex items-center gap-1">
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
@@ -1124,7 +1210,7 @@ const OrdersWithAddressPage = () => {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-gray-400 hover:text-gray-600">Click to mark</span>
                         )}
                       </Table.Cell>
                     )}
