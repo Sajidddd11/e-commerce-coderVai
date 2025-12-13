@@ -85,7 +85,33 @@ export default function ConsolidatedCheckoutForm({
                 listCartPaymentMethods(cart.region?.id ?? ""),
             ])
             setShippingMethods(shipping)
-            setPaymentMethods(payment)
+
+            // Inject virtual bKash and Nagad payment methods when SSLCommerz is available
+            if (payment) {
+                const sslCommerzProvider = payment.find(p => p.id === "pp_sslcommerz_default")
+
+                if (sslCommerzProvider) {
+                    // Create virtual payment methods for bKash and Nagad
+                    const enhancedPayment = [
+                        ...payment.filter(p => p.id !== "pp_sslcommerz_default"), // Remove original SSLCommerz
+                        // Add bKash as first MFS option
+                        {
+                            ...sslCommerzProvider,
+                            id: "pp_sslcommerz_default_bkash",
+                        },
+                        // Add Nagad as second MFS option
+                        {
+                            ...sslCommerzProvider,
+                            id: "pp_sslcommerz_default_nagad",
+                        },
+                        // Keep generic SSLCommerz as fallback
+                        sslCommerzProvider,
+                    ]
+                    setPaymentMethods(enhancedPayment)
+                } else {
+                    setPaymentMethods(payment)
+                }
+            }
         }
         fetchMethods()
     }, [cart.id, cart.region?.id])

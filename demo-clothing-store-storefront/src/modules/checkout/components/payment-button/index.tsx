@@ -7,6 +7,7 @@ import { useElements, useStripe } from "@stripe/react-stripe-js"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
 import LoadingButton from "@modules/common/components/loading-button"
+import { Button } from "@medusajs/ui"
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
@@ -185,7 +186,9 @@ const SSLCommerzPaymentButton = ({
         throw new Error("SSLCommerz payment session not found. Please select a payment method.")
       }
 
-      const gatewayUrl = sslSession?.data?.gateway_url
+      const gatewayUrl = sslSession?.data?.gateway_url as string | undefined
+      const selectedGateway = sslSession?.data?.selected_gateway as string | undefined
+      const gatewayList = (sslSession?.data?.gateway_list || []) as any[]
 
       if (!gatewayUrl) {
         throw new Error(
@@ -194,14 +197,35 @@ const SSLCommerzPaymentButton = ({
       }
 
       // Store cart ID in localStorage before redirecting (as backup)
-      // This ensures we can retrieve it even if cookies are cleared
       if (cart?.id) {
         localStorage.setItem("_medusa_cart_id_ssl", cart.id)
         console.log(`[SSLCommerz] Stored cart ID in localStorage: ${cart.id}`)
       }
 
-      // Redirect to SSLCommerz gateway
-      window.location.href = gatewayUrl
+      let redirectUrl = gatewayUrl
+
+      // If a specific gateway was selected (bkash or nagad), try to find its direct URL
+      if (selectedGateway && gatewayList.length > 0) {
+        console.log(`[SSLCommerz] Looking for ${selectedGateway} in gateway list...`)
+        console.log(`[SSLCommerz] Gateway list:`, gatewayList)
+
+        // Find the gateway with matching 'gw' field
+        const gateway = gatewayList.find((gw: any) => gw.gw === selectedGateway)
+
+        if (gateway?.redirectGatewayURL) {
+          redirectUrl = gateway.redirectGatewayURL
+          console.log(`[SSLCommerz] Found direct ${selectedGateway} URL: ${redirectUrl}`)
+        } else {
+          console.log(`[SSLCommerz] No redirectGatewayURL found for ${selectedGateway}, using default gateway page`)
+        }
+      } else {
+        console.log(`[SSLCommerz] No specific gateway selected, using default gateway page`)
+      }
+
+      console.log(`[SSLCommerz] Redirecting to: ${redirectUrl}`)
+
+      // Redirect to the selected gateway
+      window.location.href = redirectUrl
     } catch (err: any) {
       setErrorMessage(err.message)
       setSubmitting(false)

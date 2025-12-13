@@ -45,6 +45,8 @@ type SslCommerzSessionData = {
   provider_response?: Record<string, unknown>
   last_validation?: Record<string, unknown>
   cart_id?: string
+  selected_gateway?: string
+  gateway_list?: any[]
 }
 
 const SUCCESS_STATUSES = new Set(["VALID", "VALIDATED", "AUTHORIZED", "COMPLETED", "PAID"])
@@ -148,16 +150,16 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
     this.logger_.info(`[SSLCommerz] Extracting customer data from context: ${JSON.stringify(context, null, 2)}`)
 
     const customer = context?.customer
-    
+
     // For guest checkouts, billing/shipping address might be directly in context
     const billingAddress = customer?.billing_address || (context as any)?.billing_address
     const shippingAddress = (customer as any)?.shipping_address || (context as any)?.shipping_address
-    
+
     // Use billing address as primary, fallback to shipping
     const address = billingAddress || shippingAddress
 
     // Extract email - check multiple locations for guest vs logged-in
-    const email = 
+    const email =
       customer?.email ||
       (context as any)?.email ||
       billingAddress?.email ||
@@ -180,15 +182,15 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
     }
 
     // Extract name - check both customer and address objects
-    const firstName = 
-      customer?.first_name || 
-      billingAddress?.first_name || 
+    const firstName =
+      customer?.first_name ||
+      billingAddress?.first_name ||
       shippingAddress?.first_name ||
       ""
-    
-    const lastName = 
-      customer?.last_name || 
-      billingAddress?.last_name || 
+
+    const lastName =
+      customer?.last_name ||
+      billingAddress?.last_name ||
       shippingAddress?.last_name ||
       ""
 
@@ -275,7 +277,7 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
     }
 
     // Extract customer data - use cart data if available, otherwise fallback
-    const customerData = cartData 
+    const customerData = cartData
       ? this.extractCustomerDataFromCart(cartData)
       : this.extractCustomerData(context)
 
@@ -309,13 +311,17 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
       )
     }
 
-    // Store cart_id in session data for easy retrieval later
+    // Store cart_id and gateway list in session data for easy retrieval later
     const sessionData: SslCommerzSessionData = {
       tran_id: sessionId,
       gateway_url: response.GatewayPageURL,
       payload,
       provider_response: response,
       cart_id: cartId ?? undefined,
+      // Store the selected gateway preference for later use
+      selected_gateway: (data as any)?.selected_gateway,
+      // Store the gateway list (desc array) which contains redirectGatewayURL for each gateway
+      gateway_list: response.desc || [],
     }
 
     // Cache session data in Redis for 1 hour (3600 seconds)

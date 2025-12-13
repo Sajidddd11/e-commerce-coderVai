@@ -99,9 +99,26 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
         const cartResponse = await sdk.store.cart.retrieve(cartId, {}, headers)
         const cart = cartResponse.cart
 
+        // Map virtual payment provider IDs to real provider ID
+        // bKash and Nagad are virtual - they use the same SSLCommerz provider
+        let actualProviderId = paymentProviderId
+        let selectedGateway = null
+
+        if (paymentProviderId === "pp_sslcommerz_default_bkash") {
+            actualProviderId = "pp_sslcommerz_default"
+            selectedGateway = "bkash"
+        } else if (paymentProviderId === "pp_sslcommerz_default_nagad") {
+            actualProviderId = "pp_sslcommerz_default"
+            selectedGateway = "nagad"
+        }
+
+        // Store gateway preference for payment button to use
+        // Note: This runs on server, so we'll pass it via redirect URL
+        // The payment button will read it from the payment session provider_id we'll store
+
         // Step 4: Initiate payment session with cart data for SSLCommerz
         const enrichedData = {
-            provider_id: paymentProviderId,
+            provider_id: actualProviderId, // Use the real provider ID
             data: {
                 cart: {
                     id: cart.id,
@@ -109,6 +126,8 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
                     billing_address: cart.billing_address,
                     shipping_address: cart.shipping_address,
                 },
+                // Store the selected gateway in the session data
+                selected_gateway: selectedGateway,
             },
         }
 

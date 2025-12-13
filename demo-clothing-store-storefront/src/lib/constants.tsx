@@ -50,6 +50,26 @@ export const paymentInfoMap: Record<
       />
     ),
   },
+  pp_sslcommerz_default_bkash: {
+    title: "bKash",
+    icon: (
+      <img
+        src="/bkash-logo-mobile-banking-app-icon-transparent-background-free-png.webp"
+        alt="bKash"
+        className="h-8 w-auto object-contain"
+      />
+    ),
+  },
+  pp_sslcommerz_default_nagad: {
+    title: "Nagad",
+    icon: (
+      <img
+        src="/nagan-logo-mobile-banking-app-icon-transparent-background-free-png.png"
+        alt="Nagad"
+        className="h-8 w-auto object-contain"
+      />
+    ),
+  },
   // Add more payment providers here
 }
 
