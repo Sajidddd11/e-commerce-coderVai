@@ -2,6 +2,8 @@ import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Text, Table, Select, Input, Button } from "@medusajs/ui"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import codImage from "../../assets/cod.png"
+import sslImage from "../../assets/ssl.png"
 
 const OrdersWithAddressPage = () => {
   const navigate = useNavigate()
@@ -1145,7 +1147,17 @@ const OrdersWithAddressPage = () => {
                     )}
                     {visibleColumns.paymentMethod && (
                       <Table.Cell>
-                        <Text size="small">{formatPaymentMethod(order)}</Text>
+                        {(() => {
+                          const providerId = order.payment_provider?.toLowerCase() || ''
+
+                          if (providerId.includes("sslcommerz")) {
+                            return <img src={sslImage} alt="SSLCommerz" style={{ height: '30px', width: '80px', objectFit: 'contain' }} />
+                          } else if (providerId.includes("manual") || providerId.includes("cod") || providerId.includes("system")) {
+                            return <img src={codImage} alt="COD" style={{ height: '30px', width: 'auto' }} />
+                          } else {
+                            return <Text size="small">{formatPaymentMethod(order)}</Text>
+                          }
+                        })()}
                       </Table.Cell>
                     )}
                     {visibleColumns.total && (
