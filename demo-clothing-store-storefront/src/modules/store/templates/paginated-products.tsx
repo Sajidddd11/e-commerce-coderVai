@@ -51,7 +51,7 @@ export default async function PaginatedProducts({
     queryParams["q"] = search
   }
 
-  if (sortBy === "created_at") {
+  if (sortBy === "created_at" || sortBy === "popularity") {
     queryParams["order"] = "created_at"
   }
 

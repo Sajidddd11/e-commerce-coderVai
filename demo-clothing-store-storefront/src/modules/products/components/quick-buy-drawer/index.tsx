@@ -45,7 +45,7 @@ export default function QuickBuyDrawer({
         <>
             {/* Drawer */}
             <div
-                className={`absolute bottom-0 left-0 right-0 bg-white z-10 border-t-2 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hidden medium:block ${isOpen ? "translate-y-0" : "translate-y-full"
+                className={`absolute bottom-0 left-0 right-0 bg-white z-10 border-t-2 border-gray-200 shadow-[0_-8px_30px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hidden medium:block ${isOpen ? "translate-y-0" : "translate-y-full"
                     }`}
             >
                 {/* Header */}
