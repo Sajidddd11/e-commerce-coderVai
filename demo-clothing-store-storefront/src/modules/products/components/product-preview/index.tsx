@@ -9,7 +9,7 @@ import OptionSelect from "../product-actions/option-select"
 import ColorSwatchSelector from "../color-swatch-selector"
 import DotSpinner from "@modules/common/components/dot-spinner"
 import QuickBuyDrawer from "../quick-buy-drawer"
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import { isEqual } from "lodash"
 import { useParams, useRouter } from "next/navigation"
 
@@ -45,10 +45,19 @@ export default function ProductPreview({
   const [isAdding, setIsAdding] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const isNew = product.created_at &&
     new Date(product.created_at).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
+
+  // Detect desktop screen size client-side
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024)
+    checkDesktop()
+    window.addEventListener('resize', checkDesktop)
+    return () => window.removeEventListener('resize', checkDesktop)
+  }, [])
 
   const inStock = product.variants?.some(
     (v) => !v.manage_inventory || (v.inventory_quantity || 0) > 0
@@ -327,12 +336,12 @@ export default function ProductPreview({
         )}
 
         {/* Title */}
-        <h3 className="text-sm font-bold text-slate-900 line-clamp-2 mb-2">
+        <h3 className="text-base small:text-sm font-bold text-slate-900 line-clamp-2 mb-1 small:mb-2">
           {product.title}
         </h3>
 
         {/* Pricing Section */}
-        <div className="space-y-1 mb-3 pt-2">
+        <div className="space-y-1 mb-2 small:mb-3 pt-1 small:pt-2">
           {/* Current Price (highlighted) */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-600">Price:</span>
@@ -347,7 +356,7 @@ export default function ProductPreview({
         {/* Variant Options - Only show on mobile, hidden on desktop (shown in drawer instead) */}
         {hasVariants && (
           <div
-            className="medium:hidden pt-1 space-y-1 border-slate-200 mb-3"
+            className="medium:hidden pt-1 space-y-1 border-slate-200 mb-2"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Color Swatches */}
@@ -385,10 +394,10 @@ export default function ProductPreview({
         <div className="">
           <button
             onClick={handleButtonClick}
-            disabled={typeof window !== 'undefined' && window.innerWidth >= 1024 && hasVariants ? false : (!canAddToCart || isAdding)}
-            className={`w-full py-2 px-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${(typeof window !== 'undefined' && window.innerWidth >= 1024 && hasVariants) || (canAddToCart && !isAdding)
-              ? "bg-slate-900 text-white hover:bg-slate-800"
-              : "bg-slate-200 text-slate-500 cursor-not-allowed"
+            disabled={isDesktop && hasVariants ? false : (!canAddToCart || isAdding)}
+            className={`w-full py-2 px-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${(isDesktop && hasVariants) || (canAddToCart && !isAdding)
+                ? "bg-slate-900 text-white hover:bg-slate-800"
+                : "bg-slate-200 text-slate-500 cursor-not-allowed"
               }`}
           >
             {isAdding ? (
