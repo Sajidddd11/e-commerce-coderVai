@@ -57,16 +57,14 @@ const ColorSwatchSelector: React.FC<ColorSwatchSelectorProps> = ({
               key={`${option.id}_${option.value}`}
               onClick={() => onColorSelect(option.id, option.value)}
               disabled={disabled}
-              className={`relative group flex flex-col items-center ${
-                disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-              }`}
+              className={`relative group flex flex-col items-center ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
               title={option.label || option.value}
             >
               {/* Color Swatch */}
               <div
-                className={`w-8 h-8 xsmall:w-10 xsmall:h-10 rounded-full border-2 transition-all ${
-                  isSelected ? "border-slate-900 ring-2 ring-slate-400" : "border-slate-300"
-                }`}
+                className={`w-6 h-6 rounded-full border-2 transition-all ${isSelected ? "border-slate-900 ring-2 ring-slate-400" : "border-slate-300"
+                  }`}
                 style={{ backgroundColor: hexColor }}
               />
 

@@ -1,13 +1,14 @@
 "use client"
 
 import { getProductPrice } from "@lib/util/get-product-price"
-import { addToCart } from "@lib/data/cart"
+import { addToCart, clearCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
 import OptionSelect from "../product-actions/option-select"
 import ColorSwatchSelector from "../color-swatch-selector"
 import DotSpinner from "@modules/common/components/dot-spinner"
+import QuickBuyDrawer from "../quick-buy-drawer"
 import { useState, useMemo, useRef } from "react"
 import { isEqual } from "lodash"
 import { useParams, useRouter } from "next/navigation"
@@ -43,6 +44,7 @@ export default function ProductPreview({
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const isNew = product.created_at &&
@@ -50,7 +52,7 @@ export default function ProductPreview({
 
   const inStock = product.variants?.some(
     (v) => !v.manage_inventory || (v.inventory_quantity || 0) > 0
-  )
+  ) ?? true
 
   // Calculate pricing using the formatted strings from getProductPrice
   const basePrice =
@@ -160,9 +162,11 @@ export default function ProductPreview({
       }, [])
     : []
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleAddToCart = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
 
     const variantToAdd = selectedVariant || product.variants?.[0]
     if (!variantToAdd?.id) return
@@ -177,6 +181,48 @@ export default function ProductPreview({
       })
     } finally {
       setIsAdding(false)
+    }
+  }
+
+  // Buy now: clear cart, add this product only, and navigate to checkout
+  const handleBuyNow = async () => {
+    const variantToAdd = selectedVariant || product.variants?.[0]
+    if (!variantToAdd?.id) return
+
+    setIsAdding(true)
+
+    try {
+      // Clear existing cart items first (Buy Now is for this item only)
+      await clearCart()
+
+      await addToCart({
+        variantId: variantToAdd.id,
+        quantity: 1,
+        countryCode,
+      })
+
+      // Navigate to checkout page
+      router.push(`/${countryCode}/checkout?step=address`)
+    } finally {
+      setIsAdding(false)
+      setIsDrawerOpen(false)
+    }
+  }
+
+  // Handle button click - open drawer for products with variants on desktop
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Check if we're on desktop (medium breakpoint = 1024px)
+    const isDesktop = window.innerWidth >= 1024
+
+    // If product has variants AND we're on desktop, open drawer
+    if (hasVariants && isDesktop) {
+      setIsDrawerOpen(true)
+    } else {
+      // Mobile or no variants - directly add to cart
+      handleAddToCart(e)
     }
   }
 
@@ -211,7 +257,7 @@ export default function ProductPreview({
   return (
     <div
       ref={cardRef}
-      className={`group relative flex flex-col h-fit w-full bg-white shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer ${isNavigating ? 'opacity-75' : ''
+      className={`group relative flex flex-col h-fit w-full bg-white shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer ${isNavigating ? 'opacity-75' : ''
         }`}
       onClick={handleCardClick}
       data-clickable="true"
@@ -262,10 +308,10 @@ export default function ProductPreview({
       )}
 
       {/* Content Container */}
-      <div className="flex flex-col flex-1 p-2 small:p-3 medium:p-4">
+      <div className="flex flex-col flex-1 p-2 small:p-3 medium:p-4 bg-gray-100">
         {/* Product Type */}
         {product.type && (
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
             {product.type.value || "Product"}
           </p>
         )}
@@ -276,7 +322,7 @@ export default function ProductPreview({
         </h3>
 
         {/* Pricing Section */}
-        <div className="space-y-1 mb-3 border-t border-slate-200 pt-2">
+        <div className="space-y-1 mb-3 pt-2">
           {/* Current Price (highlighted) */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-600">Price:</span>
@@ -307,35 +353,10 @@ export default function ProductPreview({
           )}
         </div>
 
-        {/* Add to Cart Button - Always at bottom */}
-        <div className="">
-          <button
-            onClick={handleAddToCart}
-            disabled={!canAddToCart || isAdding}
-            className={`w-full py-2 px-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${canAddToCart && !isAdding
-              ? "bg-slate-900 text-white hover:bg-slate-800"
-              : "bg-slate-200 text-slate-500 cursor-not-allowed"
-              }`}
-          >
-            {isAdding ? (
-              <>
-                <DotSpinner size="sm" color="#ffffff" />
-                <span>Adding</span>
-              </>
-            ) : hasVariants && !selectedVariant ? (
-              "Select Options"
-            ) : !inStock || (selectedVariant && !isSelectedVariantInStock) ? (
-              "Out of Stock"
-            ) : (
-              "Add to Cart"
-            )}
-          </button>
-        </div>
-
-        {/* Variant Options - Only show if product has multiple variants */}
+        {/* Variant Options - Only show on mobile, hidden on desktop (shown in drawer instead) */}
         {hasVariants && (
           <div
-            className="pt-1 space-y-1 border-slate-200"
+            className="medium:hidden pt-1 space-y-1 border-slate-200 mb-3"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Color Swatches */}
@@ -369,8 +390,51 @@ export default function ProductPreview({
           </div>
         )}
 
+        {/* Add to Cart Button */}
+        <div className="">
+          <button
+            onClick={handleButtonClick}
+            disabled={typeof window !== 'undefined' && window.innerWidth >= 1024 && hasVariants ? false : (!canAddToCart || isAdding)}
+            className={`w-full py-2 px-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${(typeof window !== 'undefined' && window.innerWidth >= 1024 && hasVariants) || (canAddToCart && !isAdding)
+                ? "bg-slate-900 text-white hover:bg-slate-800"
+                : "bg-slate-200 text-slate-500 cursor-not-allowed"
+              }`}
+          >
+            {isAdding ? (
+              <>
+                <DotSpinner size="sm" color="#ffffff" />
+                <span>Adding</span>
+              </>
+            ) : !inStock ? (
+              "Out of Stock"
+            ) : (
+              "Add to Cart"
+            )}
+          </button>
+        </div>
+
 
       </div>
+
+      {/* Quick Buy Drawer - Desktop Only */}
+      <QuickBuyDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        product={product}
+        colorOption={colorOption}
+        colorValues={colorValues || []}
+        options={options}
+        selectedVariant={selectedVariant}
+        isValidVariant={!!isValidVariant}
+        inStock={inStock}
+        isAdding={isAdding}
+        onOptionSelect={setOptionValue}
+        onAddToCart={async () => {
+          await handleAddToCart()
+          setIsDrawerOpen(false)
+        }}
+        onBuyNow={handleBuyNow}
+      />
     </div>
   )
 }
