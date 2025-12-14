@@ -33,7 +33,7 @@ export default async function FeaturedProductsShowcase({
   )
 
   return (
-    <div className="w-full bg-white py-12 small:py-16 medium:py-24">
+    <div className="w-full bg-white py-8 small:py-10 medium:py-12 pb-4 small:pb-6 medium:pb-8">
       <div className="content-container">
         <div className="flex flex-col gap-8 small:gap-12 medium:gap-16">
           {collectionWithProducts.map((collection, index) => (
