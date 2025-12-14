@@ -26,7 +26,7 @@ export default async function Nav() {
               <MobileMenu regions={regions} categories={categories} />
               <LocalizedClientLink
                 href="/"
-                className="flex ml-12 items-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="flex small:ml-12 items-center hover:opacity-90 transition-opacity whitespace-nowrap"
                 data-testid="nav-store-link"
               >
                 <img
