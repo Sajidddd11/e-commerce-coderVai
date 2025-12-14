@@ -295,17 +295,27 @@ export default function ProductPreview({
             </div>
           </div>
         )}
+
+        {/* Base Price Badge - bottom right, show only when there is a discount */}
+        {hasDiscount && (
+          <div className="absolute bottom-1 right-0 px-2 py-[2px] bg-slate-900 flex items-center justify-center shadow-lg z-20">
+            <span className="text-white font-semibold text-xs line-through">
+              {formattedBasePrice}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Discount Badge - show only when there is a real discount */}
       {hasDiscount && (
-        <div className="absolute top-1 right-1 px-3 py-[1px] bg-red-500 flex items-center justify-center shadow-2xl  z-20">
+        <div className="absolute top-1 left-1 px-3 py-[1px] bg-red-500 flex items-center justify-center shadow-2xl  z-20">
           <span className="text-white font-bold text-md text-center">
             {discountPercentage}%
             <span className="text-xs"> off</span>
           </span>
         </div>
       )}
+
 
       {/* Content Container */}
       <div className="flex flex-col flex-1 p-2 small:p-3 medium:p-4 bg-gray-100">
@@ -331,26 +341,7 @@ export default function ProductPreview({
             </span>
           </div>
 
-          {/* Show base price and discount only when there is a real discount */}
-          {hasDiscount && (
-            <>
-              {/* Base Price (strikethrough) */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600">Base Price:</span>
-                <span className="text-xs font-semibold text-slate-400 line-through">
-                  {formattedBasePrice}
-                </span>
-              </div>
 
-              {/* Discount Percentage */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600">Discount:</span>
-                <span className="text-xs font-semibold text-red-600">
-                  {discountPercentage}%
-                </span>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Variant Options - Only show on mobile, hidden on desktop (shown in drawer instead) */}
@@ -396,8 +387,8 @@ export default function ProductPreview({
             onClick={handleButtonClick}
             disabled={typeof window !== 'undefined' && window.innerWidth >= 1024 && hasVariants ? false : (!canAddToCart || isAdding)}
             className={`w-full py-2 px-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${(typeof window !== 'undefined' && window.innerWidth >= 1024 && hasVariants) || (canAddToCart && !isAdding)
-                ? "bg-slate-900 text-white hover:bg-slate-800"
-                : "bg-slate-200 text-slate-500 cursor-not-allowed"
+              ? "bg-slate-900 text-white hover:bg-slate-800"
+              : "bg-slate-200 text-slate-500 cursor-not-allowed"
               }`}
           >
             {isAdding ? (
