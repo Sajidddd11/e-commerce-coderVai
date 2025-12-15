@@ -26,10 +26,16 @@ export default function CheckoutLayout({
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/"
-            className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+            className="flex items-center hover:opacity-90 transition-opacity"
             data-testid="store-link"
           >
-            ZAHAN
+            <img
+              src="/Zahan Fashion simplified.svg"
+              alt="ZAHAN logo"
+              width={140}
+              height={32}
+              className="h-auto w-20 small:w-28"
+            />
           </LocalizedClientLink>
           <div className="flex-1 basis-0" />
         </nav>
