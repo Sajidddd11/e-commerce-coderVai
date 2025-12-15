@@ -1,5 +1,7 @@
+import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import { Button, Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Image from "next/image"
 
 const SignInPrompt = () => {
   return (
@@ -12,12 +14,24 @@ const SignInPrompt = () => {
           Sign in for a better experience.
         </Text>
       </div>
-      <div>
-        <LocalizedClientLink href="/account">
-          <Button className="h-10 bg-black text-white hover:bg-gray-800 transition-colors" data-testid="sign-in-button">
-            Sign in
-          </Button>
-        </LocalizedClientLink>
+      <div><LocalizedClientLink href="/account" className="flex items-center gap-2">
+        <video
+          src="/icon.webm"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-10 w-10"
+        />
+
+        <Button
+          className="h-10 bg-black text-white hover:bg-gray-800 transition-colors"
+          data-testid="sign-in-button"
+        >
+          Sign in
+        </Button>
+      </LocalizedClientLink>
+
       </div>
     </div>
   )

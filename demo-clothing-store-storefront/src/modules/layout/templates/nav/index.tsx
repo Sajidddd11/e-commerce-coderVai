@@ -40,7 +40,7 @@ export default async function Nav() {
             </div>
 
             {/* Center: Search Bar - Hidden on very small screens, 50% width on tablet+ */}
-            <div className="hidden xsmall:flex small:w-1/2 medium:w-1/2 lg:w-1/2">
+            <div className="hidden xsmall:flex small:w-1/2 medium:w-1/2">
               <CentralSearch initialCategories={categories} />
             </div>
 

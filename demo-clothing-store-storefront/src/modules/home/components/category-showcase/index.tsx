@@ -181,12 +181,12 @@ async function CategoryProductSection({
       </h3>
 
       {/* Main Section */}
-      <div className="w-full small:grid small:grid-cols-6 gap-4 small:gap-6">
+      <div className="w-full grid grid-cols-2 xsmall:grid-cols-4 xsmall:grid-rows-3 small:grid-rows-2 small:grid-cols-6 gap-4 small:gap-6">
         {/* Left: Category Card - Hidden on mobile, visible on small and above */}
-        <div className="col-span-2">
+        <div className="col-span-2 xsmall:row-span-2">
           <LocalizedClientLink
             href={`/categories/${category.handle}`}
-            className="w-full h-full flex-shrink-0 relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group hidden small:block"
+            className="w-full h-full flex-shrink-0 relative overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group block"
             style={{
               aspectRatio: "1 / 1",
             }}
@@ -214,9 +214,7 @@ async function CategoryProductSection({
 
 
         {/* Right: Product Grid - Responsive columns and product count based on device */}
-        <div className="col-span-4 ">
-          <ResponsiveProductGrid products={products} categoryHandle={category.handle} />
-        </div>
+        <ResponsiveProductGrid products={products} categoryHandle={category.handle} />
       </div>
     </div>
   )
