@@ -22,8 +22,8 @@ export function SubmitButton({
     <>
       {pending && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
-          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+          <div className="fixed top-0 left-0 right-0 bottom-0 z-40 bg-black/10 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }} />
+          <div className="fixed top-0 left-0 right-0 bottom-0 z-40 flex items-center justify-center pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
             <LoadingLogo size="md" />
           </div>
         </>

@@ -70,11 +70,12 @@ const LoadingLogo: React.FC<LoadingLogoProps> = ({ size = "md" }) => {
                     <g mask="url(#logoMask)">
                         <rect
                             className="reflection-line"
-                            x="-100"
-                            y="-100"
+                            x="157.5"
+                            y="-300"
                             width="60"
-                            height="600"
+                            height="975"
                             fill="url(#bladeGradient)"
+                            transform-origin="187.5 187.5"
                         />
                     </g>
                 </svg>

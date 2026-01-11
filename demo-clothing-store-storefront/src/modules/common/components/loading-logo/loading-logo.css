@@ -5,6 +5,9 @@
     justify-content: center;
     width: 100%;
     height: 100%;
+    /* Prevent layout shift on mobile */
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 .loading-logo {
@@ -12,6 +15,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Hardware acceleration for smooth rendering */
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 /* SVG Styling */
