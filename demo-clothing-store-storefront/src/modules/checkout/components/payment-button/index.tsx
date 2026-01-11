@@ -7,6 +7,7 @@ import { useElements, useStripe } from "@stripe/react-stripe-js"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
 import LoadingButton from "@modules/common/components/loading-button"
+import LoadingLogo from "@modules/common/components/loading-logo"
 import { Button } from "@medusajs/ui"
 
 type PaymentButtonProps = {
@@ -143,11 +144,19 @@ const StripePaymentButton = ({
 
   return (
     <>
+      {submitting && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <LoadingLogo size="md" />
+          </div>
+        </>
+      )}
       <LoadingButton
         disabled={disabled || notReady}
         onClick={handlePayment}
         size="large"
-        isLoading={submitting}
+        isLoading={false}
         data-testid={dataTestId}
       >
         Place order
@@ -234,9 +243,17 @@ const SSLCommerzPaymentButton = ({
 
   return (
     <>
+      {submitting && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <LoadingLogo size="md" />
+          </div>
+        </>
+      )}
       <LoadingButton
         disabled={notReady}
-        isLoading={submitting}
+        isLoading={false}
         onClick={handlePayment}
         size="large"
         data-testid={dataTestId}
@@ -273,9 +290,17 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 
   return (
     <>
+      {submitting && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <LoadingLogo size="md" />
+          </div>
+        </>
+      )}
       <LoadingButton
         disabled={notReady}
-        isLoading={submitting}
+        isLoading={false}
         onClick={handlePayment}
         size="large"
         data-testid="submit-order-button"
