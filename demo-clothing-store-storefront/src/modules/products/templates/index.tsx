@@ -89,7 +89,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       <div className="w-full min-h-screen bg-white">
         <div className="content-container py-2 small:py-2 medium:py-3">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-2 small:mb-3 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2">
+          <nav className="mb-2 small:mb-3 flex items-center gap-2 text-xs small:text-sm text-slate-600 overflow-x-auto pb-2 font-['Ubuntu']">
             <a href="/" className="hover:text-slate-900 transition-colors whitespace-nowrap">
               Home
             </a>

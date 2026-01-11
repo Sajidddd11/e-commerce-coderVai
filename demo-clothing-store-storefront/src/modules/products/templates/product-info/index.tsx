@@ -53,7 +53,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   })()
 
   return (
-    <div id="product-info" className="flex flex-col gap-4">
+    <div id="product-info" className="flex flex-col gap-4 font-['Ubuntu']">
       {/* Collection Link */}
       {product.collection && (
         <LocalizedClientLink
@@ -66,7 +66,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
 
       {/* Product Title */}
       <div>
-        <h1 className="text-2xl small:text-3xl font-bold text-slate-900 leading-tight mb-1">
+        <h1 className="text-3xl small:text-4xl font-bold text-slate-900 leading-tight mb-1">
           {product.title}
         </h1>
       </div>
@@ -76,7 +76,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
           {/* "Starting from" segment - only when variants have different prices */}
           {hasPriceDifference && (
             <div className="flex items-baseline gap-3">
-              <span className="text-sm text-slate-600">Starting from</span>
+              <span className="text-base font-medium text-slate-700">Starting from</span>
 
               {/* Main price (current price) - Blue color */}
               <span className="text-2xl small:text-3xl font-bold text-blue-600">
@@ -101,7 +101,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
 
           {/* Product Category */}
           {product.type && (
-            <p className="text-sm text-slate-600">{product.type.value}</p>
+            <p className="text-base font-medium text-slate-800">{product.type.value}</p>
           )}
         </div>
       )}
@@ -113,7 +113,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
             {features.slice(0, 4).map((feature, index) => (
               <li
                 key={index}
-                className="flex items-start gap-2 text-xs text-slate-700"
+                className="flex items-start gap-2 text-sm font-medium text-slate-800"
               >
                 <span className="text-orange-500 font-bold flex-shrink-0">✓</span>
                 <span>{feature}</span>
@@ -125,8 +125,8 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
 
       {/* Dimensions and Details - Compact */}
       {(product.weight || product.length || product.width || product.height || product.material) && (
-        <div className="border-t border-slate-100 pt-3 space-y-1 text-xs">
-          <div className="grid grid-cols-2 gap-2 text-slate-600">
+        <div className="border-t border-slate-100 pt-3 space-y-1 text-sm">
+          <div className="grid grid-cols-2 gap-2 text-slate-800">
             {product.weight && (
               <div>
                 <span className="font-semibold">Weight:</span> {product.weight}g
