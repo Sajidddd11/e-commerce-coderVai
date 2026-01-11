@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { usePathname } from "next/navigation"
-import DotSpinner from "@modules/common/components/dot-spinner"
+import LoadingLogo from "@modules/common/components/loading-logo"
 
 export default function PageTransitionLoader() {
   const [isVisible, setIsVisible] = useState(false)
@@ -133,23 +133,14 @@ export default function PageTransitionLoader() {
 
       {/* Page Overlay - More visible */}
       <div
-        className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-opacity duration-300 pointer-events-none ${
-          isVisible ? "opacity-100" : "opacity-0"
-        }`}
+        className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-opacity duration-300 pointer-events-none ${isVisible ? "opacity-100" : "opacity-0"
+          }`}
       />
 
       {/* Center Loader - Show immediately */}
       {isVisible && (
         <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
-          <div className="flex flex-col items-center gap-4">
-            {/* Dot Spinner */}
-            <DotSpinner size="lg" color="#262626" />
-
-            {/* Loading Text */}
-            <p className="text-sm font-medium text-grey-80">
-              Loading...
-            </p>
-          </div>
+          <LoadingLogo size="md" />
         </div>
       )}
     </>
