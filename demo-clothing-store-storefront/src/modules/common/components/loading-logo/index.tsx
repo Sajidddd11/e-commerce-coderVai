@@ -7,14 +7,14 @@ interface LoadingLogoProps {
 
 const LoadingLogo: React.FC<LoadingLogoProps> = ({ size = "md" }) => {
     const sizeClasses = {
-        sm: "w-16 h-16",
-        md: "w-24 h-24",
-        lg: "w-32 h-32",
+        sm: "w-12 h-12 md:w-16 md:h-16",
+        md: "w-16 h-16 md:w-24 md:h-24",
+        lg: "w-20 h-20 md:w-32 md:h-32",
     }
 
     return (
-        <div className="loading-logo-container">
-            <div className={`loading-logo ${sizeClasses[size]}`}>
+        <div className="loading-logo-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+            <div className={`loading-logo ${sizeClasses[size]}`} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg
                     id="Layer_1"
                     xmlns="http://www.w3.org/2000/svg"
@@ -34,16 +34,15 @@ const LoadingLogo: React.FC<LoadingLogoProps> = ({ size = "md" }) => {
                             </g>
                         </mask>
 
-                        {/* Gradient for bright blade flare - wider and more feathered */}
-                        <linearGradient id="bladeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
-                            <stop offset="10%" stopColor="rgba(255, 255, 255, 0.2)" />
-                            <stop offset="30%" stopColor="rgba(255, 255, 255, 0.6)" />
-                            <stop offset="50%" stopColor="rgba(255, 255, 255, 1)" />
-                            <stop offset="70%" stopColor="rgba(255, 255, 255, 0.6)" />
-                            <stop offset="90%" stopColor="rgba(255, 255, 255, 0.2)" />
+                        {/* Radial gradient for ultra-soft oval flare */}
+                        <radialGradient id="bladeGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" stopColor="rgba(255, 255, 255, 0.85)" />
+                            <stop offset="20%" stopColor="rgba(255, 255, 255, 0.6)" />
+                            <stop offset="40%" stopColor="rgba(255, 255, 255, 0.35)" />
+                            <stop offset="60%" stopColor="rgba(255, 255, 255, 0.15)" />
+                            <stop offset="80%" stopColor="rgba(255, 255, 255, 0.05)" />
                             <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
-                        </linearGradient>
+                        </radialGradient>
                     </defs>
 
                     {/* Base black logo */}
@@ -66,16 +65,16 @@ const LoadingLogo: React.FC<LoadingLogoProps> = ({ size = "md" }) => {
                         />
                     </g>
 
-                    {/* Single reflection line - masked to only show inside logo */}
+                    {/* Soft oval flare - masked to logo */}
                     <g mask="url(#logoMask)">
-                        <rect
+                        <ellipse
                             className="reflection-line"
-                            x="157.5"
-                            y="-300"
-                            width="60"
-                            height="975"
+                            cx="187.5"
+                            cy="187.5"
+                            rx="80"
+                            ry="600"
                             fill="url(#bladeGradient)"
-                            transform-origin="187.5 187.5"
+                            style={{ transformOrigin: '187.5px 187.5px' }}
                         />
                     </g>
                 </svg>

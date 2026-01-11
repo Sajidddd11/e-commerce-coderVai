@@ -21,12 +21,26 @@ export default function PageTransitionLoader() {
       setIsVisible(true)
       setProgress(0)
 
+      // Lock body scroll and reset scroll position for mobile
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = `-${window.scrollY}px`
+
       // Safety timeout: force hide loader after 5 seconds if no route change occurs
       if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
       loaderTimeoutRef.current = setTimeout(() => {
         isLoadingRef.current = false
         setIsVisible(false)
         setProgress(0)
+
+        // Unlock body scroll
+        const scrollY = document.body.style.top
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.top = ''
+        window.scrollTo(0, parseInt(scrollY || '0') * -1)
       }, 5000)
     }
   }
@@ -115,6 +129,16 @@ export default function PageTransitionLoader() {
         isLoadingRef.current = false
         setIsVisible(false)
         setProgress(0)
+
+        // Unlock body scroll and restore position
+        const scrollY = document.body.style.top
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.top = ''
+        if (scrollY) {
+          window.scrollTo(0, parseInt(scrollY || '0') * -1)
+        }
       }, 400)
     }
   }, [pathname])
@@ -133,13 +157,13 @@ export default function PageTransitionLoader() {
 
       {/* Page Overlay - More visible */}
       <div
-        className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-opacity duration-300 pointer-events-none ${isVisible ? "opacity-100" : "opacity-0"
-          }`}
+        className="fixed top-0 left-0 right-0 bottom-0 z-40 bg-black/10 backdrop-blur-sm transition-opacity duration-300 pointer-events-none"
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, opacity: isVisible ? 1 : 0 }}
       />
 
       {/* Center Loader - Show immediately */}
       {isVisible && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
+        <div className="fixed top-0 left-0 right-0 bottom-0 z-40 flex items-center justify-center pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
           <LoadingLogo size="md" />
         </div>
       )}
