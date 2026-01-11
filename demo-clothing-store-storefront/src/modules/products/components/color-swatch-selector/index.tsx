@@ -69,7 +69,7 @@ const ColorSwatchSelector: React.FC<ColorSwatchSelectorProps> = ({
               />
 
               {/* Color Name Tooltip */}
-              <span className="text-xs text-slate-700 mt-2 font-medium">
+              <span className="text-xs text-slate-700 mt-2 font-medium font-['Ubuntu']">
                 {option.label || option.value}
               </span>
 
