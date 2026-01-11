@@ -266,7 +266,7 @@ export default function ProductPreview({
   return (
     <div
       ref={cardRef}
-      className={`group relative flex flex-col h-fit w-full bg-white shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer ${isNavigating ? 'opacity-75' : ''
+      className={`group relative flex flex-col h-fit w-full bg-white shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer font-['Ubuntu'] ${isNavigating ? 'opacity-75' : ''
         }`}
       onClick={handleCardClick}
       data-clickable="true"
@@ -330,13 +330,13 @@ export default function ProductPreview({
       <div className="flex flex-col flex-1 p-2 small:p-3 medium:p-4 bg-gray-100">
         {/* Product Type */}
         {product.type && (
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
             {product.type.value || "Product"}
           </p>
         )}
 
         {/* Title */}
-        <h3 className="text-base small:text-sm font-bold text-slate-900 line-clamp-2 mb-1 small:mb-2">
+        <h3 className="text-lg small:text-base font-bold text-slate-900 line-clamp-2 mb-1 small:mb-2">
           {product.title}
         </h3>
 
@@ -344,8 +344,8 @@ export default function ProductPreview({
         <div className="space-y-1 mb-2 small:mb-3 pt-1 small:pt-2">
           {/* Current Price (highlighted) */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-600">Price:</span>
-            <span className="text-lg font-bold text-slate-900">
+            <span className="text-sm font-medium text-slate-800">Price:</span>
+            <span className="text-xl font-bold text-slate-900">
               {formattedDiscountedPrice}
             </span>
           </div>
@@ -396,8 +396,8 @@ export default function ProductPreview({
             onClick={handleButtonClick}
             disabled={isDesktop && hasVariants ? false : (!canAddToCart || isAdding)}
             className={`w-full py-2 px-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${(isDesktop && hasVariants) || (canAddToCart && !isAdding)
-                ? "bg-slate-900 text-white hover:bg-slate-800"
-                : "bg-slate-200 text-slate-500 cursor-not-allowed"
+              ? "bg-slate-900 text-white hover:bg-slate-800"
+              : "bg-slate-200 text-slate-500 cursor-not-allowed"
               }`}
           >
             {isAdding ? (
