@@ -30,11 +30,11 @@ export default async function Nav() {
                 data-testid="nav-store-link"
               >
                 <img
-                  src="/Zahan Fashion simplified.svg"
-                  alt="ZAHAN logo"
-                  width={140}
-                  height={32}
-                  className="h-auto w-24 small:w-32"
+                  src="/zahanlogo.png"
+                  alt="ZAHAN"
+                  width={100}
+                  height={25}
+                  className="h-auto w-20 small:w-24"
                 />
               </LocalizedClientLink>
             </div>
