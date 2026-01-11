@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/Final Logo BW.png",
   },
+  other: {
+    "facebook-domain-verification": "i5nn3i9uzdw2jteotpcqxjxauforqg",
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
