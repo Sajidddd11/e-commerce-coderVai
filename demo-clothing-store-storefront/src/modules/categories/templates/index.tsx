@@ -71,7 +71,7 @@ export default function CategoryTemplate({
             {category.name}
           </h1>
           {category.description && (
-            <p className="text-grey-60 text-base max-w-2xl">
+            <p className="text-grey-60 text-base max-w-2xl font-['Ubuntu']">
               {category.description}
             </p>
           )}
