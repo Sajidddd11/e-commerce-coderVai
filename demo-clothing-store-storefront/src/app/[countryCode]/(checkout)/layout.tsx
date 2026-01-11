@@ -32,9 +32,9 @@ export default function CheckoutLayout({
             <img
               src="/zahanlogo.png"
               alt="ZAHAN"
-              width={120}
-              height={30}
-              className="h-auto w-24 small:w-28"
+              width={160}
+              height={40}
+              className="h-auto w-32 small:w-40"
             />
           </LocalizedClientLink>
           <div className="flex-1 basis-0" />
