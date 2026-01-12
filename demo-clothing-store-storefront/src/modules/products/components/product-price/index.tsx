@@ -22,6 +22,26 @@ export default function ProductPrice({
     return <div className="block w-32 h-9 bg-gray-100 animate-pulse" />
   }
 
+  // If no variant is selected and product has options, show selection prompt
+  if (!variant && product.options && product.options.length > 0) {
+    // Get option titles that need to be selected
+    const optionTitles = product.options.map(opt => opt.title).filter(Boolean)
+
+    return (
+      <div className="flex flex-col text-slate-600">
+        <div className="text-lg font-medium">
+          Please select{" "}
+          {optionTitles.length === 1
+            ? optionTitles[0]
+            : optionTitles.length === 2
+              ? optionTitles.join(" and ")
+              : optionTitles.slice(0, -1).join(", ") + ", and " + optionTitles[optionTitles.length - 1]
+          }
+        </div>
+      </div>
+    )
+  }
+
   const hasValidDiscount =
     selectedPrice.price_type === "sale" &&
     typeof selectedPrice.percentage_diff !== "undefined" &&
