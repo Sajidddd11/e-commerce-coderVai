@@ -114,7 +114,7 @@ export default function MobileMenu({
                     key={category.id}
                     href={`/categories/${category.handle}`}
                     className={`block px-6 py-1 text-slate-800 hover:bg-slate-50 text-base transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"} ${isActive
-                      ? "bg-gray-500 border text-white px-2 py-1 rounded-sm"
+                      ? "text-black bg-grey-20 px-2 py-1 rounded-sm"
                       : ""
                       }`}
                     style={{
