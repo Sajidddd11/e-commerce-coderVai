@@ -1,226 +1,253 @@
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { FacebookIcon, InstagramIcon, YouTubeIcon, MailIcon, PhoneIcon, LockIcon, SmileIcon, ElectricTruckIcon } from "@modules/common/icons/social-icons"
-import { socialMediaLinks } from "@lib/constants"
+import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon } from "@modules/common/icons/social-icons"
 import Image from "next/image"
 
 export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
   const allCategories = await listCategories()
   const productCategories = filterCategoriesWithProducts(allCategories)
 
   return (
-    <footer className="w-full bg-[#58595B] text-grey-0">
-      <div className="pt-10 pb-10 bg-[#F3F3F3]">
-        {/* Bottom Bar */}
-        <div className=" grid grid-cols-1 px-2 xsmall:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Payment methods strip */}
-          <div className="flex w-full  flex-col gap-2">
-            <span className=" w-fit mx-auto "><LockIcon size={32} color="#373A3C" /></span>
-            <h1 className="typography-subheading text-[#373A3C] w-fit mx-auto">All secure payment methods</h1>
+    <footer className="w-full bg-black text-white">
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+
+          {/* Brand Section */}
+          <div className="lg:col-span-1">
             <Image
-              src="/sslcommerz.png"
-              alt="Accepted payment methods via SSLCommerz"
-              width={600}
-              height={75}
-              className="w-full h-auto object-contain"
+              src="/footerlogo.svg"
+              alt="ZAHAN - Premium Lifestyle Brand"
+              width={200}
+              height={80}
+              className="w-auto h-auto max-h-20 mb-4"
             />
-          </div>
-          {/* Satisfaction guaranteed */}
-          <div className="flex w-full  flex-col">
-            <span className=" w-fit mx-auto"><SmileIcon size={32} color="#373A3C" /></span>
-            <h1 className="typography-subheading text-[#373A3C] pt-2 mb-2 w-fit mx-auto">Satisfaction guaranteed</h1>
-
-            <p className="typography-body text-[#373A3C] w-fit mx-auto xsmall:mt-4">Made with premium quality materials.</p>
-            <p className="typography-body text-[#373A3C] w-fit mx-auto font-semibold">Cozy yet lasts the test of time</p>
-          </div>
-          {/* Worldwide delivery */}
-          {/* <div className="flex w-full flex-col gap-2">
-            <span className=" w-fit mx-auto"><ElectricTruckIcon size={32} color="#373A3C" /></span>
-            <h1 className="text-[#373A3C] text-xl w-fit mx-auto font-semibold">Worldwide delivery</h1>
-            <Image
-              src="/delivery.png"
-              alt="Accepted payment methods via SSLCommerz"
-              width={600}
-              height={75}
-              className="w-full h-auto object-contain"
-            />
-          </div> */}
-        </div>
-      </div>
-      <div className="py-10 bg-[#37383F]">
-        <div className="w-fit xsmall:w-full gap-5 mx-auto flex flex-col xsmall:flex-row xsmall:max-w-5xl xsmall:mx-auto justify-between">
-
-          <div className="flex flex-col w-fit">
-            <div className="flex gap-2 items-center">
-              <div>
-                <MailIcon size={28} color="#F7941E" />
-              </div>
-              <div><h1 className="typography-subheading-sm text-[#EBEBEB]">GET SPECIAL DISCOUNTS IN YOUR INBOX</h1></div>
-            </div>
-            <div>
-              <div className="flex gap-3 items-center py-3">
-                <LocalizedClientLink
-                  href={socialMediaLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-[#F7941E] rounded-full hover:bg-[#F7941E]/80 transition-colors duration-300 transform hover:scale-110"
-                  aria-label="Visit our Facebook page"
-                >
-                  <FacebookIcon size={20} color="white" />
-                </LocalizedClientLink>
-                <LocalizedClientLink
-                  href={socialMediaLinks.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-[#F7941E] rounded-full hover:bg-[#F7941E]/80 transition-colors duration-300 transform hover:scale-110"
-                  aria-label="Visit our Instagram page"
-                >
-                  <InstagramIcon size={20} color="white" />
-                </LocalizedClientLink>
-                <LocalizedClientLink
-                  href={socialMediaLinks.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-[#F7941E] rounded-full hover:bg-[#F7941E]/80 transition-colors duration-300 transform hover:scale-110"
-                  aria-label="Visit our YouTube channel"
-                >
-                  <YouTubeIcon size={20} color="white" />
-                </LocalizedClientLink>
-              </div>
+            {/* App Store Badges */}
+            <div className="mt-4">
+              <Image
+                src="/playstore.png"
+                alt="Download on Google Play and App Store"
+                width={300}
+                height={120}
+                className="w-full max-w-[250px] h-auto"
+              />
             </div>
           </div>
-          <div className="flex gap-2  w-fit">
-            <div><PhoneIcon size={20} color="#F7941E" /></div>
-            <div>
-              <p className="typography-subheading-sm text-[#EBEBEB]">FOR ANY HELP YOU MAY CALL US AT</p>
-              <p className="typography-body text-[#AAAAAA]">+8809677666888</p>
-              <p className="typography-body text-[#AAAAAA]">Open 24 Hours a Day, 7 Days a week</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="max-w-6xl py-5 px-5 xsmall:py-16 mx-auto w-fit xsmall:w-full">
-        <div className="grid grid-cols-2 small:grid-cols-5 gap-3 mb-12">
-          {/* Brand */}
-          <div className="col-span-2">
-            <LocalizedClientLink
-              href="/"
-              className="typography-brand text-[#F7941E] block mb-2 xsmall:mb-4"
-            >
-              ZAHAN Fashion and Lifestyle
-            </LocalizedClientLink>
-            <p className="typography-footer-lg text-[#EBEBEB]">
-              Discover our curated collection of premium clothing and accessories. Quality, style, and elegance in every piece.
-            </p>
-          </div>
 
-          {/* Categories */}
-          {productCategories && productCategories.length > 0 && (
-            <div className="">
-              <h3 className="typography-subheading-sm text-white mb-4">Categories</h3>
-              <ul className="space-y-2" data-testid="footer-categories">
-                {productCategories
-                  .filter((c) => !c.parent_category)
-                  .slice(0, 5)
-                  .map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        href={`/categories/${c.handle}`}
-                        className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                        data-testid="category-link"
-                      >
-                        {c.name}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Collections */}
-          {collections && collections.length > 0 && (
-            <div className="">
-              <h3 className="typography-subheading-sm text-white mb-4">Collections</h3>
-              <ul className="space-y-2">
-                {collections.slice(0, 5).map((c) => (
+          {/* Shop Section - Dynamic Categories */}
+          <div>
+            <h3 className="text-white font-semibold text-base mb-4">Shop</h3>
+            <ul className="space-y-2.5">
+              {productCategories
+                .filter((c) => !c.parent_category)
+                .slice(0, 6)
+                .map((c) => (
                   <li key={c.id}>
                     <LocalizedClientLink
-                      href={`/collections/${c.handle}`}
-                      className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                      href={`/categories/${c.handle}`}
+                      className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block"
                     >
-                      {c.title}
+                      {c.name}
                     </LocalizedClientLink>
                   </li>
                 ))}
-              </ul>
-            </div>
-          )}
+            </ul>
+          </div>
 
-          {/* Support & Info */}
-          <div className="">
-            <h3 className="typography-subheading-sm text-white mb-4">Support</h3>
-            <ul className="space-y-2">
+          {/* Company Section */}
+          <div>
+            <h3 className="text-white font-semibold text-base mb-4">Company</h3>
+            <ul className="space-y-2.5">
               <li>
-                <LocalizedClientLink
-                  href="/account"
-                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                >
-                  My Account
+                <LocalizedClientLink href="/about" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                  About ZAHAN
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink
-                  href="/contact"
-                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                >
-                  Contact Us
+                <a href="mailto:partners@zahan.com.bd" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                  Wholesale & Collaboration
+                </a>
+              </li>
+              <li>
+                <LocalizedClientLink href="/contact" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                  Contact
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink
-                  href="/shipping-info"
-                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                >
-                  Shipping Info
-                </LocalizedClientLink>
-              </li>
-              <li>
-                <LocalizedClientLink
-                  href="/returns"
-                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                >
-                  Returns
-                </LocalizedClientLink>
-              </li>
-              <li>
-                <LocalizedClientLink
-                  href="/privacy-policy"
-                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                >
+                <LocalizedClientLink href="/privacy-policy" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
                   Privacy Policy
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink
-                  href="/terms-of-service"
-                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
-                >
-                  Terms of Service
+                <LocalizedClientLink href="/terms" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                  Terms & Conditions
                 </LocalizedClientLink>
               </li>
             </ul>
           </div>
+
+          {/* Support Section */}
+          <div>
+            <h3 className="text-white font-semibold text-base mb-4">Support</h3>
+
+            {/* 24/7 Hotline */}
+            <div className="mb-4">
+              <p className="text-gray-500 text-xs mb-1">24/7 Support Hotline</p>
+              <a href="tel:+8809677610610" className="text-white font-medium hover:text-gray-300 transition-colors">
+                +8809677610610
+              </a>
+            </div>
+
+            {/* Live Assistance */}
+            <div className="mb-4">
+              <p className="text-gray-500 text-xs mb-2">Live Assistance</p>
+              <ul className="space-y-1 text-sm text-gray-400">
+                <li>AI Support Agent (Chat)</li>
+                <li>WhatsApp Support</li>
+              </ul>
+            </div>
+
+            {/* Email Support */}
+            <div>
+              <p className="text-gray-500 text-xs mb-2">Email Support</p>
+              <div className="space-y-1">
+                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors block">
+                  support@zahan.com.bd
+                </a>
+                <a href="mailto:info@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors block">
+                  info@zahan.com.bd
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Media - Horizontal Section */}
+        <div className="mt-12 pt-8 border-t border-gray-800">
+          <h3 className="text-white font-semibold text-base mb-6 text-center">Connect With Us</h3>
+          <div className="flex flex-wrap justify-center items-center gap-6">
+            <a
+              href="https://instagram.com/zahan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+            >
+              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                <InstagramIcon size={20} />
+              </div>
+              <span className="text-sm font-medium">Instagram</span>
+            </a>
+
+            <a
+              href="https://facebook.com/zahan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+            >
+              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                <FacebookIcon size={20} />
+              </div>
+              <span className="text-sm font-medium">Facebook</span>
+            </a>
+
+            <a
+              href="https://youtube.com/@zahan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+            >
+              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                <YouTubeIcon size={20} />
+              </div>
+              <span className="text-sm font-medium">YouTube</span>
+            </a>
+
+            <a
+              href="https://tiktok.com/@zahan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+            >
+              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                <TikTokIcon size={20} />
+              </div>
+              <span className="text-sm font-medium">TikTok</span>
+            </a>
+
+            <a
+              href="https://wa.me/8809677610610"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+            >
+              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                <WhatsAppIcon size={20} />
+              </div>
+              <span className="text-sm font-medium">WhatsApp</span>
+            </a>
+
+            <a
+              href="mailto:info@zahan.com.bd"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+            >
+              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                <MailIcon size={20} />
+              </div>
+              <span className="text-sm font-medium">Email</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Secure Payment */}
+        <div className="mt-8 pt-6 border-t border-gray-800">
+          <div className="text-center">
+            <h4 className="text-white font-semibold text-sm mb-3">SECURE PAYMENT & TRUST</h4>
+            <p className="text-gray-500 text-xs mb-3">🔒 SSL Secured Checkout</p>
+
+            <div className="flex justify-center">
+              <Image
+                src="/footer payment.png"
+                alt="Accepted Payment Methods - bKash, Nagad, Upay, Visa, MasterCard, American Express"
+                width={600}
+                height={80}
+                className="w-full max-w-lg h-auto"
+              />
+            </div>
+          </div>
         </div>
       </div>
-      <div className=" bg-[#EBEBEB] py-1 xsmall:py-5">
-        <div className="flex text-black w-fit mx-auto flex-col small:flex-row small:items-center gap-4">
-          <p className="typography-footer text-black">
-            © {new Date().getFullYear()} ZAHAN Fashion and Lifestyle. All rights reserved.
-          </p>
+
+      {/* Bottom Copyright Bar */}
+      <div className="border-t border-gray-900 bg-black">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} ZAHAN. All rights reserved.
+            </p>
+
+            {/* Social Icons */}
+            <div className="flex gap-4">
+              <a href="https://instagram.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                <InstagramIcon size={20} />
+              </a>
+              <a href="https://facebook.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                <FacebookIcon size={20} />
+              </a>
+              <a href="https://youtube.com/@zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                <YouTubeIcon size={20} />
+              </a>
+            </div>
+
+            <div className="flex gap-4 text-sm">
+              <LocalizedClientLink href="/privacy-policy" className="text-gray-500 hover:text-white transition-colors">
+                Privacy Policy
+              </LocalizedClientLink>
+              <span className="text-gray-700">|</span>
+              <LocalizedClientLink href="/terms" className="text-gray-500 hover:text-white transition-colors">
+                Terms & Conditions
+              </LocalizedClientLink>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
