@@ -30,7 +30,7 @@ export default function CheckoutLayout({
             data-testid="store-link"
           >
             <img
-              src="/zahanlogo.png"
+              src="/finallogoblack.svg"
               alt="ZAHAN"
               width={160}
               height={40}

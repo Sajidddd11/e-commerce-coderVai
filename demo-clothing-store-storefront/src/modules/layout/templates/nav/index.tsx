@@ -30,7 +30,7 @@ export default async function Nav() {
                 data-testid="nav-store-link"
               >
                 <img
-                  src="/zahanlogo.png"
+                  src="/finallogoblack.svg"
                   alt="ZAHAN"
                   width={160}
                   height={40}
