@@ -50,9 +50,9 @@ export default function CategoryFilterClient({
             <li key={category.id}>
               <button
                 onClick={() => handleCategorySelect(category.id)}
-                className={`w-fit px-2 text-left rounded text-base font-medium transition-colors overflow-hidden font-['Ubuntu'] ${selectedCategoryId === category.id
+                className={`w-fit px-2 text-left rounded text-base font-medium overflow-hidden font-['Ubuntu'] text-md transition-all duration-300 ease-in-out ${selectedCategoryId === category.id
                     ? "bg-slate-900 text-white font-semibold"
-                    : "text-slate-700 hover:bg-grey-10 hover:text-slate-900"
+                    : "text-slate-700 hover:bg-grey-10 hover:text-slate-900 hover:ml-2 hover:font-medium hover:cursor-pointer"
                   }`}
               >
                 <div className="flex items-center justify-between gap-2 w-fit min-w-0">

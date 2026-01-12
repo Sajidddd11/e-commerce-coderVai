@@ -18,10 +18,7 @@ export default function ProductDescriptionSection({
   }
 
   return (
-    <div className="w-full border-t border-slate-200 pt-6 mt-6">
-      <h3 className="text-lg small:text-xl font-bold text-slate-900 mb-4">
-        About This Product
-      </h3>
+    <div className="w-full border-slate-200">
 
       <div className="prose prose-sm max-w-none text-slate-700">
         <ReactMarkdown

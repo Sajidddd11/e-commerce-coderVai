@@ -53,7 +53,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   })()
 
   return (
-    <div id="product-info" className="flex flex-col gap-4 font-['Ubuntu']">
+    <div id="product-info" className="flex flex-col gap-2 font-['Ubuntu']">
       {/* Collection Link */}
       {product.collection && (
         <LocalizedClientLink
@@ -66,7 +66,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
 
       {/* Product Title */}
       <div>
-        <h1 className="text-3xl small:text-4xl font-bold text-slate-900 leading-tight mb-1">
+        <h1 className="text-3xl small:text-4xl font-bold text-slate-900 leading-tight">
           {product.title}
         </h1>
       </div>

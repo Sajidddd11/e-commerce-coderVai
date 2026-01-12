@@ -16,7 +16,7 @@ export default async function Footer() {
     <footer className="w-full bg-[#58595B] text-grey-0">
       <div className="pt-10 pb-10 bg-[#F3F3F3]">
         {/* Bottom Bar */}
-        <div className=" grid grid-cols-1 px-2 xsmall:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className=" grid grid-cols-1 px-2 xsmall:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Payment methods strip */}
           <div className="flex w-full  flex-col gap-2">
             <span className=" w-fit mx-auto "><LockIcon size={32} color="#373A3C" /></span>
@@ -34,11 +34,11 @@ export default async function Footer() {
             <span className=" w-fit mx-auto"><SmileIcon size={32} color="#373A3C" /></span>
             <h1 className="text-[#373A3C] pt-2 text-xl mb-2 w-fit mx-auto font-semibold">Satisfaction guaranteed</h1>
 
-            <p className="text-[#373A3C] text-base w-fit mx-auto font-medium">Made with premium quality materials.</p>
+            <p className="text-[#373A3C] text-base w-fit mx-auto font-medium xsmall:mt-4">Made with premium quality materials.</p>
             <p className="text-[#373A3C] text-base w-fit mx-auto font-semibold">Cozy yet lasts the test of time</p>
           </div>
           {/* Worldwide delivery */}
-          <div className="flex w-full flex-col gap-2">
+          {/* <div className="flex w-full flex-col gap-2">
             <span className=" w-fit mx-auto"><ElectricTruckIcon size={32} color="#373A3C" /></span>
             <h1 className="text-[#373A3C] text-xl w-fit mx-auto font-semibold">Worldwide delivery</h1>
             <Image
@@ -48,7 +48,7 @@ export default async function Footer() {
               height={75}
               className="w-full h-auto object-contain"
             />
-          </div>
+          </div> */}
         </div>
       </div>
       <div className="py-10 bg-[#37383F]">

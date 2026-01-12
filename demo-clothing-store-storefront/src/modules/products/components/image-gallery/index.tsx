@@ -58,11 +58,11 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="grid grid-cols-5 gap-1 xsmall:gap-3">
       {/* Main Image with Zoom */}
       <div
         ref={mainImageRef}
-        className="relative overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
+        className="relative col-span-4 overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
         style={{
           aspectRatio: "1 / 1",
           width: "100%",
@@ -89,36 +89,16 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
           }
           quality={90}
         />
-
-        {/* Zoom Indicator - Desktop Only */}
-        {isZooming && (
-          <div className="hidden small:flex absolute top-4 right-4 bg-black/60 backdrop-blur text-white px-3 py-2 rounded-lg text-sm font-medium gap-1">
-            <span>🔍</span>
-            <span>Zoom</span>
-          </div>
-        )}
-
-        {/* Image Counter - Mobile */}
-        <div className="small:hidden absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-lg text-xs font-bold">
-          {selectedImageIndex + 1}/{images.length}
-        </div>
-
-        {/* Badge */}
-        {images.length > 1 && (
-          <div className="absolute bottom-4 left-4 small:hidden bg-black/70 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
-            Swipe to explore
-          </div>
-        )}
       </div>
 
       {/* Thumbnail Gallery - Horizontal Scroll */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-col gap-1 xsmall:gap-2 overflow-x-auto">
           {images.map((image, index) => (
             <button
               key={image.id}
               onClick={() => setSelectedImageIndex(index)}
-              className={`relative flex-shrink-0 w-14 h-14 small:w-16 small:h-16 rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
+              className={`relative flex-shrink-0 w-full aspect-square small:w-16 small:h-16 rounded-lg overflow-hidden border xsmall:border-2 transition-all ${selectedImageIndex === index
                 ? "border-slate-900 shadow-lg"
                 : "border-slate-200 hover:border-slate-400"
                 }`}

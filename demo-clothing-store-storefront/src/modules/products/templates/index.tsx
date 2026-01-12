@@ -127,12 +127,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             {/* Product Info and Actions */}
             <div className="flex flex-col gap-2 ">
               {/* Header Info Section */}
-              <div className="flex flex-col gap-2 px-4">
+              <div className="flex flex-col gap-2 xsmall:px-4">
                 <ProductInfo product={product} />
               </div>
 
               {/* Actions Section */}
-              <div className="flex flex-col gap-3 small:gap-4 bg-white py-2 px-4">
+              <div className="flex flex-col gap-3 small:gap-4 bg-white py-2 xsmall:px-4">
                 <ProductOnboardingCta />
                 <Suspense
                   fallback={
@@ -146,8 +146,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                   <ProductActionsWrapper id={product.id} region={region} />
                 </Suspense>
 
-                {/* Product Description Section - Under Action Buttons */}
-                <ProductDescriptionSection product={product} />
+                
               </div>
             </div>
           </div>
