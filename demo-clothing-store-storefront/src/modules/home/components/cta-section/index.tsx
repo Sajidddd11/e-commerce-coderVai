@@ -20,7 +20,7 @@ const benefits = [
 
 export default function CTASection() {
   return (
-    <div className="w-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-4 small:py-8 relative overflow-hidden">
+    <div className="w-full bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 py-4 small:py-8 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full blur-3xl animate-pulse"></div>
@@ -34,7 +34,7 @@ export default function CTASection() {
       }}></div>
 
       <div className="content-container relative z-10">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-5 small:p-8 medium:p-10 border border-slate-700/50">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900/60 to-black/60 backdrop-blur-sm p-5 small:p-8 medium:p-10 border border-gray-800/50">
           {/* Content */}
           <div className="flex flex-col gap-4 small:gap-6">
             {/* Header */}
