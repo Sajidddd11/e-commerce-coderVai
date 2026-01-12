@@ -79,53 +79,53 @@ const Hero = () => {
             </span>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-4xl small:text-5xl medium:text-6xl font-bold text-white leading-tight animate-fade-in-up">
+          {/* Main Headline - Hero Typography (Montserrat 700) */}
+          <h1 className="typography-hero text-white leading-tight animate-fade-in-up">
             Elevate Your Style
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-400">
               Up to 50% OFF
             </span>
           </h1>
 
-          {/* Subheadline */}
-          <p className="text-lg small:text-xl text-slate-100 max-w-2xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200">
+          {/* Subheadline - Body Text (Inter 400) */}
+          <p className="typography-body-lg text-slate-100 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
             Discover our handpicked selections for this season's must-haves. Premium quality, unbeatable prices, limited time only.
           </p>
 
-          {/* Trust Badges */}
+          {/* Trust Badges - Navigation Text (Inter 500) */}
           <div className="flex flex-wrap justify-center gap-4 small:gap-6 pt-4 animate-fade-in-up animation-delay-400">
             <div className="flex items-center gap-2 text-white">
               <span className="text-lg">🚀</span>
-              <span className="text-sm font-medium">Fast Shipping</span>
+              <span className="typography-nav-sm text-white">Fast Shipping</span>
             </div>
             <div className="flex items-center gap-2 text-white">
               <span className="text-lg">🛡️</span>
-              <span className="text-sm font-medium">Secure Payment</span>
+              <span className="typography-nav-sm text-white">Secure Payment</span>
             </div>
             <div className="flex items-center gap-2 text-white">
               <span className="text-lg">↩️</span>
-              <span className="text-sm font-medium">Easy Returns</span>
+              <span className="typography-nav-sm text-white">Easy Returns</span>
             </div>
           </div>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Button Text (Inter 600) */}
           <div className="flex flex-col small:flex-row gap-4 justify-center pt-6 animate-fade-in-up animation-delay-600">
             <LocalizedClientLink
               href="/store"
-              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold rounded-lg hover:shadow-xl hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 text-base small:text-lg whitespace-nowrap"
+              className="typography-button-lg inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:shadow-xl hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 whitespace-nowrap"
             >
               Shop Now →
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/store"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-bold rounded-lg border-2 border-white hover:bg-white/30 transition-all duration-300 text-base small:text-lg whitespace-nowrap"
+              className="typography-button-lg inline-flex items-center justify-center px-8 py-4 bg-white/20 backdrop-blur-sm text-white rounded-lg border-2 border-white hover:bg-white/30 transition-all duration-300 whitespace-nowrap"
             >
               View Offers
             </LocalizedClientLink>
           </div>
 
-          {/* Countdown Timer (optional) */}
-          <div className="pt-4 text-white text-sm small:text-base font-medium animate-fade-in-up animation-delay-800">
+          {/* Countdown Timer - Body Text (Inter 400) */}
+          <div className="pt-4 text-white typography-body animate-fade-in-up animation-delay-800">
             ⏱️ Limited Time Offer - Shop Today!
           </div>
         </div>

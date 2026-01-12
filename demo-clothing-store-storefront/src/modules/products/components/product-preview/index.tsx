@@ -9,6 +9,7 @@ import OptionSelect from "../product-actions/option-select"
 import ColorSwatchSelector from "../color-swatch-selector"
 import DotSpinner from "@modules/common/components/dot-spinner"
 import QuickBuyDrawer from "../quick-buy-drawer"
+import ResponsivePrice from "@modules/common/components/responsive-price"
 import { useState, useMemo, useRef, useEffect } from "react"
 import { isEqual } from "lodash"
 import { useParams, useRouter } from "next/navigation"
@@ -345,9 +346,10 @@ export default function ProductPreview({
           {/* Current Price (highlighted) */}
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-800">Price:</span>
-            <span className="text-xl font-bold text-slate-900">
-              {formattedDiscountedPrice}
-            </span>
+            <ResponsivePrice
+              formattedPrice={formattedDiscountedPrice}
+              baseClassName="text-xl small:text-2xl font-bold text-slate-900"
+            />
           </div>
 
 

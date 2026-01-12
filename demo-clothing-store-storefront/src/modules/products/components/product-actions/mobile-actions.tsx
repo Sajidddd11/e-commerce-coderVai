@@ -9,6 +9,7 @@ import X from "@modules/common/icons/x"
 import { getProductPrice } from "@lib/util/get-product-price"
 import OptionSelect from "./option-select"
 import LoadingButton from "@modules/common/components/loading-button"
+import ResponsivePrice from "@modules/common/components/responsive-price"
 import { HttpTypes } from "@medusajs/types"
 import { isSimpleProduct } from "@lib/util/product"
 
@@ -86,14 +87,17 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                       </span>
                     </p>
                   )}
-                  <span
+                  <div
                     className={clx({
                       "text-ui-fg-interactive":
                         selectedPrice.price_type === "sale",
                     })}
                   >
-                    {selectedPrice.calculated_price}
-                  </span>
+                    <ResponsivePrice
+                      formattedPrice={selectedPrice.calculated_price}
+                      baseClassName="text-lg small:text-xl font-bold"
+                    />
+                  </div>
                 </div>
               ) : (
                 <div></div>

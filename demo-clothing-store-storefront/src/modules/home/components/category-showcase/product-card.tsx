@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 import { getProductPrice } from "@lib/util/get-product-price"
+import ResponsivePrice from "@modules/common/components/responsive-price"
 
 function ProductCardWithPrice({
   product,
@@ -32,7 +33,7 @@ function ProductCardWithPrice({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group w-full relative overflow-visible shadow-sm rounded-sm hover:shadow-2xl transition-all duration-300"
+      className="group w-full shadow-md hover:shadow-2xl relative overflow-visible rounded-sm transition-all duration-300"
 
     >
       {/* Image Container - 1:1 ratio */}
@@ -64,7 +65,7 @@ function ProductCardWithPrice({
 
       {/* Bottom Box - White box with xs shadow, positioned -2px from bottom */}
       <div
-        className="relative w-full shadow-md px-2 bg-gray-100 hover:bg-gray-100 flex flex-col items-center rounded-b-sm justify-center py-1"
+        className="relative w-full px-2 bg-gray-100 hover:bg-gray-100 flex flex-col items-center rounded-b-sm justify-center py-1"
 
       >
         {/* Title */}
@@ -79,14 +80,16 @@ function ProductCardWithPrice({
               <span className="text-xs text-gray-500 line-through">
                 {formatPrice(basePrice)}
               </span>
-              <span className="text-base font-bold text-red-600">
-                {formatPrice(salePrice)}
-              </span>
+              <ResponsivePrice
+                formattedPrice={formatPrice(salePrice)}
+                baseClassName="text-base small:text-xl font-bold text-red-600"
+              />
             </>
           ) : (
-            <span className="text-base font-bold text-red-600">
-              {formatPrice(salePrice)}
-            </span>
+            <ResponsivePrice
+              formattedPrice={formatPrice(salePrice)}
+              baseClassName="text-base small:text-lg font-bold text-red-600"
+            />
           )}
         </div>
       </div>

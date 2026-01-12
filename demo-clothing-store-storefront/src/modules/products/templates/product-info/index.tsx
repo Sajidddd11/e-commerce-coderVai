@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductRating from "@modules/products/components/product-rating"
 import { getProductPrice } from "@lib/util/get-product-price"
+import ResponsivePrice from "@modules/common/components/responsive-price"
 import { useState } from "react"
 
 type ProductInfoProps = {
@@ -79,9 +80,10 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
               <span className="text-base font-medium text-slate-700">Starting from</span>
 
               {/* Main price (current price) - Blue color */}
-              <span className="text-2xl small:text-3xl font-bold text-blue-600">
-                {cheapestPrice.calculated_price}
-              </span>
+              <ResponsivePrice
+                formattedPrice={cheapestPrice.calculated_price}
+                baseClassName="text-2xl small:text-3xl font-bold text-blue-600"
+              />
 
               {/* Discount/base price - faded black */}
               {hasDiscount && (

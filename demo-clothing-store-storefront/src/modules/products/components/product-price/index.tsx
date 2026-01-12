@@ -2,6 +2,7 @@ import { clx } from "@medusajs/ui"
 
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
+import ResponsivePrice from "@modules/common/components/responsive-price"
 
 export default function ProductPrice({
   product,
@@ -30,14 +31,15 @@ export default function ProductPrice({
 
   return (
     <div className="flex flex-col text-ui-fg-base">
-      <span className="text-3xl font-bold text-slate-900">
-        <span
-          data-testid="product-price"
-          data-value={selectedPrice.calculated_price_number}
-        >
-          {selectedPrice.calculated_price}
-        </span>
-      </span>
+      <div
+        data-testid="product-price"
+        data-value={selectedPrice.calculated_price_number}
+      >
+        <ResponsivePrice
+          formattedPrice={selectedPrice.calculated_price}
+          baseClassName="text-3xl small:text-4xl font-bold text-slate-900"
+        />
+      </div>
       {hasValidDiscount && (
         <>
           <p>

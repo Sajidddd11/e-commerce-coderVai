@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useState, useEffect, useMemo } from "react"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { ProductGridSkeleton } from "./skeleton"
+import ResponsivePrice from "@modules/common/components/responsive-price"
 
 interface CategorySectionClientProps {
   category: HttpTypes.StoreProductCategory
@@ -162,9 +163,12 @@ function ProductCard({
           {/* Price */}
           <div className="flex flex-col">
             <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">Price</span>
-            <span className="text-lg small:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors duration-300">
-              {formattedPrice}
-            </span>
+            <div className="group-hover:text-orange-600 transition-colors duration-300">
+              <ResponsivePrice
+                formattedPrice={formattedPrice}
+                baseClassName="text-lg small:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors duration-300"
+              />
+            </div>
           </div>
 
           {/* Variants Info */}

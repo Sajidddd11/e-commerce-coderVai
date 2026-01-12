@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Ubuntu:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Inter:wght@400;500;600&family=Rajdhani:wght@300;400;500;600;700&family=Ubuntu:wght@300;400;500;700&display=swap');
 
 @import "tailwindcss/base";
 @import "tailwindcss/components";
@@ -352,6 +352,130 @@
 }
 
 @layer components {
+  /* ============================================================================
+     ZAHAN Typography System
+     Implements the standardized font usage for Brand, Headings, Body, and CTAs
+     ============================================================================ */
+
+  /* Brand / Logo Text - Montserrat 600-700 */
+  .typography-brand {
+    @apply font-montserrat font-bold text-lg;
+  }
+
+  .typography-brand-lg {
+    @apply font-montserrat font-bold text-xl;
+  }
+
+  /* Hero Section - Montserrat 700 */
+  .typography-hero {
+    @apply font-montserrat font-bold text-4xl small:text-5xl medium:text-6xl;
+  }
+
+  /* Section Headings - Montserrat 600 */
+  .typography-section-heading {
+    @apply font-montserrat font-semibold text-2xl small:text-3xl;
+  }
+
+  .typography-section-heading-lg {
+    @apply font-montserrat font-semibold text-3xl small:text-4xl;
+  }
+
+  .typography-section-heading-sm {
+    @apply font-montserrat font-semibold text-xl small:text-2xl;
+  }
+
+  /* Sub-Headings - Montserrat 500 */
+  .typography-subheading {
+    @apply font-montserrat font-medium text-lg small:text-xl;
+  }
+
+  .typography-subheading-lg {
+    @apply font-montserrat font-medium text-xl small:text-2xl;
+  }
+
+  .typography-subheading-sm {
+    @apply font-montserrat font-medium text-base small:text-lg;
+  }
+
+  /* Body Text / Paragraphs - Inter 400 */
+  .typography-body {
+    @apply font-inter font-normal text-base leading-relaxed;
+  }
+
+  .typography-body-lg {
+    @apply font-inter font-normal text-lg leading-relaxed;
+  }
+
+  .typography-body-sm {
+    @apply font-inter font-normal text-sm leading-relaxed;
+  }
+
+  /* Product Titles - Inter 500 */
+  .typography-product-title {
+    @apply font-inter font-medium text-lg small:text-xl;
+  }
+
+  .typography-product-title-lg {
+    @apply font-inter font-medium text-xl small:text-2xl;
+  }
+
+  .typography-product-title-sm {
+    @apply font-inter font-medium text-base small:text-lg;
+  }
+
+  /* Product Descriptions - Inter 400 */
+  .typography-product-desc {
+    @apply font-inter font-normal text-base leading-relaxed;
+  }
+
+  .typography-product-desc-sm {
+    @apply font-inter font-normal text-sm leading-relaxed;
+  }
+
+  /* Navigation Menu - Inter 500 */
+  .typography-nav {
+    @apply font-inter font-medium text-base;
+  }
+
+  .typography-nav-lg {
+    @apply font-inter font-medium text-lg;
+  }
+
+  .typography-nav-sm {
+    @apply font-inter font-medium text-sm;
+  }
+
+  /* Buttons / CTAs - Inter 600 */
+  .typography-button {
+    @apply font-inter font-semibold text-base;
+  }
+
+  .typography-button-lg {
+    @apply font-inter font-semibold text-lg;
+  }
+
+  .typography-button-sm {
+    @apply font-inter font-semibold text-sm;
+  }
+
+  /* Footer Text - Inter 400 */
+  .typography-footer {
+    @apply font-inter font-normal text-sm;
+  }
+
+  .typography-footer-lg {
+    @apply font-inter font-normal text-base;
+  }
+
+  /* Bangla Text - SolaimanLipi Regular */
+  .typography-bangla {
+    @apply font-solaiman-lipi font-normal;
+  }
+
+  .typography-bangla-heading {
+    @apply font-solaiman-lipi font-semibold;
+  }
+
   .content-container {
     @apply max-w-[1440px] w-full mx-auto px-4 small:px-6;
   }

@@ -47,7 +47,7 @@ export default async function Nav() {
             {/* Right: Account (Desktop only) + Cart (Mobile + Desktop) */}
             <div className="flex items-center gap-2 small:gap-4 flex-shrink-0">
               <LocalizedClientLink
-                className="hidden small:flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors text-sm font-medium"
+                className="typography-nav-sm hidden small:flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors"
                 href="/account"
                 data-testid="nav-account-link"
               >
@@ -70,7 +70,7 @@ export default async function Nav() {
               <Suspense
                 fallback={
                   <LocalizedClientLink
-                    className="flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors text-sm font-medium"
+                    className="typography-nav-sm flex items-center gap-2 px-3 py-2 text-grey-70 hover:text-grey-90 hover:bg-grey-5 rounded-lg transition-colors"
                     href="/cart"
                     data-testid="nav-cart-link"
                   >

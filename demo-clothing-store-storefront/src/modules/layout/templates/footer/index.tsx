@@ -20,7 +20,7 @@ export default async function Footer() {
           {/* Payment methods strip */}
           <div className="flex w-full  flex-col gap-2">
             <span className=" w-fit mx-auto "><LockIcon size={32} color="#373A3C" /></span>
-            <h1 className="text-[#373A3C] text-xl w-fit mx-auto font-semibold">All secure payment methods</h1>
+            <h1 className="typography-subheading text-[#373A3C] w-fit mx-auto">All secure payment methods</h1>
             <Image
               src="/sslcommerz.png"
               alt="Accepted payment methods via SSLCommerz"
@@ -32,10 +32,10 @@ export default async function Footer() {
           {/* Satisfaction guaranteed */}
           <div className="flex w-full  flex-col">
             <span className=" w-fit mx-auto"><SmileIcon size={32} color="#373A3C" /></span>
-            <h1 className="text-[#373A3C] pt-2 text-xl mb-2 w-fit mx-auto font-semibold">Satisfaction guaranteed</h1>
+            <h1 className="typography-subheading text-[#373A3C] pt-2 mb-2 w-fit mx-auto">Satisfaction guaranteed</h1>
 
-            <p className="text-[#373A3C] text-base w-fit mx-auto font-medium xsmall:mt-4">Made with premium quality materials.</p>
-            <p className="text-[#373A3C] text-base w-fit mx-auto font-semibold">Cozy yet lasts the test of time</p>
+            <p className="typography-body text-[#373A3C] w-fit mx-auto xsmall:mt-4">Made with premium quality materials.</p>
+            <p className="typography-body text-[#373A3C] w-fit mx-auto font-semibold">Cozy yet lasts the test of time</p>
           </div>
           {/* Worldwide delivery */}
           {/* <div className="flex w-full flex-col gap-2">
@@ -59,7 +59,7 @@ export default async function Footer() {
               <div>
                 <MailIcon size={28} color="#F7941E" />
               </div>
-              <div><h1 className="text-md xsmall:text-xl text-[#EBEBEB] font-semibold">GET SPECIAL DISCOUNTS IN YOUR INBOX</h1></div>
+              <div><h1 className="typography-subheading-sm text-[#EBEBEB]">GET SPECIAL DISCOUNTS IN YOUR INBOX</h1></div>
             </div>
             <div>
               <div className="flex gap-3 items-center py-3">
@@ -96,9 +96,9 @@ export default async function Footer() {
           <div className="flex gap-2  w-fit">
             <div><PhoneIcon size={20} color="#F7941E" /></div>
             <div>
-              <p className="text-md xsmall:text-xl text-[#EBEBEB] font-semibold">FOR ANY HELP YOU MAY CALL US AT</p>
-              <p className="text-xl text-[#AAAAAA]">+8809677666888</p>
-              <p className="text-xl text-[#AAAAAA]">Open 24 Hours a Day, 7 Days a week</p>
+              <p className="typography-subheading-sm text-[#EBEBEB]">FOR ANY HELP YOU MAY CALL US AT</p>
+              <p className="typography-body text-[#AAAAAA]">+8809677666888</p>
+              <p className="typography-body text-[#AAAAAA]">Open 24 Hours a Day, 7 Days a week</p>
             </div>
           </div>
         </div>
@@ -109,11 +109,11 @@ export default async function Footer() {
           <div className="col-span-2">
             <LocalizedClientLink
               href="/"
-              className="font-medium text-xl text-[#F7941E] block mb-2 xsmall:mb-4"
+              className="typography-brand text-[#F7941E] block mb-2 xsmall:mb-4"
             >
               ZAHAN Fashion and Lifestyle
             </LocalizedClientLink>
-            <p className="text-[#EBEBEB] text-base xsmall:text-xl font-light leading-relaxed">
+            <p className="typography-footer-lg text-[#EBEBEB]">
               Discover our curated collection of premium clothing and accessories. Quality, style, and elegance in every piece.
             </p>
           </div>
@@ -121,7 +121,7 @@ export default async function Footer() {
           {/* Categories */}
           {productCategories && productCategories.length > 0 && (
             <div className="">
-              <h3 className="font-medium text-base xsmall:text-xl text-white mb-4">Categories</h3>
+              <h3 className="typography-subheading-sm text-white mb-4">Categories</h3>
               <ul className="space-y-2" data-testid="footer-categories">
                 {productCategories
                   .filter((c) => !c.parent_category)
@@ -130,7 +130,7 @@ export default async function Footer() {
                     <li key={c.id}>
                       <LocalizedClientLink
                         href={`/categories/${c.handle}`}
-                        className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                        className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                         data-testid="category-link"
                       >
                         {c.name}
@@ -144,13 +144,13 @@ export default async function Footer() {
           {/* Collections */}
           {collections && collections.length > 0 && (
             <div className="">
-              <h3 className="font-medium text-base xsmall:text-xl text-white mb-4">Collections</h3>
+              <h3 className="typography-subheading-sm text-white mb-4">Collections</h3>
               <ul className="space-y-2">
                 {collections.slice(0, 5).map((c) => (
                   <li key={c.id}>
                     <LocalizedClientLink
                       href={`/collections/${c.handle}`}
-                      className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                      className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                     >
                       {c.title}
                     </LocalizedClientLink>
@@ -162,12 +162,12 @@ export default async function Footer() {
 
           {/* Support & Info */}
           <div className="">
-            <h3 className="font-medium text-base xsmall:text-xl text-white mb-4">Support</h3>
+            <h3 className="typography-subheading-sm text-white mb-4">Support</h3>
             <ul className="space-y-2">
               <li>
                 <LocalizedClientLink
                   href="/account"
-                  className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   My Account
                 </LocalizedClientLink>
@@ -175,7 +175,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/contact"
-                  className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Contact Us
                 </LocalizedClientLink>
@@ -183,7 +183,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/shipping-info"
-                  className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Shipping Info
                 </LocalizedClientLink>
@@ -191,7 +191,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/returns"
-                  className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Returns
                 </LocalizedClientLink>
@@ -199,7 +199,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/privacy-policy"
-                  className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Privacy Policy
                 </LocalizedClientLink>
@@ -207,7 +207,7 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink
                   href="/terms-of-service"
-                  className="text-[#EBEBEB] text-base xsmall:text-xl transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
+                  className="typography-footer-lg text-[#EBEBEB] transition-all duration-300 ease-in-out hover:text-[#F7941E] hover:pl-3"
                 >
                   Terms of Service
                 </LocalizedClientLink>
@@ -218,7 +218,7 @@ export default async function Footer() {
       </div>
       <div className=" bg-[#EBEBEB] py-1 xsmall:py-5">
         <div className="flex text-black w-fit mx-auto flex-col small:flex-row small:items-center gap-4">
-          <p className="text-sm xsmall:text-xl">
+          <p className="typography-footer text-black">
             © {new Date().getFullYear()} ZAHAN Fashion and Lifestyle. All rights reserved.
           </p>
         </div>

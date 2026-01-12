@@ -50,9 +50,9 @@ export default async function CategoryShowcase({
       <div className="content-container">
         <div className="flex flex-col">
 
-          {/* Top Categories Heading */}
+          {/* Top Categories Heading - Section Heading (Montserrat 600) */}
           <div className="w-full mb-6 xsmall:mb-8 small:mb-10 flex flex-col items-center">
-            <h2 className="text-2xl xsmall:text-3xl small:text-4xl font-extrabold text-grey-90 mb-2 xsmall:mb-3 text-center">
+            <h2 className="typography-section-heading text-grey-90 mb-2 xsmall:mb-3 text-center">
               Top Categories
             </h2>
             <div className="w-16 xsmall:w-20 h-1 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full"></div>
@@ -80,7 +80,7 @@ export default async function CategoryShowcase({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-2 xsmall:px-4 py-1 xsmall:py-4">
-                      <h3 className="text-center font-semibold text-white text-xs xsmall:text-xl line-clamp-2">
+                      <h3 className="typography-subheading-sm text-white text-center line-clamp-2 xsmall:text-xl">
                         {category.name}
                       </h3>
                     </div>
@@ -97,19 +97,23 @@ export default async function CategoryShowcase({
               {/* Left Section - Full width on mobile, 3/4 on larger screens */}
               <div className="w-full xsmall:w-3/4 p-6 xsmall:p-8 small:p-12 flex flex-col justify-between bg-gradient-to-br from-gray-50 to-white">
                 <div>
-                  <h2 className="text-2xl xsmall:text-3xl small:text-4xl font-bold text-gray-900 mb-2">
+                  {/* Brand Text - Montserrat 700 */}
+                  <h2 className="typography-brand-lg text-gray-900 mb-2">
                     ZAHAN
                   </h2>
-                  <h3 className="text-base xsmall:text-lg small:text-xl font-semibold text-gray-600 mb-4">
+                  {/* Sub-Heading - Montserrat 500 */}
+                  <h3 className="typography-subheading text-gray-600 mb-4">
                     Premium Collection
                   </h3>
-                  <p className="text-gray-600 text-sm xsmall:text-base leading-relaxed">
+                  {/* Body Text - Inter 400 */}
+                  <p className="typography-body text-gray-600">
                     Discover our exclusive selection of premium products curated for excellence and style.
                   </p>
                 </div>
+                {/* Button - Inter 600 */}
                 <LocalizedClientLink
                   href="/store"
-                  className="inline-block text-sm xsmall:text-base font-semibold text-black hover:text-gray-600 transition-colors mt-4 xsmall:mt-0"
+                  className="typography-button inline-block text-black hover:text-gray-600 transition-colors mt-4 xsmall:mt-0"
                 >
                   Shop Now →
                 </LocalizedClientLink>
@@ -140,9 +144,9 @@ export default async function CategoryShowcase({
             ))}
           </div>
 
-          {/* Featured Products Row Section */}
+          {/* Featured Products Row Section - Section Heading (Montserrat 600) */}
           <div className="w-full pt-8 xsmall:pt-12 small:pt-16 mt-8 border-t border-grey-20">
-            <h2 className="text-2xl xsmall:text-3xl small:text-4xl font-bold text-grey-90 mb-6 xsmall:mb-8">
+            <h2 className="typography-section-heading text-grey-90 mb-6 xsmall:mb-8">
               Featured Products
             </h2>
             <AllProductsRow countryCode={countryCode} />
