@@ -10,32 +10,33 @@ export default async function Footer() {
   return (
     <footer className="w-full bg-black text-white">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-12 md:pt-16 pb-6 md:pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
 
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <Image
-              src="/footerlogo.svg"
-              alt="ZAHAN - Premium Lifestyle Brand"
-              width={200}
-              height={80}
-              className="w-auto h-auto max-h-20 mb-4"
-            />
-            {/* App Store Badges */}
-            <div className="mt-4">
+            <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
+              {/* Company Logo */}
+              <Image
+                src="/footerlogo.svg"
+                alt="ZAHAN - Premium Lifestyle Brand"
+                width={200}
+                height={80}
+                className="w-auto h-12 md:h-20 order-2 md:order-1"
+              />
+              {/* App Store Badges */}
               <Image
                 src="/playstore.png"
                 alt="Download on Google Play and App Store"
                 width={300}
                 height={120}
-                className="w-full max-w-[250px] h-auto"
+                className="w-auto max-w-[120px] md:max-w-[250px] h-auto order-1 md:order-2"
               />
             </div>
           </div>
 
           {/* Shop Section - Dynamic Categories */}
-          <div>
+          <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Shop</h3>
             <ul className="space-y-2.5">
               {productCategories
@@ -55,7 +56,7 @@ export default async function Footer() {
           </div>
 
           {/* Company Section */}
-          <div>
+          <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Company</h3>
             <ul className="space-y-2.5">
               <li>
@@ -87,7 +88,7 @@ export default async function Footer() {
           </div>
 
           {/* Support Section */}
-          <div>
+          <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Support</h3>
 
             {/* 24/7 Hotline */}
@@ -99,13 +100,18 @@ export default async function Footer() {
               </a>
             </div>
 
-            {/* Live Assistance */}
+            {/* WhatsApp Chat Support */}
             <div className="mb-4">
-              <p className="text-gray-500 text-xs mb-2">Live Assistance</p>
-              <ul className="space-y-1 text-sm text-gray-400">
-                <li>AI Support Agent (Chat)</li>
-                <li>WhatsApp Support</li>
-              </ul>
+              <p className="text-gray-500 text-xs mb-2">Live Chat Support</p>
+              <a
+                href="https://wa.me/8809677610610?text=Hello%2C%20I%20need%20support"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-400 text-sm hover:text-green-300 transition-colors flex items-center gap-2 justify-center md:justify-start"
+              >
+                <WhatsAppIcon size={16} />
+                Chat on WhatsApp
+              </a>
             </div>
 
             {/* Email Support */}
@@ -126,9 +132,9 @@ export default async function Footer() {
         </div>
 
         {/* Social Media - Horizontal Section */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <h3 className="text-white font-semibold text-base mb-6 text-center">Connect With Us</h3>
-          <div className="flex flex-wrap justify-center items-center gap-6">
+        <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-gray-800">
+          <h3 className="text-white font-semibold text-sm md:text-base mb-4 md:mb-6 text-center">Connect With Us</h3>
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
             <a
               href="https://instagram.com/zahan"
               target="_blank"
@@ -138,7 +144,7 @@ export default async function Footer() {
               <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                 <InstagramIcon size={20} />
               </div>
-              <span className="text-sm font-medium">Instagram</span>
+              <span className="text-sm font-medium hidden md:inline">Instagram</span>
             </a>
 
             <a
@@ -150,7 +156,7 @@ export default async function Footer() {
               <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                 <FacebookIcon size={20} />
               </div>
-              <span className="text-sm font-medium">Facebook</span>
+              <span className="text-sm font-medium hidden md:inline">Facebook</span>
             </a>
 
             <a
@@ -162,7 +168,7 @@ export default async function Footer() {
               <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                 <YouTubeIcon size={20} />
               </div>
-              <span className="text-sm font-medium">YouTube</span>
+              <span className="text-sm font-medium hidden md:inline">YouTube</span>
             </a>
 
             <a
@@ -174,7 +180,7 @@ export default async function Footer() {
               <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                 <TikTokIcon size={20} />
               </div>
-              <span className="text-sm font-medium">TikTok</span>
+              <span className="text-sm font-medium hidden md:inline">TikTok</span>
             </a>
 
             <a
@@ -186,7 +192,7 @@ export default async function Footer() {
               <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                 <WhatsAppIcon size={20} />
               </div>
-              <span className="text-sm font-medium">WhatsApp</span>
+              <span className="text-sm font-medium hidden md:inline">WhatsApp</span>
             </a>
 
             <a
@@ -196,16 +202,16 @@ export default async function Footer() {
               <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                 <MailIcon size={20} />
               </div>
-              <span className="text-sm font-medium">Email</span>
+              <span className="text-sm font-medium hidden md:inline">Email</span>
             </a>
           </div>
         </div>
 
         {/* Secure Payment */}
-        <div className="mt-8 pt-6 border-t border-gray-800">
+        <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800">
           <div className="text-center">
-            <h4 className="text-white font-semibold text-sm mb-3">SECURE PAYMENT & TRUST</h4>
-            <p className="text-gray-500 text-xs mb-3">🔒 SSL Secured Checkout</p>
+            <h4 className="text-white font-semibold text-xs md:text-sm mb-2 md:mb-3">SECURE PAYMENT & TRUST</h4>
+            <p className="text-gray-500 text-xs mb-2 md:mb-3">🔒 SSL Secured Checkout</p>
 
             <div className="flex justify-center">
               <Image
@@ -213,7 +219,7 @@ export default async function Footer() {
                 alt="Accepted Payment Methods - bKash, Nagad, Upay, Visa, MasterCard, American Express"
                 width={600}
                 height={80}
-                className="w-full max-w-lg h-auto"
+                className="w-full max-w-xs md:max-w-lg h-auto"
               />
             </div>
           </div>
@@ -222,8 +228,8 @@ export default async function Footer() {
 
       {/* Bottom Copyright Bar */}
       <div className="border-t border-gray-900 bg-black">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
             <p className="text-gray-500 text-sm">
               © {new Date().getFullYear()} ZAHAN. All rights reserved.
             </p>
