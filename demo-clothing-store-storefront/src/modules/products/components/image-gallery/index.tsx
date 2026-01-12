@@ -62,7 +62,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
       {/* Main Image with Zoom */}
       <div
         ref={mainImageRef}
-        className="relative col-span-4 overflow-hidden bg-slate-100 cursor-zoom-in group mx-auto"
+        className="relative col-span-4 overflow-hidden bg-slate-100 xsmall:cursor-zoom-in group mx-auto"
         style={{
           aspectRatio: "1 / 1",
           width: "100%",
@@ -92,7 +92,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
       </div>
 
       {/* Thumbnail Gallery - Horizontal Scroll */}
-      {images.length > 1 && (
+      {images.length > 0 && (
         <div className="flex flex-col gap-1 xsmall:gap-2 overflow-x-auto">
           {images.map((image, index) => (
             <button
