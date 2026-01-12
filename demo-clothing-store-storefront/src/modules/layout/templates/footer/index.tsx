@@ -1,6 +1,6 @@
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon } from "@modules/common/icons/social-icons"
+import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon, PhoneIcon } from "@modules/common/icons/social-icons"
 import Image from "next/image"
 
 export default async function Footer() {
@@ -93,7 +93,8 @@ export default async function Footer() {
             {/* 24/7 Hotline */}
             <div className="mb-4">
               <p className="text-gray-500 text-xs mb-1">24/7 Support Hotline</p>
-              <a href="tel:+8809677610610" className="text-white font-medium hover:text-gray-300 transition-colors">
+              <a href="tel:+8809677610610" className="text-white font-medium hover:text-gray-300 transition-colors flex items-center gap-2">
+                <PhoneIcon size={16} />
                 +8809677610610
               </a>
             </div>
@@ -111,10 +112,12 @@ export default async function Footer() {
             <div>
               <p className="text-gray-500 text-xs mb-2">Email Support</p>
               <div className="space-y-1">
-                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors block">
+                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors flex items-center gap-2">
+                  <MailIcon size={16} />
                   support@zahan.com.bd
                 </a>
-                <a href="mailto:info@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors block">
+                <a href="mailto:info@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors flex items-center gap-2">
+                  <MailIcon size={16} />
                   info@zahan.com.bd
                 </a>
               </div>
