@@ -21,11 +21,18 @@ export default function PageTransitionLoader() {
       setIsVisible(true)
       setProgress(0)
 
+      // Calculate scrollbar width to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
       // Lock body scroll and reset scroll position for mobile
       document.body.style.overflow = 'hidden'
       document.body.style.position = 'fixed'
       document.body.style.width = '100%'
       document.body.style.top = `-${window.scrollY}px`
+      // Add padding to compensate for scrollbar removal
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
 
       // Safety timeout: force hide loader after 5 seconds if no route change occurs
       if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
@@ -40,6 +47,7 @@ export default function PageTransitionLoader() {
         document.body.style.position = ''
         document.body.style.width = ''
         document.body.style.top = ''
+        document.body.style.paddingRight = ''
         window.scrollTo(0, parseInt(scrollY || '0') * -1)
       }, 5000)
     }
@@ -136,6 +144,7 @@ export default function PageTransitionLoader() {
         document.body.style.position = ''
         document.body.style.width = ''
         document.body.style.top = ''
+        document.body.style.paddingRight = ''
         if (scrollY) {
           window.scrollTo(0, parseInt(scrollY || '0') * -1)
         }
