@@ -8,6 +8,7 @@ import Thumbnail from "../thumbnail"
 import OptionSelect from "../product-actions/option-select"
 import ColorSwatchSelector from "../color-swatch-selector"
 import DotSpinner from "@modules/common/components/dot-spinner"
+import LoadingLogo from "@modules/common/components/loading-logo"
 import QuickBuyDrawer from "../quick-buy-drawer"
 import ResponsivePrice from "@modules/common/components/responsive-price"
 import { useState, useMemo, useRef, useEffect } from "react"
@@ -298,11 +299,8 @@ export default function ProductPreview({
 
         {/* Loading Overlay */}
         {isNavigating && (
-          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50 shadow-2xl">
-            <div className="flex flex-col items-center gap-3">
-              <DotSpinner size="lg" color="#262626" />
-              <p className="text-sm font-semibold text-slate-700">Opening...</p>
-            </div>
+          <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-50">
+            <LoadingLogo size="md" />
           </div>
         )}
 
