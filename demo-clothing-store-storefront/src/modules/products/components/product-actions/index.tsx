@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
+import ReactMarkdown from "react-markdown"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -219,9 +220,9 @@ export default function ProductActions({
           )}
         </div>
 
-        {/* Price and stock Display */}
-        <div className="flex gap-4 items-center">
-          <div className=" py-1">
+        {/* Price Display at Top */}
+        <div className="flex gap-4 items-center py-2">
+          <div className="py-1">
             <ProductPrice product={product} variant={selectedVariant} />
           </div>
           <div>
@@ -243,7 +244,7 @@ export default function ProductActions({
           </div>
         </div>
 
-        {/* Quantity selector , add to cart, buy now  */}
+        {/* Quantity selector, add to cart, buy now */}
         <div className="flex flex-col gap-3">
           <div className="w-[100px]">
             {/* Quantity Selector */}
