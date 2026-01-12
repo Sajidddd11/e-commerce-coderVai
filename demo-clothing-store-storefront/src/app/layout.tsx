@@ -2,6 +2,7 @@ import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import Script from "next/script"
 import RootProvider from "@modules/common/components/root-provider"
+import WhatsAppChatButton from "@modules/common/components/whatsapp-chat-button"
 import "styles/globals.css"
 
 export const metadata: Metadata = {
@@ -50,6 +51,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
 
         <RootProvider>
           <main className="relative m-0 p-0">{props.children}</main>
+          <WhatsAppChatButton />
         </RootProvider>
       </body>
     </html>
