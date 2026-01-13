@@ -24,10 +24,10 @@ export default function PurchaseTracker({ order }: PurchaseTrackerProps) {
       order.items?.map((item) => ({
         id: item.product_id || item.variant_id || "",
         quantity: item.quantity || 1,
-        price: (item.unit_price || 0) / 100, // Convert from cents
+        price: item.unit_price || 0, // Price is already in correct currency units
       })) || []
 
-    const totalValue = (order.total || 0) / 100 // Convert from cents
+    const totalValue = order.total || 0 // Total is already in correct currency units
     const currency = order.currency_code?.toUpperCase() || "BDT"
     const numItems = order.items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0
 

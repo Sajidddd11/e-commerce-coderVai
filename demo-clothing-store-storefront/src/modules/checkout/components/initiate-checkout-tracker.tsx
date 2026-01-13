@@ -23,10 +23,10 @@ export default function InitiateCheckoutTracker({ cart }: InitiateCheckoutTracke
     const cartItems = cart.items.map((item) => ({
       id: item.product_id || item.variant_id || "",
       quantity: item.quantity || 1,
-      price: (item.unit_price || 0) / 100, // Convert from cents
+      price: item.unit_price || 0, // Price is already in correct currency units
     }))
 
-    const totalValue = (cart.total || 0) / 100 // Convert from cents
+    const totalValue = cart.total || 0 // Total is already in correct currency units
     const currency = cart.region?.currency_code?.toUpperCase() || "BDT"
     const numItems = cart.items.reduce((sum, item) => sum + (item.quantity || 1), 0)
 

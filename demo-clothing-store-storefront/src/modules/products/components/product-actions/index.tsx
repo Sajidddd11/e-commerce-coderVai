@@ -145,7 +145,7 @@ export default function ProductActions({
       productId: product.id || "",
       productName: product.title || "",
       quantity: quantity,
-      price: price / 100, // Convert from cents to currency units
+      price: price, // Price is already in correct currency units
       currency: region?.currency_code?.toUpperCase() || "BDT",
     })
 

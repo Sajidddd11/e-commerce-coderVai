@@ -24,11 +24,11 @@ export default function ViewContentTracker({ product, region }: ViewContentTrack
     // Get the cheapest variant price
     const firstVariant = product.variants?.[0]
     const price = firstVariant?.calculated_price?.calculated_amount || 0
-
+    
     trackViewContent({
       productId: product.id || "",
       productName: product.title || "",
-      price: price / 100, // Convert from cents
+      price: price, // Price is already in correct currency units
       currency: region?.currency_code?.toUpperCase() || "BDT",
     })
   }, [product.id, region?.currency_code]) // Track once per product

@@ -36,7 +36,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
               
               // Only initialize once
               if (!window._fbq_initialized) {
-                fbq('init', '2204025276331885');
+                fbq('init', '868788322534380');
                 fbq('track', 'PageView');
                 window._fbq_initialized = true;
               }
@@ -48,7 +48,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=2204025276331885&ev=PageView&noscript=1"
+            src="https://www.facebook.com/tr?id=868788322534380&ev=PageView&noscript=1"
             alt=""
           />
         </noscript>
