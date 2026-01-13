@@ -15,12 +15,12 @@ interface CategoryShowcaseProps {
 
 const getRandomImage = (index: number) => {
   const images = [
-    "https://i.ibb.co.com/6SypGNs/1.jpg",
-    "https://i.ibb.co.com/qYb0q9Rn/Black-Premium-Leather-Square-Backpack-SB-BP129-3.jpg",
-    "https://i.ibb.co.com/B5LMxDy2/3.jpg",
-    "https://i.ibb.co.com/G4Mh2PYJ/4.jpg",
-    "https://i.ibb.co.com/gFrZVRn6/5.webp",
-    "https://i.ibb.co.com/PZTBMyBG/6.webp",
+    "/category/c1.jpg",
+    "/category/222.jpg",
+    "/category/c33.jpg",
+    "/category/c44.jpg",
+    "/category/c555.jpg",
+    "/category/c6.jpg",
     "https://i.ibb.co.com/B5t4yDsR/Screenshot-2025-11-27-at-2-41-10-AM.png",
     "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=400&fit=crop",
     "https://images.unsplash.com/photo-1595707707802-51b39fd9b371?w=600&h=400&fit=crop",
