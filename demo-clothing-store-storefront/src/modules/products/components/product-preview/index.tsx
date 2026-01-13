@@ -343,7 +343,7 @@ export default function ProductPreview({
         <div className="space-y-1 mb-2 small:mb-3 pt-1 small:pt-2">
           {/* Current Price (highlighted) */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-800">Price:</span>
+            <span className="hidden xsmall:block text-sm font-medium text-slate-800">Price:</span>
             <ResponsivePrice
               formattedPrice={formattedDiscountedPrice}
               baseClassName="text-xl small:text-2xl font-bold text-slate-900"
