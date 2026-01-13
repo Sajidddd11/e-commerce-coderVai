@@ -268,7 +268,7 @@ export default function ProductPreview({
   return (
     <div
       ref={cardRef}
-      className={`group relative flex flex-col h-fit w-full bg-white shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer font-['Ubuntu'] ${isNavigating ? 'opacity-75' : ''
+      className={`group relative flex flex-col h-fit w-full bg-white shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer ${isNavigating ? 'opacity-75' : ''
         }`}
       onClick={handleCardClick}
       data-clickable="true"

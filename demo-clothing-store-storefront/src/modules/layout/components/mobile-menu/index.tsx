@@ -76,7 +76,7 @@ export default function MobileMenu({
           <div className="px-4 py-2 space-y-1">
             <LocalizedClientLink
               href="/store"
-              className={`block px-4 py-2 text-slate-800 hover:bg-slate-50 rounded-lg font-medium transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] text-base ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+              className={`block px-4 py-2 text-slate-800 hover:bg-slate-50 rounded-lg font-medium transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] text-base ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
               style={{
                 transitionDelay: isOpen ? "50ms" : "0ms",
               }}
@@ -89,7 +89,7 @@ export default function MobileMenu({
             <div className=" border-slate-100">
               <LocalizedClientLink
                 href="/account"
-                className={`block px-4 py-2 text-slate-800 hover:bg-slate-50 rounded-lg font-medium transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] text-base ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                className={`block px-4 py-2 text-slate-800 hover:bg-slate-50 rounded-lg font-medium transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] text-base ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
                 style={{
                   transitionDelay: isOpen ? `${400 + topLevelCategories.length * 25}ms` : "0ms",
                 }}
@@ -100,7 +100,7 @@ export default function MobileMenu({
             </div>
 
             <div className="border-t border-slate-100">
-              <h3 className={`px-4 py-1 text-base font-semibold text-slate-900 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+              <h3 className={`px-4 py-1 text-base font-semibold text-slate-900 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
                 style={{
                   transitionDelay: isOpen ? "100ms" : "0ms",
                 }}
@@ -113,7 +113,7 @@ export default function MobileMenu({
                   <LocalizedClientLink
                     key={category.id}
                     href={`/categories/${category.handle}`}
-                    className={`block px-6 py-1 text-slate-800 hover:bg-slate-50 text-base transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"} ${isActive
+                    className={`block px-6 py-1 text-slate-800 hover:bg-slate-50 text-base transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"} ${isActive
                       ? "text-black bg-grey-20 px-2 py-1 rounded-sm"
                       : ""
                       }`}
@@ -133,7 +133,7 @@ export default function MobileMenu({
 
             {regions && regions.length > 1 && (
               <div className="border-t border-slate-100">
-                <h3 className={`px-4 py-2 text-base font-semibold text-slate-900 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                <h3 className={`px-4 py-2 text-base font-semibold text-slate-900 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
                   style={{
                     transitionDelay: isOpen ? `${450 + topLevelCategories.length * 25}ms` : "0ms",
                   }}
@@ -143,7 +143,7 @@ export default function MobileMenu({
                 {regions.map((region, index) => (
                   <div
                     key={region.id}
-                    className={`px-4 py-2 text-slate-800 text-base transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-['Ubuntu'] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
+                    className={`px-4 py-2 text-slate-800 text-base transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"}`}
                     style={{
                       transitionDelay: isOpen ? `${500 + topLevelCategories.length * 25 + index * 25}ms` : "0ms",
                     }}

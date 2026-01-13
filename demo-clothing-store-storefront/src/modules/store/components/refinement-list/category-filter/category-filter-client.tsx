@@ -40,17 +40,17 @@ export default function CategoryFilterClient({
 
   return (
     <div className="py-4 w-fit" data-testid={dataTestId || "category-filter"}>
-      <h3 className="text-lg font-bold text-slate-900 mb-4 font-['Ubuntu']">Categories</h3>
+      <h3 className="text-lg font-bold text-slate-900 mb-4">Categories</h3>
 
       {categories.length === 0 ? (
-        <p className="text-sm font-medium text-slate-600 font-['Ubuntu']">No categories available</p>
+        <p className="text-sm font-medium text-slate-600">No categories available</p>
       ) : (
         <ul className="space-y-2">
           {categories.map((category) => (
             <li key={category.id}>
               <button
                 onClick={() => handleCategorySelect(category.id)}
-                className={`w-fit px-2 text-left rounded text-base font-medium overflow-hidden font-['Ubuntu'] text-md transition-all duration-300 ease-in-out ${selectedCategoryId === category.id
+                className={`w-fit px-2 text-left rounded text-base font-medium overflow-hidden text-md transition-all duration-300 ease-in-out ${selectedCategoryId === category.id
                     ? "bg-slate-900 text-white font-semibold"
                     : "text-slate-700 hover:bg-grey-10 hover:text-slate-900 hover:ml-2 hover:font-medium hover:cursor-pointer"
                   }`}

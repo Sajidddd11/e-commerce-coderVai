@@ -55,7 +55,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   })()
 
   return (
-    <div id="product-info" className="flex flex-col gap-2 font-['Ubuntu']">
+    <div id="product-info" className="flex flex-col gap-2">
       {/* Collection Link */}
       {product.collection && (
         <LocalizedClientLink

@@ -41,7 +41,7 @@ export default function CategoryTemplate({
     <div className="w-full min-h-screen bg-gradient-to-b from-white to-grey-5">
       <div className="content-container py-8 small:py-12">
         {/* Breadcrumb Navigation */}
-        <div className="mb-8 flex items-center gap-2 text-base font-medium text-slate-700 font-['Ubuntu']">
+        <div className="mb-8 flex items-center gap-2 text-base font-medium text-slate-700">
           <LocalizedClientLink href="/" className="hover:text-slate-900 transition-colors">
             Home
           </LocalizedClientLink>
@@ -67,11 +67,11 @@ export default function CategoryTemplate({
 
         {/* Category Header */}
         <div className="mb-12">
-          <h1 className="text-4xl small:text-5xl font-bold text-slate-900 mb-3 font-['Ubuntu']" data-testid="category-page-title">
+          <h1 className="text-4xl small:text-5xl font-bold text-slate-900 mb-3" data-testid="category-page-title">
             {category.name}
           </h1>
           {category.description && (
-            <p className="text-grey-60 text-base max-w-2xl font-['Ubuntu']">
+            <p className="text-grey-60 text-base max-w-2xl">
               {category.description}
             </p>
           )}
