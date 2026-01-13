@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { trackInitiateCheckout } from "@lib/util/facebook-pixel"
 
@@ -13,9 +13,12 @@ type InitiateCheckoutTrackerProps = {
  * Fires once when checkout page loads
  */
 export default function InitiateCheckoutTracker({ cart }: InitiateCheckoutTrackerProps) {
+  const hasTracked = useRef(false)
+
   useEffect(() => {
-    // Track InitiateCheckout event only once when component mounts
-    if (!cart || !cart.items || cart.items.length === 0) return
+    // Prevent duplicate tracking (React Strict Mode or re-renders)
+    if (!cart || !cart.items || cart.items.length === 0 || hasTracked.current) return
+    hasTracked.current = true
 
     const cartItems = cart.items.map((item) => ({
       id: item.product_id || item.variant_id || "",

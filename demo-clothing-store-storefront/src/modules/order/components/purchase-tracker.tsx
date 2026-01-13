@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { trackPurchase } from "@lib/util/facebook-pixel"
 
@@ -13,9 +13,12 @@ type PurchaseTrackerProps = {
  * Fires once when order confirmation page loads
  */
 export default function PurchaseTracker({ order }: PurchaseTrackerProps) {
+  const hasTracked = useRef(false)
+
   useEffect(() => {
-    // Track Purchase event only once when component mounts
-    if (!order) return
+    // Prevent duplicate tracking (React Strict Mode or re-renders)
+    if (!order || hasTracked.current) return
+    hasTracked.current = true
 
     const orderItems =
       order.items?.map((item) => ({

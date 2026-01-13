@@ -11,6 +11,7 @@ declare global {
       eventName: string,
       data?: Record<string, any>
     ) => void
+    _fbq_initialized?: boolean
   }
 }
 
