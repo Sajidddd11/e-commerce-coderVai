@@ -3,6 +3,7 @@ import { retrieveCustomer } from "@lib/data/customer"
 import Review from "@modules/checkout/components/review"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import CheckoutClient from "@modules/checkout/templates/checkout-client"
+import InitiateCheckoutTracker from "@modules/checkout/components/initiate-checkout-tracker"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
@@ -27,6 +28,9 @@ export default async function Checkout({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
+      {/* Track Facebook Pixel InitiateCheckout event */}
+      <InitiateCheckoutTracker cart={cart} />
+      
       <div className="content-container py-6 small:py-12">
         <h1 className="text-2xl small:text-4xl font-bold text-slate-900 mb-6 small:mb-8">
           Checkout

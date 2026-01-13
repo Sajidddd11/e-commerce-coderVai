@@ -14,6 +14,7 @@ import ResponsivePrice from "@modules/common/components/responsive-price"
 import { useState, useMemo, useRef, useEffect } from "react"
 import { isEqual } from "lodash"
 import { useParams, useRouter } from "next/navigation"
+import { trackAddToCart } from "@lib/util/facebook-pixel"
 
 type ProductPreviewProps = {
   product: HttpTypes.StoreProduct
@@ -189,6 +190,16 @@ export default function ProductPreview({
         variantId: variantToAdd.id,
         quantity: 1,
         countryCode,
+      })
+
+      // Track Facebook Pixel AddToCart event
+      const price = variantToAdd.calculated_price?.calculated_amount || 0
+      trackAddToCart({
+        productId: product.id || "",
+        productName: product.title || "",
+        quantity: 1,
+        price: price / 100, // Convert from cents to currency units
+        currency: region?.currency_code?.toUpperCase() || "BDT",
       })
     } finally {
       setIsAdding(false)

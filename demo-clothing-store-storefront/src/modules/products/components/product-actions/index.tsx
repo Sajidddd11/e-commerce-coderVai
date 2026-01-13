@@ -16,6 +16,7 @@ import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 import ReactMarkdown from "react-markdown"
+import { trackAddToCart } from "@lib/util/facebook-pixel"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -34,6 +35,7 @@ const optionsAsKeymap = (
 
 export default function ProductActions({
   product,
+  region,
   disabled,
 }: ProductActionsProps) {
   const router = useRouter()
@@ -135,6 +137,16 @@ export default function ProductActions({
       variantId: selectedVariant.id,
       quantity: quantity,
       countryCode,
+    })
+
+    // Track Facebook Pixel AddToCart event
+    const price = selectedVariant.calculated_price?.calculated_amount || 0
+    trackAddToCart({
+      productId: product.id || "",
+      productName: product.title || "",
+      quantity: quantity,
+      price: price / 100, // Convert from cents to currency units
+      currency: region?.currency_code?.toUpperCase() || "BDT",
     })
 
     setIsAdding(false)

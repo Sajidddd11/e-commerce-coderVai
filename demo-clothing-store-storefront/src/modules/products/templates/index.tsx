@@ -8,6 +8,7 @@ import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import ProductDescriptionSection from "@modules/products/components/product-description-section"
+import ViewContentTracker from "@modules/products/components/view-content-tracker"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 
@@ -85,6 +86,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
       />
+
+      {/* Track Facebook Pixel ViewContent event */}
+      <ViewContentTracker product={product} region={region} />
 
       <div className="w-full min-h-screen bg-white">
         <div className="content-container py-2 small:py-2 medium:py-3">
