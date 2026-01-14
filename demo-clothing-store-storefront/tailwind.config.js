@@ -60,7 +60,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
-          "Inter",
+          "Neue Hans Kendrick",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
@@ -68,15 +68,30 @@ module.exports = {
           "Helvetica Neue",
           "sans-serif",
         ],
+        north: [
+          "North",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
+        ],
+        kendrick: [
+          "Neue Hans Kendrick",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
+        ],
+        // Legacy support - mapped to new fonts
         montserrat: [
-          "Montserrat",
+          "North",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "sans-serif",
         ],
         inter: [
-          "Inter",
+          "Neue Hans Kendrick",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",

@@ -80,7 +80,10 @@ export default async function CategoryShowcase({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center px-2 xsmall:px-4 py-1 xsmall:py-4">
-                      <h3 className="typography-subheading-sm text-white text-center line-clamp-2 xsmall:text-xl">
+                      <h3
+                        className="text-base xsmall:text-xl small:text-lg font-medium text-white text-center line-clamp-2"
+                        style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+                      >
                         {category.name}
                       </h3>
                     </div>
@@ -179,8 +182,11 @@ async function CategoryProductSection({
 
   return (
     <div className="w-full flex flex-col">
-      {/* Category Title - Visible on all devices */}
-      <h3 className="text-xl xsmall:text-2xl small:text-3xl font-bold text-grey-90 mb-4 xsmall:mb-6">
+      {/* Category Title - Visible on all devices - North Font */}
+      <h3
+        className="text-xl xsmall:text-2xl small:text-3xl font-bold text-grey-90 mb-4 xsmall:mb-6"
+        style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+      >
         {category.name}
       </h3>
 
@@ -209,7 +215,10 @@ async function CategoryProductSection({
                 height: "60px",
               }}
             >
-              <h3 className="text-center font-semibold text-white text-2xl line-clamp-2">
+              <h3
+                className="text-center font-semibold text-white text-2xl line-clamp-2"
+                style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+              >
                 {category.name}
               </h3>
             </div>
@@ -263,7 +272,10 @@ async function AllProductsRow({
       >
         <div className="w-full h-full flex items-center justify-center group-hover:opacity-30 transition-opacity duration-300">
           <div className="text-center">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
+            <h3
+              className="text-lg font-bold text-gray-900 mb-2"
+              style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+            >
               See All
             </h3>
             <p className="text-sm text-gray-600">
@@ -278,7 +290,10 @@ async function AllProductsRow({
           className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
         >
           <div className="text-center px-4">
-            <p className="text-white font-semibold text-lg">
+            <p
+              className="text-white font-semibold text-lg"
+              style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+            >
               See All Products
             </p>
             <p className="text-white text-sm mt-2">

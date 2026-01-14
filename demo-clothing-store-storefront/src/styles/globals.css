@@ -1,4 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Inter:wght@400;500;600&family=Rajdhani:wght@300;400;500;600;700&family=Ubuntu:wght@300;400;500;700&display=swap');
+/* Custom Fonts for ZAHAN */
+@font-face {
+  font-family: 'North';
+  src: url('/North.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neue Hans Kendrick';
+  src: url('/NeueHansKendrick-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @import "tailwindcss/base";
 @import "tailwindcss/components";
@@ -353,118 +368,119 @@
 
 @layer components {
   /* ============================================================================
-     ZAHAN Typography System
-     Implements the standardized font usage for Brand, Headings, Body, and CTAs
+     ZAHAN Typography System - Custom Fonts
+     North: Headings, Brand, Focus Areas
+     Neue Hans Kendrick: Body Text, Descriptions, General Content
      ============================================================================ */
 
-  /* Brand / Logo Text - Montserrat 600-700 */
+  /* Brand / Logo Text - North */
   .typography-brand {
-    @apply font-montserrat font-bold text-lg;
+    @apply font-north font-bold text-lg;
   }
 
   .typography-brand-lg {
-    @apply font-montserrat font-bold text-xl;
+    @apply font-north font-bold text-xl;
   }
 
-  /* Hero Section - Montserrat 700 */
+  /* Hero Section - North */
   .typography-hero {
-    @apply font-montserrat font-bold text-4xl small:text-5xl medium:text-6xl;
+    @apply font-north font-bold text-4xl small:text-5xl medium:text-6xl;
   }
 
-  /* Section Headings - Montserrat 600 */
+  /* Section Headings - North */
   .typography-section-heading {
-    @apply font-montserrat font-semibold text-2xl small:text-3xl;
+    @apply font-north font-semibold text-2xl small:text-3xl;
   }
 
   .typography-section-heading-lg {
-    @apply font-montserrat font-semibold text-3xl small:text-4xl;
+    @apply font-north font-semibold text-3xl small:text-4xl;
   }
 
   .typography-section-heading-sm {
-    @apply font-montserrat font-semibold text-xl small:text-2xl;
+    @apply font-north font-semibold text-xl small:text-2xl;
   }
 
-  /* Sub-Headings - Montserrat 500 */
+  /* Sub-Headings - North */
   .typography-subheading {
-    @apply font-montserrat font-medium text-lg small:text-xl;
+    @apply font-north font-medium text-lg small:text-xl;
   }
 
   .typography-subheading-lg {
-    @apply font-montserrat font-medium text-xl small:text-2xl;
+    @apply font-north font-medium text-xl small:text-2xl;
   }
 
   .typography-subheading-sm {
-    @apply font-montserrat font-medium text-base small:text-lg;
+    @apply font-north font-medium text-base small:text-lg;
   }
 
-  /* Body Text / Paragraphs - Inter 400 */
+  /* Body Text / Paragraphs - Neue Hans Kendrick */
   .typography-body {
-    @apply font-inter font-normal text-base leading-relaxed;
+    @apply font-kendrick font-normal text-base leading-relaxed;
   }
 
   .typography-body-lg {
-    @apply font-inter font-normal text-lg leading-relaxed;
+    @apply font-kendrick font-normal text-lg leading-relaxed;
   }
 
   .typography-body-sm {
-    @apply font-inter font-normal text-sm leading-relaxed;
+    @apply font-kendrick font-normal text-sm leading-relaxed;
   }
 
-  /* Product Titles - Inter 500 */
+  /* Product Titles - North (for focus/attention) */
   .typography-product-title {
-    @apply font-inter font-medium text-lg small:text-xl;
+    @apply font-north font-medium text-lg small:text-xl;
   }
 
   .typography-product-title-lg {
-    @apply font-inter font-medium text-xl small:text-2xl;
+    @apply font-north font-medium text-xl small:text-2xl;
   }
 
   .typography-product-title-sm {
-    @apply font-inter font-medium text-base small:text-lg;
+    @apply font-north font-medium text-base small:text-lg;
   }
 
-  /* Product Descriptions - Inter 400 */
+  /* Product Descriptions - Neue Hans Kendrick */
   .typography-product-desc {
-    @apply font-inter font-normal text-base leading-relaxed;
+    @apply font-kendrick font-normal text-base leading-relaxed;
   }
 
   .typography-product-desc-sm {
-    @apply font-inter font-normal text-sm leading-relaxed;
+    @apply font-kendrick font-normal text-sm leading-relaxed;
   }
 
-  /* Navigation Menu - Inter 500 */
+  /* Navigation Menu - Neue Hans Kendrick */
   .typography-nav {
-    @apply font-inter font-medium text-base;
+    @apply font-kendrick font-medium text-base;
   }
 
   .typography-nav-lg {
-    @apply font-inter font-medium text-lg;
+    @apply font-kendrick font-medium text-lg;
   }
 
   .typography-nav-sm {
-    @apply font-inter font-medium text-sm;
+    @apply font-kendrick font-medium text-sm;
   }
 
-  /* Buttons / CTAs - Inter 600 */
+  /* Buttons / CTAs - North (for attention/focus) */
   .typography-button {
-    @apply font-inter font-semibold text-base;
+    @apply font-north font-semibold text-base;
   }
 
   .typography-button-lg {
-    @apply font-inter font-semibold text-lg;
+    @apply font-north font-semibold text-lg;
   }
 
   .typography-button-sm {
-    @apply font-inter font-semibold text-sm;
+    @apply font-north font-semibold text-sm;
   }
 
-  /* Footer Text - Inter 400 */
+  /* Footer Text - Neue Hans Kendrick */
   .typography-footer {
-    @apply font-inter font-normal text-sm;
+    @apply font-kendrick font-normal text-sm;
   }
 
   .typography-footer-lg {
-    @apply font-inter font-normal text-base;
+    @apply font-kendrick font-normal text-base;
   }
 
   /* Bangla Text - SolaimanLipi Regular */

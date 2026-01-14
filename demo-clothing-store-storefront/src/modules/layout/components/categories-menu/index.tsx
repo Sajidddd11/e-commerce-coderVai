@@ -41,7 +41,10 @@ export default function CategoriesMenu({ categories }: CategoriesMenuProps) {
                 <div className="flex-shrink-0 transition-all">
                   <IconComponent className="" size={16} />
                 </div>
-                <div className="hidden small:inline typography-nav">
+                <div
+                  className="hidden small:inline text-xs"
+                  style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+                >
                   {category.name}
                 </div>
               </LocalizedClientLink>

@@ -67,7 +67,11 @@ export default function CategoryTemplate({
 
         {/* Category Header */}
         <div className="mb-12">
-          <h1 className="text-4xl small:text-5xl font-bold text-slate-900 mb-3" data-testid="category-page-title">
+          <h1
+            className="text-4xl small:text-5xl font-bold text-slate-900 mb-3"
+            data-testid="category-page-title"
+            style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+          >
             {category.name}
           </h1>
           {category.description && (
@@ -80,7 +84,10 @@ export default function CategoryTemplate({
         {/* Subcategories */}
         {category.category_children && category.category_children.length > 0 && (
           <div className="mb-12 pb-8 border-b border-grey-20">
-            <h2 className="text-lg font-semibold text-grey-90 mb-4">
+            <h2
+              className="text-lg font-semibold text-grey-90 mb-4"
+              style={{ fontFamily: 'North, -apple-system, BlinkMacSystemFont, sans-serif' }}
+            >
               Subcategories
             </h2>
             <div className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-4">
