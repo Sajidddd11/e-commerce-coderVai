@@ -1,6 +1,7 @@
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon, PhoneIcon } from "@modules/common/icons/social-icons"
+import TrustBadges from "@modules/layout/components/trust-badges"
 import Image from "next/image"
 
 export default async function Footer() {
@@ -9,9 +10,12 @@ export default async function Footer() {
 
   return (
     <footer className="w-full bg-black text-white">
+      {/* Trust Badges - Top Row */}
+      <TrustBadges />
+
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-12 md:pt-16 pb-6 md:pb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
 
           {/* Brand Section */}
           <div className="lg:col-span-1">
@@ -35,7 +39,7 @@ export default async function Footer() {
             </div>
           </div>
 
-          {/* Shop Section - Dynamic Categories */}
+          {/* Navigation Links - Shop Section */}
           <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Shop</h3>
             <ul className="space-y-2.5">
@@ -55,7 +59,7 @@ export default async function Footer() {
             </ul>
           </div>
 
-          {/* Company Section */}
+          {/* Company Links */}
           <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Company</h3>
             <ul className="space-y-2.5">
@@ -87,7 +91,7 @@ export default async function Footer() {
             </ul>
           </div>
 
-          {/* Support Section */}
+          {/* Support Links */}
           <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Support</h3>
 
@@ -129,89 +133,89 @@ export default async function Footer() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Social Media - Horizontal Section */}
-        <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-gray-800">
-          <h3 className="text-white font-semibold text-sm md:text-base mb-4 md:mb-6 text-center">Connect With Us</h3>
-          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
-            <a
-              href="https://instagram.com/zahan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-            >
-              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                <InstagramIcon size={20} />
-              </div>
-              <span className="text-sm font-medium hidden md:inline">Instagram</span>
-            </a>
+          {/* Connect / Contact Section */}
+          <div className="text-center md:text-left">
+            <h3 className="text-white font-semibold text-base mb-4">Connect With Us</h3>
+            <div className="flex flex-col gap-3">
+              <a
+                href="https://instagram.com/zahan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+              >
+                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                  <InstagramIcon size={16} />
+                </div>
+                <span className="text-sm">Instagram</span>
+              </a>
 
-            <a
-              href="https://facebook.com/zahan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-            >
-              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                <FacebookIcon size={20} />
-              </div>
-              <span className="text-sm font-medium hidden md:inline">Facebook</span>
-            </a>
+              <a
+                href="https://facebook.com/zahan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+              >
+                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                  <FacebookIcon size={16} />
+                </div>
+                <span className="text-sm">Facebook</span>
+              </a>
 
-            <a
-              href="https://youtube.com/@zahan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-            >
-              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                <YouTubeIcon size={20} />
-              </div>
-              <span className="text-sm font-medium hidden md:inline">YouTube</span>
-            </a>
+              <a
+                href="https://youtube.com/@zahan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+              >
+                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                  <YouTubeIcon size={16} />
+                </div>
+                <span className="text-sm">YouTube</span>
+              </a>
 
-            <a
-              href="https://tiktok.com/@zahan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-            >
-              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                <TikTokIcon size={20} />
-              </div>
-              <span className="text-sm font-medium hidden md:inline">TikTok</span>
-            </a>
+              <a
+                href="https://tiktok.com/@zahan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+              >
+                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                  <TikTokIcon size={16} />
+                </div>
+                <span className="text-sm">TikTok</span>
+              </a>
 
-            <a
-              href="https://wa.me/8809677610610"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-            >
-              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                <WhatsAppIcon size={20} />
-              </div>
-              <span className="text-sm font-medium hidden md:inline">WhatsApp</span>
-            </a>
+              <a
+                href="https://wa.me/8809677610610"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+              >
+                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                  <WhatsAppIcon size={16} />
+                </div>
+                <span className="text-sm">WhatsApp</span>
+              </a>
 
-            <a
-              href="mailto:info@zahan.com.bd"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-            >
-              <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                <MailIcon size={20} />
-              </div>
-              <span className="text-sm font-medium hidden md:inline">Email</span>
-            </a>
+              <a
+                href="mailto:info@zahan.com.bd"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+              >
+                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
+                  <MailIcon size={16} />
+                </div>
+                <span className="text-sm">Email</span>
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Secure Payment */}
+        {/* Payment Methods - Separate Row */}
         <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800">
           <div className="text-center">
             <h4 className="text-white font-semibold text-xs md:text-sm mb-2 md:mb-3">SECURE PAYMENT & TRUST</h4>
-            <p className="text-gray-500 text-xs mb-2 md:mb-3">🔒 SSL Secured Checkout</p>
+            <p className="text-gray-500 text-xs mb-2 md:mb-3">SSL Secured Checkout</p>
 
             <div className="flex justify-center">
               <Image
