@@ -51,7 +51,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "i.ibb.co",
-      },{
+      }, {
         protocol: "https",
         hostname: "ibb.co.com",
       },
@@ -64,14 +64,18 @@ const nextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "e-com-cvit.s3.ap-south-1.amazonaws.com",
+      },
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [
-            {
-              protocol: "https",
-              hostname: S3_HOSTNAME,
-              pathname: S3_PATHNAME,
-            },
-          ]
+          {
+            protocol: "https",
+            hostname: S3_HOSTNAME,
+            pathname: S3_PATHNAME,
+          },
+        ]
         : []),
     ],
   },
