@@ -137,75 +137,75 @@ export default async function Footer() {
           {/* Connect / Contact Section */}
           <div className="text-center md:text-left">
             <h3 className="text-white font-semibold text-base mb-4">Connect With Us</h3>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center md:justify-start">
               <a
                 href="https://instagram.com/zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                   <InstagramIcon size={16} />
                 </div>
-                <span className="text-sm">Instagram</span>
+                <span className="text-sm hidden md:inline">Instagram</span>
               </a>
 
               <a
                 href="https://facebook.com/zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                   <FacebookIcon size={16} />
                 </div>
-                <span className="text-sm">Facebook</span>
+                <span className="text-sm hidden md:inline">Facebook</span>
               </a>
 
               <a
                 href="https://youtube.com/@zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                   <YouTubeIcon size={16} />
                 </div>
-                <span className="text-sm">YouTube</span>
+                <span className="text-sm hidden md:inline">YouTube</span>
               </a>
 
               <a
                 href="https://tiktok.com/@zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                   <TikTokIcon size={16} />
                 </div>
-                <span className="text-sm">TikTok</span>
+                <span className="text-sm hidden md:inline">TikTok</span>
               </a>
 
               <a
                 href="https://wa.me/8809677610610"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                   <WhatsAppIcon size={16} />
                 </div>
-                <span className="text-sm">WhatsApp</span>
+                <span className="text-sm hidden md:inline">WhatsApp</span>
               </a>
 
               <a
                 href="mailto:info@zahan.com.bd"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group justify-center md:justify-start"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
                   <MailIcon size={16} />
                 </div>
-                <span className="text-sm">Email</span>
+                <span className="text-sm hidden md:inline">Email</span>
               </a>
             </div>
           </div>
