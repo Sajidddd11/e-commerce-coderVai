@@ -142,48 +142,48 @@ export default async function Footer() {
                 href="https://facebook.com/zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+                className="flex items-center gap-2 group"
               >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <FacebookIcon size={16} />
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  <FacebookIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline">Facebook</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">Facebook</span>
               </a>
 
               <a
                 href="https://youtube.com/@zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+                className="flex items-center gap-2 group"
               >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <YouTubeIcon size={16} />
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  <YouTubeIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline">YouTube</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">YouTube</span>
               </a>
 
               <a
                 href="https://tiktok.com/@zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+                className="flex items-center gap-2 group"
               >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <TikTokIcon size={16} />
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  <TikTokIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline">TikTok</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">TikTok</span>
               </a>
 
               <a
                 href="https://instagram.com/zahan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+                className="flex items-center gap-2 group"
               >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <InstagramIcon size={16} />
+                <div className="transition-transform duration-300 group-hover:scale-110">
+                  <InstagramIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline">Instagram</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">Instagram</span>
               </a>
             </div>
           </div>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     icon: "/Final Logo BW.png",
   },
   other: {
-    "facebook-domain-verification": "i5nn3i9uzdw2jteotpcqxjxauforqg",
+    "facebook-domain-verification": "5o1vb0pkq3rn3346giou710ut8jo9c",
   },
 }
 
@@ -36,7 +36,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
               
               // Only initialize once
               if (!window._fbq_initialized) {
-                fbq('init', '868788322534380');
+                fbq('init', '875095208469171');
                 fbq('track', 'PageView');
                 window._fbq_initialized = true;
               }
@@ -48,7 +48,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=868788322534380&ev=PageView&noscript=1"
+            src="https://www.facebook.com/tr?id=875095208469171&ev=PageView&noscript=1"
             alt=""
           />
         </noscript>
