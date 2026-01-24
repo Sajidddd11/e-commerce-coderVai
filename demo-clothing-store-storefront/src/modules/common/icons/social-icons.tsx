@@ -1,21 +1,19 @@
-import { IconProps } from "@types/icon"
+import { IconProps } from "../../../types/icon"
+import Image from "next/image"
 
 export const FacebookIcon = ({
   size = 24,
   ...props
 }: IconProps) => {
+  const iconSize = typeof size === 'string' ? parseInt(size) : size
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
+    <Image
+      src="/fbz.png"
+      alt="Facebook"
+      width={iconSize}
+      height={iconSize}
       {...props}
-    >
-      <circle cx="12" cy="12" r="12" fill="#1877F2" />
-      <path d="M16.5 12.75h-2.75V21h-3.5v-8.25H8v-3h2.25V8.25c0-2.5 1.5-3.75 3.75-3.75 1 0 2 0.25 2 0.25v2.25h-1.125c-1.125 0-1.375 0.625-1.375 1.375v1.65h2.5l-0.5 3z" fill="white" />
-    </svg>
+    />
   )
 }
 
@@ -23,29 +21,15 @@ export const InstagramIcon = ({
   size = 24,
   ...props
 }: IconProps) => {
+  const iconSize = typeof size === 'string' ? parseInt(size) : size
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
+    <Image
+      src="/instaz.png"
+      alt="Instagram"
+      width={iconSize}
+      height={iconSize}
       {...props}
-    >
-      <defs>
-        <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#FCAF45" />
-          <stop offset="25%" stopColor="#FD1D1D" />
-          <stop offset="50%" stopColor="#E1306C" />
-          <stop offset="75%" stopColor="#C13584" />
-          <stop offset="100%" stopColor="#833AB4" />
-        </linearGradient>
-      </defs>
-      <rect width="24" height="24" rx="6" fill="url(#instagram-gradient)" />
-      <rect x="6" y="6" width="12" height="12" rx="3" stroke="white" strokeWidth="1.5" fill="none" />
-      <circle cx="12" cy="12" r="3" stroke="white" strokeWidth="1.5" fill="none" />
-      <circle cx="16.5" cy="7.5" r="1" fill="white" />
-    </svg>
+    />
   )
 }
 
@@ -53,19 +37,15 @@ export const YouTubeIcon = ({
   size = 24,
   ...props
 }: IconProps) => {
+  const iconSize = typeof size === 'string' ? parseInt(size) : size
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
+    <Image
+      src="/youtubez.png"
+      alt="YouTube"
+      width={iconSize}
+      height={iconSize}
       {...props}
-    >
-      <rect width="24" height="24" rx="6" fill="#FF0000" />
-      <path d="M19.615 8.654c-.191-.718-.753-1.284-1.464-1.476C16.901 6.75 12 6.75 12 6.75s-4.901 0-6.151.428c-.711.192-1.273.758-1.464 1.476C4 9.918 4 12.5 4 12.5s0 2.582.385 3.846c.191.718.753 1.284 1.464 1.476C7.099 18.25 12 18.25 12 18.25s4.901 0 6.151-.428c.711-.192 1.273-.758 1.464-1.476C20 15.082 20 12.5 20 12.5s0-2.582-.385-3.846z" fill="#FF0000" />
-      <path d="M10 15V10l5 2.5-5 2.5z" fill="white" />
-    </svg>
+    />
   )
 }
 
@@ -196,20 +176,15 @@ export const TikTokIcon = ({
   size = 24,
   ...props
 }: IconProps) => {
+  const iconSize = typeof size === 'string' ? parseInt(size) : size
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
+    <Image
+      src="/tiktokz.png"
+      alt="TikTok"
+      width={iconSize}
+      height={iconSize}
       {...props}
-    >
-      <rect width="24" height="24" rx="6" fill="black" />
-      <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 015.83 13.3a4.296 4.296 0 10.255-4.585A4.32 4.32 0 008.61 7.3v3.18a1.73 1.73 0 11-.8-.85V5.76a4.29 4.29 0 015.4 3.5V13.4a4.29 4.29 0 003.4-1.8c.35-.5.57-1.06.67-1.64V5.82h-1.98z" fill="#25F4EE" />
-      <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 015.83 13.3a4.296 4.296 0 00.255-4.585A4.32 4.32 0 008.61 7.3v3.18a1.73 1.73 0 01-.8-.85V5.76a4.29 4.29 0 015.4 3.5V13.4a4.29 4.29 0 003.4-1.8c.35-.5.57-1.06.67-1.64V5.82h-1.98z" fill="#FE2C55" />
-      <path d="M5.83 13.3c0 2.38 1.93 4.3 4.3 4.3.6 0 1.18-.12 1.7-.36v-3.18c-.52.26-1.1.4-1.7.4-2.37 0-4.3-1.92-4.3-4.3 0-.71.17-1.38.48-1.97-.88.7-1.45 1.77-1.45 2.97z" fill="white" />
-    </svg>
+    />
   )
 }
 
@@ -329,5 +304,81 @@ export const MapPinIcon = ({
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
+  )
+}
+
+export const CreditCardIcon = ({
+  color = "currentColor",
+  size = 24,
+  ...props
+}: IconProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <line x1="2" x2="22" y1="10" y2="10" />
+    </svg>
+  )
+}
+
+export const SecurePaymentIcon = () => {
+  return (
+    <div className="inline-flex flex-col items-center justify-center p-6 md:p-8 border border-gray-700 rounded-xl bg-gradient-to-br from-gray-900 to-black hover:border-gray-600 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
+      {/* Payment Cards Icon */}
+      <div className="mb-3">
+        <svg
+          width="120"
+          height="32"
+          viewBox="0 0 120 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="drop-shadow-lg"
+        >
+          {/* Multiple credit cards stacked */}
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <rect
+              key={i}
+              x={i * 12}
+              y="4"
+              width="24"
+              height="16"
+              rx="2"
+              fill={i % 3 === 0 ? '#3b82f6' : i % 3 === 1 ? '#8b5cf6' : '#ec4899'}
+              opacity="0.9"
+            />
+          ))}
+          {/* Checkmark overlay */}
+          <circle cx="110" cy="12" r="8" fill="#10b981" />
+          <path
+            d="M107 12l2 2 4-4"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      {/* Text Content */}
+      <div className="text-center">
+        <h3 className="text-white font-bold text-base md:text-lg mb-1">
+          Secure Payment
+        </h3>
+        <div className="flex items-center gap-1.5 text-gray-400 text-xs md:text-sm">
+          <LockIcon size={14} color="#10b981" />
+          <span className="font-medium text-green-400">SSL Secured</span>
+        </div>
+      </div>
+    </div>
   )
 }

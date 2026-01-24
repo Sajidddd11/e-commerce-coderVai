@@ -1,6 +1,6 @@
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon, PhoneIcon } from "@modules/common/icons/social-icons"
+import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon, PhoneIcon, SecurePaymentIcon } from "@modules/common/icons/social-icons"
 import TrustBadges from "@modules/layout/components/trust-badges"
 import Image from "next/image"
 
