@@ -475,7 +475,7 @@ If something goes wrong:
 
 ---
 
-## Need Help?
+## Need Help?fd
 
 - AWS Support: https://console.aws.amazon.com/support
 - MedusaJS Discord: https://discord.gg/medusajs

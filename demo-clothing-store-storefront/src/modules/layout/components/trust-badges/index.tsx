@@ -1,4 +1,5 @@
 import { LockIcon, TruckIcon, RefundIcon, ShieldIcon, MapPinIcon, PhoneIcon } from "@modules/common/icons/social-icons"
+import Image from "next/image"
 
 interface TrustBadge {
   id: string
@@ -56,8 +57,20 @@ export default function TrustBadges() {
               key={badge.id}
               className="flex flex-col items-center justify-center p-2 md:p-3 rounded-lg border border-gray-700 hover:border-gray-500 transition-colors duration-200"
             >
-              <div className="text-white mb-1 md:mb-2 scale-75 md:scale-100">
-                {badge.icon}
+              <div className="text-white mb-1 md:mb-2 flex items-center justify-center h-6 md:h-8">
+                {badge.id === "security" ? (
+                  <Image
+                    src="/sslcommerz.png"
+                    alt="SSLCommerz Verified"
+                    width={120}
+                    height={30}
+                    className="w-20 md:w-28 h-auto object-contain"
+                  />
+                ) : (
+                  <div className="scale-75 md:scale-100">
+                    {badge.icon}
+                  </div>
+                )}
               </div>
               <p className="text-white font-medium text-[10px] md:text-sm text-center leading-tight">
                 {badge.title}

@@ -139,18 +139,6 @@ export default async function Footer() {
             <h3 className="text-white font-semibold text-base mb-4">Connect With Us</h3>
             <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center md:justify-start">
               <a
-                href="https://instagram.com/zahan"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-              >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <InstagramIcon size={16} />
-                </div>
-                <span className="text-sm hidden md:inline">Instagram</span>
-              </a>
-
-              <a
                 href="https://facebook.com/zahan"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -187,25 +175,15 @@ export default async function Footer() {
               </a>
 
               <a
-                href="https://wa.me/8809677610610"
+                href="https://instagram.com/zahan"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
               >
                 <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <WhatsAppIcon size={16} />
+                  <InstagramIcon size={16} />
                 </div>
-                <span className="text-sm hidden md:inline">WhatsApp</span>
-              </a>
-
-              <a
-                href="mailto:info@zahan.com.bd"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
-              >
-                <div className="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 transition-colors">
-                  <MailIcon size={16} />
-                </div>
-                <span className="text-sm hidden md:inline">Email</span>
+                <span className="text-sm hidden md:inline">Instagram</span>
               </a>
             </div>
           </div>
@@ -215,15 +193,15 @@ export default async function Footer() {
         <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800">
           <div className="text-center">
             <h4 className="text-white font-semibold text-xs md:text-sm mb-2 md:mb-3">SECURE PAYMENT & TRUST</h4>
-            <p className="text-gray-500 text-xs mb-2 md:mb-3">SSL Secured Checkout</p>
+            <p className="text-gray-500 text-xs mb-2 md:mb-3">We Accept All Major Payment Methods</p>
 
             <div className="flex justify-center">
               <Image
-                src="/footer payment.png"
-                alt="Accepted Payment Methods - bKash, Nagad, Upay, Visa, MasterCard, American Express"
+                src="/sslfinal.svg"
+                alt="SSLCommerz Verified - Accepted Payment Methods: Visa, MasterCard, American Express, bKash, Nagad, Upay, Rocket, and more"
                 width={600}
-                height={80}
-                className="w-full max-w-xs md:max-w-lg h-auto"
+                height={120}
+                className="w-full max-w-xs md:max-w-2xl h-auto"
               />
             </div>
           </div>
