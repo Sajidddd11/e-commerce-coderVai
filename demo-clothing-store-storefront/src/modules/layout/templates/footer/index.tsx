@@ -9,7 +9,7 @@ export default async function Footer() {
   const productCategories = filterCategoriesWithProducts(allCategories)
 
   return (
-    <footer className="w-full bg-black text-white glossy-footer">
+    <footer className="w-full bg-black text-[#56aebf] glossy-footer">
       {/* Trust Badges - Top Row */}
       <TrustBadges />
 
@@ -41,7 +41,7 @@ export default async function Footer() {
 
           {/* Navigation Links - Shop Section */}
           <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
-            <h3 className="text-white font-semibold text-base mb-4">Shop</h3>
+            <h3 className="text-[#56aebf] font-semibold text-base mb-4">Shop</h3>
             <ul className="space-y-2.5">
               {productCategories
                 .filter((c) => !c.parent_category)
@@ -61,7 +61,7 @@ export default async function Footer() {
 
           {/* Company Links */}
           <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
-            <h3 className="text-white font-semibold text-base mb-4">Company</h3>
+            <h3 className="text-[#56aebf] font-semibold text-base mb-4">Company</h3>
             <ul className="space-y-2.5">
               <li>
                 <LocalizedClientLink href="/about" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
@@ -93,12 +93,12 @@ export default async function Footer() {
 
           {/* Support Links */}
           <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
-            <h3 className="text-white font-semibold text-base mb-4">Support</h3>
+            <h3 className="text-[#56aebf] font-semibold text-base mb-4">Support</h3>
 
             {/* 24/7 Hotline */}
             <div className="mb-4">
               <p className="text-gray-500 text-xs mb-1">24/7 Support Hotline</p>
-              <a href="tel:+8801304117711" className="text-white font-medium hover:text-gray-300 transition-colors flex items-center gap-2 justify-center md:justify-start">
+              <a href="tel:+8801304117711" className="text-[#56aebf] font-medium hover:text-gray-300 transition-colors flex items-center gap-2 justify-center md:justify-start">
                 <PhoneIcon size={16} />
                 +8801304117711
               </a>
@@ -122,7 +122,7 @@ export default async function Footer() {
             <div>
               <p className="text-gray-500 text-xs mb-2">Email Support</p>
               <div className="space-y-1">
-                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-sm hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start">
+                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-[12px] hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start">
                   <MailIcon size={16} />
                   support@zahan.com.bd
                 </a>
@@ -136,7 +136,7 @@ export default async function Footer() {
 
           {/* Connect / Contact Section */}
           <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
-            <h3 className="text-white font-semibold text-base mb-4">Connect With Us</h3>
+            <h3 className="text-[#56aebf] font-semibold text-base mb-4">Connect With Us</h3>
             <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center md:justify-start">
               <a
                 href="https://facebook.com/zahan"
@@ -192,7 +192,7 @@ export default async function Footer() {
         {/* Payment Methods - Separate Row */}
         <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800 glassmorphism-section p-5 rounded-2xl">
           <div className="text-center">
-            <h4 className="text-white font-semibold text-xs md:text-sm mb-2 md:mb-3">SECURE PAYMENT & TRUST</h4>
+            <h4 className="text-[#56aebf] font-semibold text-xs md:text-sm mb-2 md:mb-3">SECURE PAYMENT & TRUST</h4>
             <p className="text-gray-500 text-xs mb-2 md:mb-3">We Accept All Major Payment Methods</p>
 
             <div className="flex justify-center">
