@@ -13,6 +13,7 @@ import {
   Headphones,
   Monitor,
   Package,
+  PawPrint,
 } from "lucide-react"
 
 interface CategoryIconProps {
@@ -83,6 +84,10 @@ export const HeadphonesIcon = ({ size = 24, className = "" }: CategoryIconProps)
 
 export const ElectronicsIcon = ({ size = 24, className = "" }: CategoryIconProps) => (
   <Monitor size={size} className={className} strokeWidth={1.5} />
+)
+
+export const PetsIcon = ({ size = 24, className = "" }: CategoryIconProps) => (
+  <PawPrint size={size} className={className} strokeWidth={1.5} />
 )
 
 export const DefaultIcon = ({ size = 24, className = "" }: CategoryIconProps) => (
@@ -191,6 +196,16 @@ const categoryIconMap: Record<string, React.ComponentType<CategoryIconProps>> = 
   gym: SportsIcon,
   fitness: SportsIcon,
   training: SportsIcon,
+
+  // Pets
+  pets: PetsIcon,
+  pet: PetsIcon,
+  animals: PetsIcon,
+  animal: PetsIcon,
+  dogs: PetsIcon,
+  cats: PetsIcon,
+  dog: PetsIcon,
+  cat: PetsIcon,
 }
 
 export const getCategoryIcon = (categoryName: string): React.ComponentType<CategoryIconProps> => {

@@ -39,9 +39,9 @@ export default function CategoriesMenu({ categories }: CategoriesMenuProps) {
                 title={category.name}
               >
                 <div className="flex-shrink-0 transition-all">
-                  <IconComponent className="" size={16} />
+                  <IconComponent className="" size={28} />
                 </div>
-                <div className="hidden small:inline typography-nav">
+                <div className="hidden small:inline typography-nav text-lg">
                   {category.name}
                 </div>
               </LocalizedClientLink>

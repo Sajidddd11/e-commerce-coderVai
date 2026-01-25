@@ -9,7 +9,7 @@ export default async function Footer() {
   const productCategories = filterCategoriesWithProducts(allCategories)
 
   return (
-    <footer className="w-full bg-black text-white">
+    <footer className="w-full bg-black text-white glossy-footer">
       {/* Trust Badges - Top Row */}
       <TrustBadges />
 
@@ -18,7 +18,7 @@ export default async function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
 
           {/* Brand Section */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 glassmorphism-section p-5 rounded-2xl">
             <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
               {/* Company Logo */}
               <Image
@@ -32,25 +32,25 @@ export default async function Footer() {
               <Image
                 src="/playstore.png"
                 alt="Download on Google Play and App Store"
-                width={300}
+                width={170}
                 height={120}
-                className="w-auto max-w-[120px] md:max-w-[250px] h-auto order-1 md:order-2"
+                className="w-auto max-w-[120px] md:max-w-[170px] h-auto order-1 md:order-2"
               />
             </div>
           </div>
 
           {/* Navigation Links - Shop Section */}
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
             <h3 className="text-white font-semibold text-base mb-4">Shop</h3>
             <ul className="space-y-2.5">
               {productCategories
                 .filter((c) => !c.parent_category)
-                .slice(0, 6)
+                .slice(0, 8)
                 .map((c) => (
                   <li key={c.id}>
                     <LocalizedClientLink
                       href={`/categories/${c.handle}`}
-                      className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block"
+                      className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block"
                     >
                       {c.name}
                     </LocalizedClientLink>
@@ -60,31 +60,31 @@ export default async function Footer() {
           </div>
 
           {/* Company Links */}
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
             <h3 className="text-white font-semibold text-base mb-4">Company</h3>
             <ul className="space-y-2.5">
               <li>
-                <LocalizedClientLink href="/about" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                <LocalizedClientLink href="/about" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   About ZAHAN
                 </LocalizedClientLink>
               </li>
               <li>
-                <a href="mailto:partners@zahan.com.bd" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                <a href="mailto:partners@zahan.com.bd" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Wholesale & Collaboration
                 </a>
               </li>
               <li>
-                <LocalizedClientLink href="/contact" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                <LocalizedClientLink href="/contact" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Contact
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink href="/privacy-policy" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                <LocalizedClientLink href="/privacy-policy" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Privacy Policy
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink href="/terms" className="text-gray-400 text-sm hover:text-white hover:translate-x-2 transition-all duration-200 inline-block">
+                <LocalizedClientLink href="/terms" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Terms & Conditions
                 </LocalizedClientLink>
               </li>
@@ -92,15 +92,15 @@ export default async function Footer() {
           </div>
 
           {/* Support Links */}
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
             <h3 className="text-white font-semibold text-base mb-4">Support</h3>
 
             {/* 24/7 Hotline */}
             <div className="mb-4">
               <p className="text-gray-500 text-xs mb-1">24/7 Support Hotline</p>
-              <a href="tel:+8809677610610" className="text-white font-medium hover:text-gray-300 transition-colors flex items-center gap-2 justify-center md:justify-start">
+              <a href="tel:+8801304117711" className="text-white font-medium hover:text-gray-300 transition-colors flex items-center gap-2 justify-center md:justify-start">
                 <PhoneIcon size={16} />
-                +8809677610610
+                +8801304117711
               </a>
             </div>
 
@@ -108,7 +108,7 @@ export default async function Footer() {
             <div className="mb-4">
               <p className="text-gray-500 text-xs mb-2">Live Chat Support</p>
               <a
-                href="https://wa.me/8809677610610?text=Hello%2C%20I%20need%20support"
+                href="https://wa.me/8801304117711?text=Hello%2C%20I%20need%20support"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-green-400 text-sm hover:text-green-300 transition-colors flex items-center gap-2 justify-center md:justify-start"
@@ -122,11 +122,11 @@ export default async function Footer() {
             <div>
               <p className="text-gray-500 text-xs mb-2">Email Support</p>
               <div className="space-y-1">
-                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors flex items-center gap-2 justify-center md:justify-start">
+                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-sm hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start">
                   <MailIcon size={16} />
                   support@zahan.com.bd
                 </a>
-                <a href="mailto:info@zahan.com.bd" className="text-gray-400 text-sm hover:text-white transition-colors flex items-center gap-2 justify-center md:justify-start">
+                <a href="mailto:info@zahan.com.bd" className="text-gray-400 text-sm hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start">
                   <MailIcon size={16} />
                   info@zahan.com.bd
                 </a>
@@ -135,7 +135,7 @@ export default async function Footer() {
           </div>
 
           {/* Connect / Contact Section */}
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
             <h3 className="text-white font-semibold text-base mb-4">Connect With Us</h3>
             <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center md:justify-start">
               <a
@@ -147,7 +147,7 @@ export default async function Footer() {
                 <div className="transition-transform duration-300 group-hover:scale-110">
                   <FacebookIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">Facebook</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-[#56aebf] transition-colors">Facebook</span>
               </a>
 
               <a
@@ -159,7 +159,7 @@ export default async function Footer() {
                 <div className="transition-transform duration-300 group-hover:scale-110">
                   <YouTubeIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">YouTube</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-[#56aebf] transition-colors">YouTube</span>
               </a>
 
               <a
@@ -171,7 +171,7 @@ export default async function Footer() {
                 <div className="transition-transform duration-300 group-hover:scale-110">
                   <TikTokIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">TikTok</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-[#56aebf] transition-colors">TikTok</span>
               </a>
 
               <a
@@ -183,14 +183,14 @@ export default async function Footer() {
                 <div className="transition-transform duration-300 group-hover:scale-110">
                   <InstagramIcon size={20} />
                 </div>
-                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-white transition-colors">Instagram</span>
+                <span className="text-sm hidden md:inline text-gray-400 group-hover:text-[#56aebf] transition-colors">Instagram</span>
               </a>
             </div>
           </div>
         </div>
 
         {/* Payment Methods - Separate Row */}
-        <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800">
+        <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800 glassmorphism-section p-5 rounded-2xl">
           <div className="text-center">
             <h4 className="text-white font-semibold text-xs md:text-sm mb-2 md:mb-3">SECURE PAYMENT & TRUST</h4>
             <p className="text-gray-500 text-xs mb-2 md:mb-3">We Accept All Major Payment Methods</p>
@@ -218,23 +218,23 @@ export default async function Footer() {
 
             {/* Social Icons */}
             <div className="flex gap-4">
-              <a href="https://instagram.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+              <a href="https://instagram.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <InstagramIcon size={20} />
               </a>
-              <a href="https://facebook.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+              <a href="https://facebook.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <FacebookIcon size={20} />
               </a>
-              <a href="https://youtube.com/@zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+              <a href="https://youtube.com/@zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <YouTubeIcon size={20} />
               </a>
             </div>
 
             <div className="flex gap-4 text-sm">
-              <LocalizedClientLink href="/privacy-policy" className="text-gray-500 hover:text-white transition-colors">
+              <LocalizedClientLink href="/privacy-policy" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 Privacy Policy
               </LocalizedClientLink>
               <span className="text-gray-700">|</span>
-              <LocalizedClientLink href="/terms" className="text-gray-500 hover:text-white transition-colors">
+              <LocalizedClientLink href="/terms" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 Terms & Conditions
               </LocalizedClientLink>
             </div>

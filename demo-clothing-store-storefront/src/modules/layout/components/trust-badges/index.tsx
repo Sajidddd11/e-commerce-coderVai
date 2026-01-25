@@ -55,19 +55,30 @@ export default function TrustBadges() {
           {trustBadges.map((badge) => (
             <div
               key={badge.id}
-              className="flex flex-col items-center justify-center p-2 md:p-3 rounded-lg border border-gray-700 hover:border-gray-500 transition-colors duration-200"
+              className="grid grid-cols-3 items-center justify-center rounded-3xl p-3 gap-2 transition-colors duration-200 glassmorphism-section"
             >
-              <div className="text-white mb-1 md:mb-2 flex items-center justify-center h-6 md:h-8">
-                <div className="scale-75 md:scale-100">
+              <div className="p-3 w-fit mx-auto rounded-2xl glassmorphism-badge flex items-center justify-center h-fit">
+                <div className="scale-75 md:scale-100 text-[#56AEBF]">
                   {badge.icon}
                 </div>
               </div>
-              <p className="text-white font-medium text-[10px] md:text-sm text-center leading-tight">
-                {badge.title}
-              </p>
-              <p className="text-gray-400 text-[9px] md:text-xs text-center mt-0.5 md:mt-1 leading-tight">
-                {badge.description}
-              </p>
+              <div className="col-span-2 text-left">
+                <p className="text-white text-[13px] text-left leading-tight">
+                  {badge.id === "hotline" ? (
+                    <a
+                      href="tel:+8801304117711"
+                      className="text-white text-left font-medium hover:text-gray-300 transition-colors"
+                    >
+                      +8801304117711
+                    </a>
+                  ) : (
+                    badge.title
+                  )}
+                </p>
+                <p className="text-gray-400 text-[9px] md:text-xs text-left mt-0.5 md:mt-1 leading-tight">
+                  {badge.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>

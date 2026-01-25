@@ -70,7 +70,9 @@ export default function HomeHero() {
         {slides.map((slide, index) => (
           <div
             key={`slide-${index}`}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            className={`absolute inset-0 transition-opacity transition-2000 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${index === currentSlide
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 pointer-events-none"
               }`}
           >
             <LocalizedClientLink
@@ -143,8 +145,8 @@ export default function HomeHero() {
               key={index}
               onClick={() => goToSlide(index)}
               className={`transition-all duration-300 rounded-full ${index === currentSlide
-                  ? "bg-grey-0 w-6 h-1.5 xsmall:w-8 xsmall:h-2 small:w-10 small:h-2.5"
-                  : "bg-grey-0/50 hover:bg-grey-0/70 w-1.5 h-1.5 xsmall:w-2 xsmall:h-2 small:w-2.5 small:h-2.5"
+                ? "bg-grey-0 w-6 h-1.5 xsmall:w-8 xsmall:h-2 small:w-10 small:h-2.5"
+                : "bg-grey-0/50 hover:bg-grey-0/70 w-1.5 h-1.5 xsmall:w-2 xsmall:h-2 small:w-2.5 small:h-2.5"
                 }`}
               aria-label={`Go to slide ${index + 1}`}
               aria-current={index === currentSlide}

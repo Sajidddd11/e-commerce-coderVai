@@ -33,7 +33,7 @@ const SliderHorizontalDots = ({ images }: { images: string[] }) => {
 
       {/* Slides */}
       <div
-        className="flex transition-transform duration-500 h-full"
+        className="flex transition-transform transition-2000 h-full"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {images.map((img, i) => (
