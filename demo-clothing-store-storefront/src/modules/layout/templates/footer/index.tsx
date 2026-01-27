@@ -19,7 +19,7 @@ export default async function Footer() {
 
           {/* Brand Section */}
           <div className="lg:col-span-1 glassmorphism-section p-5 rounded-2xl">
-            <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
+            <div className="flex md:flex-col items-center justify-between md:justify-center gap-4">
               {/* Company Logo */}
               <Image
                 src="/footerlogo.svg"
@@ -29,13 +29,22 @@ export default async function Footer() {
                 className="w-auto h-12 md:h-20 order-2 md:order-1"
               />
               {/* App Store Badges */}
-              <Image
-                src="/playstore.png"
-                alt="Download on Google Play and App Store"
-                width={170}
-                height={120}
-                className="w-auto max-w-[120px] md:max-w-[170px] h-auto order-1 md:order-2"
-              />
+              <div className="flex flex-col items-center gap-2 order-1 md:order-2">
+                <Image
+                  src="/playstore.svg"
+                  alt="Get it on Google Play"
+                  width={135}
+                  height={40}
+                  className="w-auto h-10 md:h-12"
+                />
+                <Image
+                  src="/appstore.svg"
+                  alt="Download on App Store"
+                  width={135}
+                  height={40}
+                  className="w-auto h-10 md:h-12"
+                />
+              </div>
             </div>
           </div>
 
