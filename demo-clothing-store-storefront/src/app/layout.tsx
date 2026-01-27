@@ -8,7 +8,7 @@ import "styles/globals.css"
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
   icons: {
-    icon: "/Final Logo BW.png",
+    icon: "/favicon.ico",
   },
   other: {
     "facebook-domain-verification": "5o1vb0pkq3rn3346giou710ut8jo9c",

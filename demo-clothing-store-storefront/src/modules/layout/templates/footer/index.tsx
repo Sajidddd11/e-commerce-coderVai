@@ -131,13 +131,13 @@ export default async function Footer() {
             <div>
               <p className="text-gray-500 text-xs mb-2">Email Support</p>
               <div className="space-y-1">
-                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-[12px] hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start">
-                  <MailIcon size={16} />
+                <a href="mailto:support@zahan.com.bd" className="text-gray-400 text-[11px] hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start whitespace-nowrap">
+                  <MailIcon size={14} />
                   support@zahan.com.bd
                 </a>
-                <a href="mailto:info@zahan.com.bd" className="text-gray-400 text-sm hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start">
-                  <MailIcon size={16} />
-                  info@zahan.com.bd
+                <a href="mailto:zahan.com.bd@gmail.com" className="text-gray-400 text-[11px] hover:text-[#56aebf] transition-colors flex items-center gap-2 justify-center md:justify-start whitespace-nowrap">
+                  <MailIcon size={14} />
+                  zahan.com.bd@gmail.com
                 </a>
               </div>
             </div>
@@ -184,7 +184,7 @@ export default async function Footer() {
               </a>
 
               <a
-                href="https://instagram.com/zahan"
+                href="https://www.instagram.com/zahan.com.bd"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group"
@@ -227,7 +227,7 @@ export default async function Footer() {
 
             {/* Social Icons */}
             <div className="flex gap-4">
-              <a href="https://instagram.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
+              <a href="https://www.instagram.com/zahan.com.bd" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <InstagramIcon size={20} />
               </a>
               <a href="https://facebook.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
