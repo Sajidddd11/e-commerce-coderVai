@@ -32,9 +32,9 @@ export default async function Nav() {
                 <img
                   src="/finallogoblack.svg"
                   alt="ZAHAN"
-                  width={160}
-                  height={40}
-                  className="h-auto w-32 small:w-40"
+                  width={224}
+                  height={56}
+                  className="h-auto w-44 small:w-56"
                 />
               </LocalizedClientLink>
             </div>
