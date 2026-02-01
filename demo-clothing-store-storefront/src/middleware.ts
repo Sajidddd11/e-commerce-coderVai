@@ -104,6 +104,16 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
+  // Detect Facebook's crawler to allow domain verification
+  const userAgent = request.headers.get("user-agent") || ""
+  const isFacebookBot = userAgent.toLowerCase().includes("facebookexternalhit") ||
+    userAgent.toLowerCase().includes("facebot")
+
+  // If Facebook bot is accessing the root URL, allow it without redirect
+  if (isFacebookBot && request.nextUrl.pathname === "/") {
+    return NextResponse.next()
+  }
+
   let redirectUrl = request.nextUrl.href
 
   let response = NextResponse.redirect(redirectUrl, 307)
