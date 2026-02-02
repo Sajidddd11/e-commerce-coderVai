@@ -10,8 +10,16 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  openGraph: {
+    type: "website",
+    url: getBaseURL(),
+    title: "ZAHAN Fashion and Lifestyle",
+    description: "Discover our curated collection of premium clothing and accessories.",
+    siteName: "ZAHAN",
+  },
   other: {
     "facebook-domain-verification": "5o1vb0pkq3rn3346giou710ut8jo9c",
+    "fb:app_id": "875095208469171",
   },
 }
 
