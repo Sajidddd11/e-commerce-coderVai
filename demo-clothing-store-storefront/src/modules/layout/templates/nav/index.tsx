@@ -34,7 +34,7 @@ export default async function Nav() {
                   alt="ZAHAN"
                   width={224}
                   height={56}
-                  className="h-auto w-44 small:w-56"
+                  className="h-auto w-36 small:w-56"
                 />
               </LocalizedClientLink>
             </div>
