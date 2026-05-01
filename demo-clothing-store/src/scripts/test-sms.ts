@@ -9,7 +9,7 @@ import type { ExecArgs } from "@medusajs/framework/types"
 
 export default async function testSmsIntegration({ container }: ExecArgs) {
   const logger = container.resolve("logger")
-  
+
   logger.info("=".repeat(60))
   logger.info("SMS Integration Test")
   logger.info("=".repeat(60))
@@ -57,7 +57,7 @@ export default async function testSmsIntegration({ container }: ExecArgs) {
     // Test 3: Check Balance
     logger.info("\n[Test 3] Checking SMS balance...")
     const balanceResponse = await client.getBalance()
-    
+
     if (balanceResponse.success) {
       logger.info(`  ✓ API is reachable`)
       logger.info(`  ✓ Balance: ${balanceResponse.balance || "N/A"}`)
@@ -81,12 +81,12 @@ export default async function testSmsIntegration({ container }: ExecArgs) {
       { input: "+1234567890", shouldPass: false },
     ]
 
-    
+
     let validationPassed = true
     for (const test of testPhones) {
       const result = validateAndNormalizeBDPhone(test.input)
       const status = result.isValid === test.shouldPass ? "✓" : "✗"
-      
+
       if (result.isValid === test.shouldPass) {
         logger.info(`  ${status} "${test.input}" → ${result.isValid ? result.normalized : result.error}`)
       } else {
@@ -143,11 +143,11 @@ export default async function testSmsIntegration({ container }: ExecArgs) {
     logger.info("=".repeat(60))
     logger.info("✅ All tests completed!")
     logger.info("\nNext steps:")
-    logger.info("1. Test manual SMS: curl -X POST http://localhost:9000/admin/sms/send \\")
+    logger.info("1. Test manual SMS: curl -X POST http://localhost:9001/admin/sms/send \\")
     logger.info('     -H "Content-Type: application/json" \\')
     logger.info('     -d \'{"numbers":["8801712345678"],"message":"Test"}\'')
     logger.info("2. Place a test order with a valid phone number")
-    logger.info("3. Check SMS logs: curl http://localhost:9000/admin/sms/logs")
+    logger.info("3. Check SMS logs: curl http://localhost:9001/admin/sms/logs")
     logger.info("\nFor troubleshooting, see: docs/sms-troubleshooting-guide.md")
 
   } catch (error: any) {

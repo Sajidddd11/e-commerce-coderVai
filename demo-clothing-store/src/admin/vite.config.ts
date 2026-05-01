@@ -4,14 +4,14 @@ const path = require("path")
 
 /**
  * Medusa Admin dev server runs through Vite. When traffic hits through
- * Cloudflare/NGINX (`api.zahan.net`), Vite rejects it unless the host
+ * Cloudflare/NGINX (`api.al-aria.com`), Vite rejects it unless the host
  * is whitelisted. Allow both base domain and the www subdomain.
  * 
- * Also injects custom branding script to replace "Medusa" with "Zahan"
+ * Also injects custom branding script to replace "Medusa" with "Al-Ariya"
  */
 module.exports = defineConfig({
   server: {
-    allowedHosts: ["api.zahan.net", "www.api.zahan.net"],
+    allowedHosts: ["api.al-aria.com", "www.api.al-aria.com", "api.al-aria.com", "www.api.al-aria.com"],
   },
   plugins: [
     {

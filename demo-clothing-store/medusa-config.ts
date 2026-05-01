@@ -46,8 +46,28 @@ module.exports = defineConfig({
       key: "cache",
       options: {
         redisUrl: process.env.REDIS_URL,
-        ttl: 30,
+        ttl: 3600, // 1 hour — products don't change that frequently
       },
+    },
+    // Blog Module - Custom module for managing blog posts
+    {
+      resolve: "./src/modules/blog",
+    },
+    // Delete Log Module - Audit trail for all deletions
+    {
+      resolve: "./src/modules/delete-log",
+    },
+    // Review Module - Custom module for product reviews and ratings
+    {
+      resolve: "./src/modules/review",
+    },
+    // Hero Module - Custom module for managing hero slider
+    {
+      resolve: "./src/modules/hero",
+    },
+    // Perfume Asset Module - Custom module for managing perfume volumes & bottles
+    {
+      resolve: "./src/modules/perfume-asset",
     },
     {
       resolve: "@medusajs/file",

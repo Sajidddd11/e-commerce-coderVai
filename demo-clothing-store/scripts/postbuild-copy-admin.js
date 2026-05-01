@@ -13,7 +13,7 @@ async function injectBranding(htmlPath, scriptPath) {
     )
 
     await fs.promises.writeFile(htmlPath, html, "utf-8")
-    console.log('[postbuild] ✅ Injected "Zahan" branding into admin HTML.')
+    console.log('[postbuild] ✅ Injected "Al Aria" branding into admin HTML.')
     return true
   } catch (error) {
     console.warn("[postbuild] ⚠️ Failed to inject branding:", error.message)

@@ -53,7 +53,7 @@ This starter now ships with sandbox-ready endpoints that wrap the officially sup
    - `POST /initiate-refund`, `POST /refund-query`.
    - `POST /transaction-query-by-transaction-id`, `POST /transaction-query-by-session-id`.
    - `POST|GET /success`, `/fail`, `/cancel`, and `POST /ipn`: Callback endpoints you can register in the SSLCommerz dashboard.
-3. Point the success, fail, cancel, and IPN URLs in the SSLCommerz dashboard to the matching routes on your server (for local testing the defaults are `http://localhost:9000/store/sslcommerz/*`).
+3. Point the success, fail, cancel, and IPN URLs in the SSLCommerz dashboard to the matching routes on your server (for local testing the defaults are `http://localhost:9001/store/sslcommerz/*`).
 4. Attach the `pp_sslcommerz_default` payment provider to any regions that should expose SSLCommerz at checkout. The provided seed script already links the demo region, but if you're working with existing data you can update the region in Medusa Admin under **Settings → Regions**.
 5. In the storefront checkout experience, selecting the "SSLCommerz" payment method will now create a payment session and redirect the shopper to the GatewayPageURL. After the payment is confirmed, SSLCommerz will hit the IPN/success routes which in turn authorize the Medusa payment session so the cart can be completed.
 

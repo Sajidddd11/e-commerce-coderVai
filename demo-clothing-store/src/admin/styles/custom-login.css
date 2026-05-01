@@ -1,6 +1,6 @@
 /* Custom Admin Login Page Branding */
 
-/* Hide the original "Welcome to Medusa" text and replace with "Welcome to Zahan" */
+/* Hide the original "Welcome to Medusa" text and replace with "Welcome to Al-Ariya" */
 h1:has-text("Welcome to Medusa"),
 h1[class*="heading"]:first-of-type,
 [class*="login"] h1,
@@ -12,7 +12,7 @@ h1:has-text("Welcome to Medusa")::before,
 h1[class*="heading"]:first-of-type::before,
 [class*="login"] h1::before,
 [class*="auth"] h1::before {
-  content: "Welcome to Zahan" !important;
+  content: "Welcome to Al-Ariya" !important;
   font-size: 1.5rem !important;
   font-weight: 600 !important;
   display: block !important;
@@ -21,5 +21,5 @@ h1[class*="heading"]:first-of-type::before,
 /* Alternative approach: Target by text content using JavaScript-free CSS */
 /* This targets the heading that contains "Medusa" */
 body {
-  --brand-name: "Zahan";
+  --brand-name: "Al-Ariya";
 }

@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Text, Table, Select, Input, Button } from "@medusajs/ui"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import codImage from "../../assets/cod.png"
 import sslImage from "../../assets/ssl.png"
+import logoImage from "../../assets/logo.png"
 
 const OrdersWithAddressPage = () => {
   const navigate = useNavigate()
@@ -21,10 +22,17 @@ const OrdersWithAddressPage = () => {
   const [orderStatus, setOrderStatus] = useState('all')
   const [paymentStatus, setPaymentStatus] = useState('all')
 
+  // Courier-related state
+  const [shipments, setShipments] = useState<Record<string, any>>({}) // Keyed by order_id
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set())
+  const [creatingShipments, setCreatingShipments] = useState(false)
+  const [trackingOrder, setTrackingOrder] = useState<string | null>(null)
+
   // Column visibility state
   const STORAGE_KEY = 'orders_visible_columns'
 
   const columnDefinitions = [
+    { key: 'select', label: '☑️' },
     { key: 'orderNumber', label: 'Order #' },
     { key: 'name', label: 'Name' },
     { key: 'mobile', label: 'Mobile Number' },
@@ -37,6 +45,10 @@ const OrdersWithAddressPage = () => {
     { key: 'date', label: 'Date' },
     { key: 'printStatus', label: 'Print Status' },
     { key: 'print', label: 'Print' },
+    { key: 'courierProvider', label: 'Courier' },
+    { key: 'courierStatus', label: 'Courier Status' },
+    { key: 'trackingId', label: 'Tracking ID' },
+    { key: 'courierActions', label: 'Courier Actions' },
   ]
 
   // Initialize visible columns from localStorage or default to all visible
@@ -121,164 +133,52 @@ const OrdersWithAddressPage = () => {
     return () => window.removeEventListener('resize', syncScrollbarWidth)
   }, [data, visibleColumns])
 
-  // Debounce search input
+  // Debounce search input — resets page to 0 when user stops typing
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchInput)
-      setOffset(0) // Reset to first page when search changes
-    }, 500) // Wait 500ms after user stops typing
-
+      setOffset(0)
+    }, 500)
     return () => clearTimeout(timer)
   }, [searchInput])
 
-  // Fetch ALL orders once from backend (no filters in API call)
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        // First, check total count to decide strategy
-        const countResponse = await fetch(
-          `/admin/orders-with-address?limit=1&offset=0`,
-          { credentials: "include" }
-        )
-        const countData = await countResponse.json()
-        const totalOrders = countData.count || 0
+  // Single server-side fetch — always sends all active filters + pagination params.
+  // The backend handles all filtering and pagination in one call.
+  const fetchOrders = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
+      })
+      if (search) params.append('search', search)
+      if (dateRange !== 'all') params.append('date_range', dateRange)
+      if (paymentMethod !== 'all') params.append('payment_method', paymentMethod)
+      if (orderStatus !== 'all') params.append('status', orderStatus)
+      if (paymentStatus !== 'all') params.append('payment_status', paymentStatus)
 
-        // Strategy: Client-side for <500 orders, Server-side for >=500
-        const useClientSideFiltering = totalOrders < 500
-
-        if (useClientSideFiltering) {
-          // Fetch all orders for client-side filtering
-          const response = await fetch(
-            `/admin/orders-with-address?limit=${totalOrders}&offset=0`,
-            { credentials: "include" }
-          )
-          if (!response.ok) throw new Error("Failed to fetch orders")
-          const result = await response.json()
-          setData({ ...result, useClientFiltering: true })
-        } else {
-          // For large datasets, we'll fetch with filters on server
-          setData({ orders: [], count: totalOrders, useClientFiltering: false })
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("Unknown error"))
-      } finally {
-        setIsLoading(false)
-      }
+      const response = await fetch(
+        `/admin/orders-with-address?${params.toString()}`,
+        { credentials: "include" }
+      )
+      if (!response.ok) throw new Error("Failed to fetch orders")
+      const result = await response.json()
+      setData(result)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Unknown error"))
+    } finally {
+      setIsLoading(false)
     }
+  }, [limit, offset, search, dateRange, paymentMethod, orderStatus, paymentStatus])
+
+  useEffect(() => {
     fetchOrders()
-  }, [])
+  }, [fetchOrders])
 
-  // Fetch with server-side filtering when dataset is large
-  useEffect(() => {
-    if (!data || data.useClientFiltering) return // Skip if using client-side filtering
-
-    const fetchFilteredOrders = async () => {
-      setIsLoading(true)
-      try {
-        const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(offset),
-        })
-
-        if (search) params.append('q', search) // Use 'q' for general search on server
-        if (dateRange !== 'all') params.append('date_range', dateRange)
-        if (paymentMethod !== 'all') params.append('payment_provider', paymentMethod) // Use payment_provider for server
-        if (orderStatus !== 'all') params.append('status', orderStatus)
-        if (paymentStatus !== 'all') params.append('payment_status', paymentStatus)
-
-        const response = await fetch(
-          `/admin/orders-with-address?${params.toString()}`,
-          { credentials: "include" }
-        )
-        if (!response.ok) throw new Error("Failed to fetch orders")
-        const result = await response.json()
-        setData({ ...result, useClientFiltering: false })
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("Unknown error"))
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchFilteredOrders()
-  }, [search, dateRange, paymentMethod, orderStatus, paymentStatus, offset, limit, data?.useClientFiltering])
-
-
-  // CLIENT-SIDE vs SERVER-SIDE filtering strategy
-  const useClientFiltering = data?.useClientFiltering || false
-  let orders: any[]
-  let count: number
-
-  if (useClientFiltering) {
-    // CLIENT-SIDE filtering for small datasets (<500 orders)
-    const allOrders = data?.orders || []
-
-    const filteredOrders = allOrders.filter((order: any) => {
-      const address = order.shipping_address || order.billing_address
-
-      // Search filter
-      if (search) {
-        const searchLower = search.toLowerCase()
-        const displayId = String(order.display_id || '').toLowerCase()
-        const email = String(order.email || '').toLowerCase()
-        const phone = String(address?.phone || '').toLowerCase()
-        const name = `${address?.first_name || ''} ${address?.last_name || ''}`.toLowerCase()
-
-        const matchesSearch = displayId.includes(searchLower) ||
-          email.includes(searchLower) ||
-          phone.includes(searchLower) ||
-          name.includes(searchLower)
-
-        if (!matchesSearch) return false
-      }
-
-      // Date range filter
-      if (dateRange !== 'all') {
-        const orderDate = new Date(order.created_at)
-        const now = new Date()
-
-        if (dateRange === 'today') {
-          const today = new Date(now.setHours(0, 0, 0, 0))
-          if (orderDate < today) return false
-        } else if (dateRange === 'week') {
-          const weekAgo = new Date(now.setDate(now.getDate() - 7))
-          if (orderDate < weekAgo) return false
-        } else if (dateRange === 'month') {
-          const monthAgo = new Date(now.setDate(now.getDate() - 30))
-          if (orderDate < monthAgo) return false
-        }
-      }
-
-      // Order status filter
-      if (orderStatus !== 'all') {
-        const customStatus = order.metadata?.custom_status || order.status
-        if (customStatus !== orderStatus) return false
-      }
-
-      // Payment method filter
-      if (paymentMethod !== 'all') {
-        if (order.payment_provider !== paymentMethod) return false
-      }
-
-      // Payment status filter
-      if (paymentStatus !== 'all') {
-        if (order.payment_status !== paymentStatus) return false
-      }
-
-      return true
-    })
-
-    // Apply pagination
-    count = filteredOrders.length
-    const startIndex = offset
-    const endIndex = startIndex + limit
-    orders = filteredOrders.slice(startIndex, endIndex)
-  } else {
-    // SERVER-SIDE filtering for large datasets (>=500 orders)
-    orders = data?.orders || []
-    count = data?.count || 0
-  }
+  // Data is always the server-paginated slice
+  const orders: any[] = data?.orders || []
+  const count: number = data?.count || 0
 
   const formatName = (address: any) => {
     if (!address) return "N/A"
@@ -352,12 +252,12 @@ const OrdersWithAddressPage = () => {
 
   // Status options for dropdown
   const STATUS_OPTIONS = [
-    { value: 'pending', label: 'Pending', color: 'text-gray-600 bg-gray-100' },
-    { value: 'processing', label: 'Processing', color: 'text-yellow-700 bg-yellow-100' },
-    { value: 'shipped', label: 'Shipped', color: 'text-blue-600 bg-blue-100' },
-    { value: 'delivered', label: 'Delivered', color: 'text-green-600 bg-green-100' },
-    { value: 'canceled', label: 'Cancelled', color: 'text-red-600 bg-red-100' },
-    { value: 'refunded', label: 'Refunded', color: 'text-amber-700 bg-amber-100' },
+    { value: 'pending', label: 'Pending', color: 'text-ui-fg-subtle bg-ui-bg-subtle' },
+    { value: 'processing', label: 'Processing', color: 'text-ui-tag-orange-text bg-ui-tag-orange-bg border-ui-tag-orange-border' },
+    { value: 'shipped', label: 'Shipped', color: 'text-ui-tag-blue-text bg-ui-tag-blue-bg border-ui-tag-blue-border' },
+    { value: 'delivered', label: 'Delivered', color: 'text-ui-tag-green-text bg-ui-tag-green-bg border-ui-tag-green-border' },
+    { value: 'canceled', label: 'Cancelled', color: 'text-ui-tag-red-text bg-ui-tag-red-bg border-ui-tag-red-border' },
+    { value: 'refunded', label: 'Refunded', color: 'text-ui-tag-orange-text bg-ui-tag-orange-bg border-ui-tag-orange-border' },
   ]
 
   // Get current status (priority: custom_status > official status)
@@ -435,13 +335,7 @@ const OrdersWithAddressPage = () => {
     } catch (error) {
       console.error("Error updating order status:", error)
       alert("Failed to update order status")
-      // Revert on error - refresh from server
-      const response = await fetch(
-        `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
-        { credentials: 'include' }
-      )
-      const freshData = await response.json()
-      setData(freshData)
+      fetchOrders() // Revert by re-fetching current page
     } finally {
       setUpdatingOrderId(null)
     }
@@ -470,10 +364,10 @@ const OrdersWithAddressPage = () => {
       })
       const itemsData = await itemsResponse.json()
 
-      // Merge items into order object
+      // Merge: start with the full detailed order from API, overlay original order's extra fields
       const fullOrder = {
         ...order,
-        items: itemsData.order?.items || []
+        ...itemsData.order,  // API response has item_subtotal, discount_total, shipping_total, etc.
       }
 
       const address = fullOrder.shipping_address || fullOrder.billing_address
@@ -628,7 +522,7 @@ const OrdersWithAddressPage = () => {
               </div>
             </div>
             <div class="invoice-header-right">
-              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="552" zoomAndPan="magnify" viewBox="0 0 414 173.999997" height="232" preserveAspectRatio="xMidYMid meet" version="1.0"><defs><g/><clipPath id="9145c20f21"><rect x="0" width="308" y="0" height="134"/></clipPath><clipPath id="d33409f2cd"><path d="M 13 4 L 51 4 L 51 42 L 13 42 Z M 13 4 " clip-rule="nonzero"/></clipPath><clipPath id="f2796ebda3"><path d="M 9.769531 37.808594 L 47.132812 0.449219 L 54.332031 7.648438 L 16.96875 45.011719 Z M 9.769531 37.808594 " clip-rule="nonzero"/></clipPath><clipPath id="891a62e12f"><path d="M 28.4375 19.140625 L 50.707031 4.074219 L 35.640625 26.34375 L 13.367188 41.410156 Z M 28.4375 19.140625 " clip-rule="nonzero"/></clipPath><clipPath id="b499315500"><path d="M 0.199219 0 L 37.878906 0 L 37.878906 37.558594 L 0.199219 37.558594 Z M 0.199219 0 " clip-rule="nonzero"/></clipPath><clipPath id="bc72a4b2dc"><path d="M -3.230469 33.808594 L 34.132812 -3.550781 L 41.332031 3.648438 L 3.96875 41.011719 Z M -3.230469 33.808594 " clip-rule="nonzero"/></clipPath><clipPath id="df41559fd6"><path d="M 15.4375 15.140625 L 37.707031 0.0742188 L 22.640625 22.34375 L 0.367188 37.410156 Z M 15.4375 15.140625 " clip-rule="nonzero"/></clipPath><clipPath id="5e9843ead9"><rect x="0" width="38" y="0" height="38"/></clipPath><clipPath id="6ef39b08c5"><path d="M 2 12 L 61 12 L 61 70 L 2 70 Z M 2 12 " clip-rule="nonzero"/></clipPath><clipPath id="231ce7aeb4"><path d="M 0 66.785156 L 57.402344 9.382812 L 63.0625 15.042969 L 5.660156 72.445312 Z M 0 66.785156 " clip-rule="nonzero"/></clipPath><clipPath id="87a312cbb5"><path d="M 28.695312 38.089844 L 60.222656 12.226562 L 34.355469 43.75 L 2.832031 69.617188 Z M 28.695312 38.089844 " clip-rule="nonzero"/></clipPath><clipPath id="d28a18b842"><path d="M 0.640625 0.0390625 L 58.238281 0.0390625 L 58.238281 57.640625 L 0.640625 57.640625 Z M 0.640625 0.0390625 " clip-rule="nonzero"/></clipPath><clipPath id="f239103242"><path d="M -2 54.785156 L 55.402344 -2.617188 L 61.0625 3.042969 L 3.660156 60.445312 Z M -2 54.785156 " clip-rule="nonzero"/></clipPath><clipPath id="2e6ed682cd"><path d="M 26.695312 26.089844 L 58.222656 0.226562 L 32.355469 31.75 L 0.832031 57.617188 Z M 26.695312 26.089844 " clip-rule="nonzero"/></clipPath><clipPath id="ea27a2e128"><rect x="0" width="59" y="0" height="58"/></clipPath><clipPath id="e83e28cb75"><path d="M 20 34 L 58 34 L 58 72 L 20 72 Z M 20 34 " clip-rule="nonzero"/></clipPath><clipPath id="d4fcb43b7b"><path d="M 16.675781 68.167969 L 54.199219 30.640625 L 61.527344 37.96875 L 24 75.496094 Z M 16.675781 68.167969 " clip-rule="nonzero"/></clipPath><clipPath id="9ea56ebaae"><path d="M 35.425781 49.414062 L 57.839844 34.328125 L 42.753906 56.742188 L 20.335938 71.832031 Z M 35.425781 49.414062 " clip-rule="nonzero"/></clipPath><clipPath id="e266736b15"><path d="M 0.160156 0.121094 L 38 0.121094 L 38 38 L 0.160156 38 Z M 0.160156 0.121094 " clip-rule="nonzero"/></clipPath><clipPath id="c7559a34e5"><path d="M -3.324219 34.167969 L 34.199219 -3.359375 L 41.527344 3.96875 L 4 41.496094 Z M -3.324219 34.167969 " clip-rule="nonzero"/></clipPath><clipPath id="536979d704"><path d="M 15.425781 15.414062 L 37.839844 0.328125 L 22.753906 22.742188 L 0.335938 37.832031 Z M 15.425781 15.414062 " clip-rule="nonzero"/></clipPath><clipPath id="dc543544ff"><rect x="0" width="38" y="0" height="38"/></clipPath><clipPath id="fb7d7bab1c"><rect x="0" width="64" y="0" height="76"/></clipPath></defs><g transform="matrix(1, 0, 0, 1, 69, 19)"><g clip-path="url(#9145c20f21)"><g fill="#000000" fill-opacity="1"><g transform="translate(0.921333, 103.648169)"><g><path d="M 25.65625 -53.90625 L 4.0625 -53.90625 L 4.0625 -66.265625 L 44.125 -66.265625 L 20.484375 -12 L 42.640625 -12 L 42.640625 0 L 2.125 0 Z M 25.65625 -53.90625 "/></g></g></g><g fill="#000000" fill-opacity="1"><g transform="translate(47.061545, 103.648169)"><g><path d="M 50.765625 0 L 45.6875 -13.65625 L 18.1875 -13.65625 L 13.109375 0 L 0 0 L 25.5625 -66.265625 L 38.296875 -66.265625 L 63.875 0 Z M 22.890625 -26.03125 L 41.078125 -26.03125 L 31.9375 -50.390625 Z M 22.890625 -26.03125 "/></g></g></g><g fill="#000000" fill-opacity="1"><g transform="translate(110.919598, 103.648169)"><g><path d="M 7.5625 -66.265625 L 20.21875 -66.265625 L 20.21875 -41.34375 L 42.546875 -41.34375 L 42.546875 -66.265625 L 55.1875 -66.265625 L 55.1875 0 L 42.546875 0 L 42.546875 -28.984375 L 20.21875 -28.984375 L 20.21875 0 L 7.5625 0 Z M 7.5625 -66.265625 "/></g></g></g><g fill="#000000" fill-opacity="1"><g transform="translate(173.670287, 103.648169)"><g><path d="M 50.765625 0 L 45.6875 -13.65625 L 18.1875 -13.65625 L 13.109375 0 L 0 0 L 25.5625 -66.265625 L 38.296875 -66.265625 L 63.875 0 Z M 22.890625 -26.03125 L 41.078125 -26.03125 L 31.9375 -50.390625 Z M 22.890625 -26.03125 "/></g></g></g><g fill="#000000" fill-opacity="1"><g transform="translate(237.52834, 103.648169)"><g><path d="M 48.09375 -66.265625 L 60.734375 -66.265625 L 60.734375 0 L 48.546875 0 L 20.21875 -43.375 L 20.21875 0 L 7.5625 0 L 7.5625 -66.265625 L 19.65625 -66.265625 L 48.09375 -22.796875 Z M 48.09375 -66.265625 "/></g></g></g></g></g><g transform="matrix(1, 0, 0, 1, 0, 53)"><g clip-path="url(#fb7d7bab1c)"><g clip-path="url(#d33409f2cd)"><g clip-path="url(#f2796ebda3)"><g clip-path="url(#891a62e12f)"><g transform="matrix(1, 0, 0, 1, 13, 4)"><g clip-path="url(#5e9843ead9)"><g clip-path="url(#b499315500)"><g clip-path="url(#bc72a4b2dc)"><g clip-path="url(#df41559fd6)"><path fill="#000000" d="M -3.230469 33.808594 L 34.101562 -3.523438 L 41.304688 3.679688 L 3.96875 41.011719 Z M -3.230469 33.808594 " fill-opacity="1" fill-rule="nonzero"/></g></g></g></g></g></g></g></g><g clip-path="url(#6ef39b08c5)"><g clip-path="url(#231ce7aeb4)"><g clip-path="url(#87a312cbb5)"><g transform="matrix(1, 0, 0, 1, 2, 12)"><g clip-path="url(#ea27a2e128)"><g clip-path="url(#d28a18b842)"><g clip-path="url(#f239103242)"><g clip-path="url(#2e6ed682cd)"><path fill="#000000" d="M -2 54.785156 L 55.402344 -2.617188 L 61.0625 3.042969 L 3.660156 60.445312 Z M -2 54.785156 " fill-opacity="1" fill-rule="nonzero"/></g></g></g></g></g></g></g></g><g clip-path="url(#e83e28cb75)"><g clip-path="url(#d4fcb43b7b)"><g clip-path="url(#9ea56ebaae)"><g transform="matrix(1, 0, 0, 1, 20, 34)"><g clip-path="url(#dc543544ff)"><g clip-path="url(#e266736b15)"><g clip-path="url(#c7559a34e5)"><g clip-path="url(#536979d704)"><path fill="#000000" d="M -3.324219 34.167969 L 34.171875 -3.332031 L 41.5 3.996094 L 4 41.496094 Z M -3.324219 34.167969 " fill-opacity="1" fill-rule="nonzero"/></g></g></g></g></g></g></g></g></g></g></svg>
+              <img src="${logoImage}" alt="Al-Ariya" style="width: 120px; height: auto; object-fit: contain;" />
             </div>
           </div>
 
@@ -680,17 +574,27 @@ const OrdersWithAddressPage = () => {
           </table>
 
           <div class="total-section">
+            <div class="total-row">
+              <span>Item Subtotal:</span>
+              <span>${formatCurrency(fullOrder.item_subtotal || 0)}</span>
+            </div>
+            ${(fullOrder.shipping_total > 0) ? `
+            <div class="total-row">
+              <span>Shipping:</span>
+              <span>${formatCurrency(fullOrder.shipping_total)}</span>
+            </div>` : ""}
+            ${(fullOrder.discount_total > 0) ? `
+            <div class="total-row" style="color: #16a34a;">
+              <span>Discount${fullOrder.promotions?.[0]?.code ? ` (${fullOrder.promotions[0].code})` : ""}:</span>
+              <span>- ${formatCurrency(fullOrder.discount_total)}</span>
+            </div>` : ""}
             <div class="total-row grand-total">
               <span>TOTAL:</span>
-              <span>${formatCurrency(fullOrder.summary?.current_order_total || fullOrder.summary?.accounting_total || 0)}</span>
+              <span>${formatCurrency(fullOrder.total || fullOrder.summary?.current_order_total || 0)}</span>
             </div>
           </div>
 
           <div class="section-title">Payment Information</div>
-          <div class="info-row">
-            <span class="info-label">Payment Status:</span>
-            <span style="text-transform: capitalize">${fullOrder.payment_status === "completed" ? "Captured" : fullOrder.payment_status}</span>
-          </div>
           <div class="info-row">
             <span class="info-label">Payment Method:</span>
             <span>${getPaymentMethod()}</span>
@@ -807,13 +711,168 @@ const OrdersWithAddressPage = () => {
     } catch (error) {
       console.error("Error toggling print status:", error)
       alert("Failed to update print status")
-      // Revert on error - refresh from server
-      const response = await fetch(
-        `/admin/orders-with-address?limit=${limit}&offset=${offset}`,
-        { credentials: 'include' }
+      fetchOrders()
+    }
+  }
+
+  // Fetch courier shipments for all visible orders
+  const fetchShipments = async (orderIds: string[], _mergeWithExisting = false) => {
+    if (!orderIds || orderIds.length === 0) return
+
+    try {
+      const shipmentsData: Record<string, any> = {}
+
+      // Fetch in parallel for better performance
+      await Promise.all(
+        orderIds.map(async (orderId) => {
+          try {
+            const response = await fetch(`/admin/courier/shipment/${orderId}`, {
+              credentials: 'include',
+            })
+            if (response.ok) {
+              const result = await response.json()
+              if (result.shipments && result.shipments.length > 0) {
+                shipmentsData[orderId] = result.shipments[0] // Take most recent
+              }
+            }
+          } catch (err) {
+            // Silently fail for individual orders
+            console.error(`Failed to fetch shipment for ${orderId}:`, err)
+          }
+        })
       )
-      const freshData = await response.json()
-      setData(freshData)
+
+      setShipments(shipmentsData)
+    } catch (error) {
+      console.error('Error fetching shipments:', error)
+    }
+  }
+
+  // Track which order IDs we've already fetched to prevent infinite loops
+  const fetchedOrderIdsRef = useRef<string>('')
+
+  // Fetch shipments only when order IDs actually change
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      const orderIds = orders.map((o: any) => o.id)
+      const orderIdsString = orderIds.sort().join(',')
+
+      // Only fetch if the order IDs have actually changed
+      if (orderIdsString !== fetchedOrderIdsRef.current) {
+        fetchedOrderIdsRef.current = orderIdsString
+        fetchShipments(orderIds)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders])
+
+  // Create shipment for single order
+  const createShipment = async (orderId: string) => {
+    try {
+      const response = await fetch('/admin/courier/shipment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          order_id: orderId,
+          provider: 'pathao',
+          delivery_type: 48, // Regular delivery
+          item_type: 2, // Parcel
+          item_weight: 0.5,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Update shipments state by merging the new shipment
+        setShipments(prev => ({
+          ...prev,
+          [orderId]: result.shipment
+        }))
+        return { success: true, consignment_id: result.shipment?.consignment_id }
+      } else {
+        return { success: false, error: result.message }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Bulk create shipments
+  const handleBulkCreateShipments = async () => {
+    if (selectedOrders.size === 0) {
+      return
+    }
+
+    const confirmed = confirm(
+      `Create Pathao shipments for ${selectedOrders.size} selected order(s)?`
+    )
+    if (!confirmed) return
+
+    setCreatingShipments(true)
+    const results = []
+
+    for (const orderId of selectedOrders) {
+      const result = await createShipment(orderId)
+      results.push({ orderId, ...result })
+    }
+
+    setCreatingShipments(false)
+
+    // Show summary
+    const success = results.filter(r => r.success).length
+    const failed = results.filter(r => !r.success).length
+
+    alert(`✅ ${success} shipment(s) created\n❌ ${failed} failed`)
+    setSelectedOrders(new Set()) // Clear selection
+  }
+
+  // Bulk update shipment status
+  const handleBulkUpdateStatus = async () => {
+    if (selectedOrders.size === 0) return
+
+    const confirmed = confirm(`Update tracking status for ${selectedOrders.size} selected shipment(s)?`)
+    if (!confirmed) return
+
+    setCreatingShipments(true)
+
+    for (const orderId of selectedOrders) {
+      const shipment = shipments[orderId]
+      if (shipment && shipment.id) {
+        await updateShipmentStatus(shipment.id, orderId)
+      }
+    }
+
+    setCreatingShipments(false)
+    setSelectedOrders(new Set())
+  }
+
+  // Update shipment tracking status
+  const updateShipmentStatus = async (shipmentId: string, orderId: string) => {
+    setTrackingOrder(orderId)
+    try {
+      const response = await fetch(`/admin/courier/shipment/${shipmentId}/track`, {
+        credentials: 'include',
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        // Update shipment in state with new tracking data
+        if (result.shipment) {
+          setShipments(prev => ({
+            ...prev,
+            [orderId]: result.shipment
+          }))
+        }
+
+      } else {
+        // Failed to fetch tracking status
+      }
+    } catch (error) {
+      // Error updating status
+    } finally {
+      setTrackingOrder(null)
     }
   }
 
@@ -849,8 +908,8 @@ const OrdersWithAddressPage = () => {
               Columns
             </Button>
             {showColumnSelector && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-3 border-b border-gray-200">
+              <div className="absolute right-0 mt-2 w-56 bg-ui-bg-base rounded-lg shadow-xl border border-ui-border-base z-50">
+                <div className="p-3 border-b border-ui-border-base">
                   <Text size="small" weight="plus" className="mb-2">Show/Hide Columns</Text>
                   <div className="flex gap-2">
                     <button
@@ -868,19 +927,20 @@ const OrdersWithAddressPage = () => {
                   </div>
                 </div>
                 <div className="p-2 max-h-96 overflow-y-auto">
-                  {columnDefinitions.map(column => (
-                    <label
-                      key={column.key}
-                      className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 rounded cursor-pointer"
+                  {columnDefinitions.map(col => (
+                    <div
+                      key={col.key}
+                      onClick={() => toggleColumn(col.key)}
+                      className="flex items-center gap-2 px-2 py-1.5 hover:bg-ui-bg-subtle-hover rounded cursor-pointer"
                     >
                       <input
                         type="checkbox"
-                        checked={visibleColumns[column.key] || false}
-                        onChange={() => toggleColumn(column.key)}
-                        className="rounded border-gray-300"
+                        checked={visibleColumns[col.key] || false}
+                        onChange={() => toggleColumn(col.key)}
+                        className="rounded border-ui-border-base"
                       />
-                      <Text size="small">{column.label}</Text>
-                    </label>
+                      <Text size="small">{col.label}</Text>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -889,8 +949,8 @@ const OrdersWithAddressPage = () => {
         </div>
       </div>
 
-      {/* Filter Section */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      {/* Filters Bar */}
+      <div className="mb-6 p-4 bg-ui-bg-subtle rounded-xl border border-ui-border-base">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* Search */}
           <div className="xl:col-span-2">
@@ -1001,6 +1061,42 @@ const OrdersWithAddressPage = () => {
         )}
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedOrders.size > 0 && (
+        <div className="mb-4 p-4 bg-ui-bg-highlight border border-ui-border-interactive rounded-xl">
+          <div className="flex items-center justify-between">
+            <Text size="small" weight="plus">
+              {selectedOrders.size} order(s) selected
+            </Text>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => setSelectedOrders(new Set())}
+              >
+                Clear
+              </Button>
+              <Button
+                variant="primary"
+                size="small"
+                onClick={handleBulkCreateShipments}
+                isLoading={creatingShipments}
+              >
+                Create Pathao Shipments
+              </Button>
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={handleBulkUpdateStatus}
+                isLoading={creatingShipments}
+              >
+                Bulk Update Status
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Scrollbar */}
       <div
         className="overflow-x-auto w-full mb-2"
@@ -1033,6 +1129,22 @@ const OrdersWithAddressPage = () => {
         <Table>
           <Table.Header>
             <Table.Row>
+              {visibleColumns.select && (
+                <Table.HeaderCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedOrders.size === orders.length && orders.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedOrders(new Set(orders.map((o: any) => o.id)))
+                      } else {
+                        setSelectedOrders(new Set())
+                      }
+                    }}
+                    className="rounded border-ui-border-base"
+                  />
+                </Table.HeaderCell>
+              )}
               {visibleColumns.orderNumber && <Table.HeaderCell>Order #</Table.HeaderCell>}
               {visibleColumns.name && <Table.HeaderCell>Name</Table.HeaderCell>}
               {visibleColumns.mobile && <Table.HeaderCell>Mobile Number</Table.HeaderCell>}
@@ -1045,13 +1157,17 @@ const OrdersWithAddressPage = () => {
               {visibleColumns.date && <Table.HeaderCell>Date</Table.HeaderCell>}
               {visibleColumns.printStatus && <Table.HeaderCell>Print Status</Table.HeaderCell>}
               {visibleColumns.print && <Table.HeaderCell>Print</Table.HeaderCell>}
+              {visibleColumns.courierProvider && <Table.HeaderCell>Courier</Table.HeaderCell>}
+              {visibleColumns.courierStatus && <Table.HeaderCell>Status</Table.HeaderCell>}
+              {visibleColumns.trackingId && <Table.HeaderCell>Tracking ID</Table.HeaderCell>}
+              {visibleColumns.courierActions && <Table.HeaderCell>Actions</Table.HeaderCell>}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {isLoading ? (
               <Table.Row>
                 <td colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-8">
-                  <Text size="small" className="text-gray-500">
+                  <Text size="small" className="text-ui-fg-muted">
                     Loading...
                   </Text>
                 </td>
@@ -1059,7 +1175,7 @@ const OrdersWithAddressPage = () => {
             ) : orders.length === 0 ? (
               <Table.Row>
                 <td colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-8">
-                  <Text size="small" className="text-gray-500">
+                  <Text size="small" className="text-ui-fg-muted">
                     No orders found
                   </Text>
                 </td>
@@ -1084,12 +1200,17 @@ const OrdersWithAddressPage = () => {
                 return (
                   <Table.Row
                     key={order.id}
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer hover:bg-ui-bg-subtle-hover"
                     onClick={() => navigate(`/orders/${order.id}`)}
                   >
+                    {visibleColumns.select && (
+                      <Table.Cell onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" checked={selectedOrders.has(order.id)} onChange={(e) => { const newSelection = new Set(selectedOrders); if (e.target.checked) { newSelection.add(order.id) } else { newSelection.delete(order.id) }; setSelectedOrders(newSelection) }} className="rounded border-ui-border-base" />
+                      </Table.Cell>
+                    )}
                     {visibleColumns.orderNumber && (
                       <Table.Cell>
-                        <Text size="small" weight="plus" className="text-blue-600 hover:underline">
+                        <Text size="small" weight="plus" className="text-ui-fg-interactive hover:underline">
                           #{order.display_id || order.id.slice(0, 8)}
                         </Text>
                       </Table.Cell>
@@ -1173,7 +1294,7 @@ const OrdersWithAddressPage = () => {
                               maximumFractionDigits: 2,
                             }).format(total)
                           ) : (
-                            <span className="text-gray-400">N/A</span>
+                            <span className="text-ui-fg-muted">N/A</span>
                           )}
                         </Text>
                       </Table.Cell>
@@ -1197,27 +1318,23 @@ const OrdersWithAddressPage = () => {
                     {visibleColumns.printStatus && (
                       <Table.Cell
                         onClick={(e) => handleTogglePrintStatus(order, e)}
-                        className="cursor-pointer hover:bg-gray-50"
+                        className="cursor-pointer hover:bg-ui-bg-subtle-hover"
                         title="Click to toggle print status"
                       >
                         {order.metadata?.printed_at ? (
                           <div className="flex items-center gap-1">
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-ui-bg-base text-ui-fg-base border border-ui-border-base">
                               ✓
                             </span>
                             <div className="flex flex-col">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-ui-fg-muted">
                                 {new Date(order.metadata.printed_at).toLocaleString("en-US", {
                                   month: "short",
                                   day: "numeric",
                                 })}
                               </span>
-                              <span className="text-xs text-gray-400 whitespace-nowrap">
-                                {new Date(order.metadata.printed_at).toLocaleString("en-US", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                })}
+                              <span className="text-xs text-ui-fg-muted whitespace-nowrap">
+                                {order.metadata?.printed_at ? `Printed: ${new Date(order.metadata.printed_at).toLocaleDateString()}` : "Not printed"}
                               </span>
                             </div>
                           </div>
@@ -1237,6 +1354,10 @@ const OrdersWithAddressPage = () => {
                         </Button>
                       </Table.Cell>
                     )}
+                    {visibleColumns.courierProvider && <Table.Cell><Text size="small">{shipments[order.id]?.provider ? <span className="capitalize">{shipments[order.id].provider}</span> : <span className="text-gray-400">-</span>}</Text></Table.Cell>}
+                    {visibleColumns.courierStatus && <Table.Cell>{shipments[order.id] ? <span className={`inline-flex items-center px-2 py-1 rounded text-xs ${shipments[order.id].status === 'created' ? 'bg-blue-100 text-blue-700' : shipments[order.id].status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{shipments[order.id].status}</span> : <span className="text-gray-400 text-xs">-</span>}</Table.Cell>}
+                    {visibleColumns.trackingId && <Table.Cell>{shipments[order.id]?.consignment_id ? <Text size="small" className="font-mono text-blue-600">{shipments[order.id].consignment_id}</Text> : <span className="text-gray-400 text-xs">-</span>}</Table.Cell>}
+                    {visibleColumns.courierActions && <Table.Cell onClick={(e) => e.stopPropagation()}><div className="flex gap-2">{!shipments[order.id] ? <Button variant="secondary" size="small" onClick={async (e) => { e.stopPropagation(); await createShipment(order.id) }}>Create</Button> : <><Button variant="secondary" size="small" onClick={async (e) => { e.stopPropagation(); await updateShipmentStatus(shipments[order.id].id, order.id) }} isLoading={trackingOrder === order.id}>Update</Button><a href={`https://merchant.pathao.com/tracking?consignment_id=${shipments[order.id].consignment_id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}><Button variant="secondary" size="small">Track</Button></a></>}</div></Table.Cell>}
                   </Table.Row>
                 )
               })
