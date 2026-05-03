@@ -197,8 +197,12 @@ const PerfumeVariantSetupWidget = ({ data }: { data: any }) => {
     )
 }
 
-export const config = defineWidgetConfig({
-    zone: "product.details.side.after",
-})
+// ── TEMPORARILY HIDDEN FROM PRODUCT PAGES ───────────────────────────────────────
+// To restore the Perfume Auto-Setup widget on product detail pages,
+// uncomment the config block below.
+// export const config = defineWidgetConfig({
+//     zone: "product.details.side.after",
+// })
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default PerfumeVariantSetupWidget

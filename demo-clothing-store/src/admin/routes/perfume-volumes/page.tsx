@@ -318,9 +318,12 @@ const PerfumeVolumesPage = () => {
     )
 }
 
-export const config = defineRouteConfig({
-    label: "Bottle Library",
-    icon: Beaker,
-})
+// ── TEMPORARILY HIDDEN FROM SIDEBAR ──────────────────────────────────────────
+// To restore the Bottle Library in the admin nav, uncomment the config block below.
+// export const config = defineRouteConfig({
+//     label: "Bottle Library",
+//     icon: Beaker,
+// })
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default PerfumeVolumesPage
