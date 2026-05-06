@@ -104,13 +104,19 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
-  // Detect Facebook's crawler to allow domain verification
+  // Detect Facebook's crawler (and other social scrapers) to allow
+  // Meta Pixel domain verification and Open Graph tag scraping.
+  // These bots must NOT be redirected to a country-code path.
   const userAgent = request.headers.get("user-agent") || ""
-  const isFacebookBot = userAgent.toLowerCase().includes("facebookexternalhit") ||
-    userAgent.toLowerCase().includes("facebot")
+  const isSocialBot =
+    userAgent.toLowerCase().includes("facebookexternalhit") ||
+    userAgent.toLowerCase().includes("facebot") ||
+    userAgent.toLowerCase().includes("twitterbot") ||
+    userAgent.toLowerCase().includes("linkedinbot") ||
+    userAgent.toLowerCase().includes("whatsapp")
 
-  // If Facebook bot is accessing the root URL, allow it without redirect
-  if (isFacebookBot && request.nextUrl.pathname === "/") {
+  // Allow social bots to reach any page without country-code redirection
+  if (isSocialBot) {
     return NextResponse.next()
   }
 

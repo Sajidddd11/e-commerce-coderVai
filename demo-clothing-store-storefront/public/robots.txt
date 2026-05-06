@@ -1,0 +1,10 @@
+# Allow all general crawlers
+User-agent: *
+Allow: /
+
+# Explicitly allow Facebook's scraper for Meta Pixel domain verification & OG tags
+User-agent: facebookexternalhit
+Allow: /
+
+# Sitemap
+Sitemap: https://zahan.net/sitemap.xml
