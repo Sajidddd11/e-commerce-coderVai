@@ -18,14 +18,18 @@ export const metadata: Metadata = {
     siteName: "ZAHAN",
   },
   other: {
+    // facebook-domain-verification is added directly in <head> below as a name tag
     "facebook-domain-verification": "5o1vb0pkq3rn3346giou710ut8jo9c",
-    "fb:app_id": "875095208469171",
   },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
+      <head>
+        {/* fb:app_id must use property="" not name="" — Next.js 'other' only generates name tags */}
+        <meta property="fb:app_id" content="875095208469171" />
+      </head>
       <body className="m-0 p-0" suppressHydrationWarning>
         {/* Meta Pixel Code */}
         <Script
