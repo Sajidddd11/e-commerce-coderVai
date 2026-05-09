@@ -28,7 +28,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en" data-mode="light">
       <head>
         {/* fb:app_id must use property="" not name="" — Next.js 'other' only generates name tags */}
-        <meta property="fb:app_id" content="875095208469171" />
+        <meta property="fb:app_id" content="868788322534380" />
       </head>
       <body className="m-0 p-0" suppressHydrationWarning>
         {/* Meta Pixel Code */}
@@ -48,7 +48,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
               
               // Only initialize once
               if (!window._fbq_initialized) {
-                fbq('init', '875095208469171');
+                fbq('init', '868788322534380');
                 fbq('track', 'PageView');
                 window._fbq_initialized = true;
               }
@@ -60,7 +60,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=875095208469171&ev=PageView&noscript=1"
+            src="https://www.facebook.com/tr?id=868788322534380&ev=PageView&noscript=1"
             alt=""
           />
         </noscript>
