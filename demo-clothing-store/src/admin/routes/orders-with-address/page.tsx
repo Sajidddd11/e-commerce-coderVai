@@ -549,6 +549,13 @@ const OrdersWithAddressPage = () => {
             ${address?.country_code?.toUpperCase() || ""}
           </div>
 
+          ${fullOrder.metadata?.delivery_instructions ? `
+          <div class="section-title">Delivery Instructions</div>
+          <div style="margin-left: 20px; font-style: italic;">
+            ${fullOrder.metadata.delivery_instructions}
+          </div>
+          ` : ''}
+
           <div class="section-title">Order Items</div>
           <table class="items-table">
             <thead>

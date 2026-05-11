@@ -32,6 +32,7 @@ const ShippingAddress = ({
     "shipping_address.country_code": cart?.shipping_address?.country_code || "",
     "shipping_address.phone": cart?.shipping_address?.phone || "",
     email: cart?.email || "",
+    delivery_instructions: (cart?.metadata?.delivery_instructions as string) || "",
   })
 
   const [deliveryType, setDeliveryType] = useState<"home" | "pickup">("home")
@@ -271,6 +272,15 @@ const ShippingAddress = ({
           required
           data-testid="shipping-country-select"
         />
+        <div className="small:col-span-2">
+          <Input
+            label="Delivery Instructions (Optional)"
+            name="delivery_instructions"
+            value={formData["delivery_instructions"]}
+            onChange={handleChange}
+            data-testid="shipping-delivery-instructions-input"
+          />
+        </div>
       </div>
       {/* Hidden checkbox - always same as billing */}
       <input

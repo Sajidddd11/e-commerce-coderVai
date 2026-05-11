@@ -81,6 +81,9 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
                 phone: formData.get("shipping_address.phone") as string,
             },
             email: formData.get("email") as string,
+            metadata: {
+                delivery_instructions: formData.get("delivery_instructions") as string || "",
+            }
         }
 
         // Set billing address (always same as shipping now)

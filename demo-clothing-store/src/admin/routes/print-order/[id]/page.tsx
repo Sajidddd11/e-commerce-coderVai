@@ -216,6 +216,16 @@ const PrintOrderPage = () => {
                 {address?.country_code?.toUpperCase()}
             </div>
 
+            {/* Delivery Instructions */}
+            {order.metadata?.delivery_instructions && (
+                <>
+                    <div className="section-title">Delivery Instructions</div>
+                    <div style={{ marginLeft: "20px", fontStyle: "italic" }}>
+                        {order.metadata.delivery_instructions}
+                    </div>
+                </>
+            )}
+
             {/* Order Items */}
             <div className="section-title">Order Items</div>
             <table className="items-table">
