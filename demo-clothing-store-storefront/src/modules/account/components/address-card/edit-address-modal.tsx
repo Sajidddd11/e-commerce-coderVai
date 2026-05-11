@@ -8,6 +8,7 @@ import useToggleState from "@lib/hooks/use-toggle-state"
 import CountrySelect from "@modules/checkout/components/country-select"
 import Input from "@modules/common/components/input"
 import Modal from "@modules/common/components/modal"
+import DistrictSelect from "@modules/checkout/components/district-select"
 import DotSpinner from "@modules/common/components/dot-spinner"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import { HttpTypes } from "@medusajs/types"
@@ -29,6 +30,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
 }) => {
   const [removing, setRemoving] = useState(false)
   const [successState, setSuccessState] = useState(false)
+  const [cityValue, setCityValue] = useState(address.city || "")
   const { state, open, close: closeModal } = useToggleState(false)
 
   const [formState, formAction] = useActionState(updateCustomerAddress, {
@@ -79,24 +81,14 @@ const EditAddress: React.FC<EditAddressProps> = ({
           >
             {address.first_name} {address.last_name}
           </Heading>
-          {address.company && (
-            <Text
-              className="txt-compact-small text-ui-fg-base"
-              data-testid="address-company"
-            >
-              {address.company}
-            </Text>
-          )}
           <Text className="flex flex-col text-left text-base-regular mt-2">
             <span data-testid="address-address">
               {address.address_1}
-              {address.address_2 && <span>, {address.address_2}</span>}
             </span>
             <span data-testid="address-postal-city">
-              {address.postal_code}, {address.city}
+              {address.city}
             </span>
             <span data-testid="address-province-country">
-              {address.province && `${address.province}, `}
               {address.country_code?.toUpperCase()}
             </span>
           </Text>
@@ -128,31 +120,14 @@ const EditAddress: React.FC<EditAddressProps> = ({
         <form action={formAction}>
           <input type="hidden" name="addressId" value={address.id} />
           <Modal.Body>
-            <div className="grid grid-cols-1 gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
-                <Input
-                  label="First name"
-                  name="first_name"
-                  required
-                  autoComplete="given-name"
-                  defaultValue={address.first_name || undefined}
-                  data-testid="first-name-input"
-                />
-                <Input
-                  label="Last name"
-                  name="last_name"
-                  required
-                  autoComplete="family-name"
-                  defaultValue={address.last_name || undefined}
-                  data-testid="last-name-input"
-                />
-              </div>
+            <div className="grid grid-cols-1 gap-y-2 w-full">
               <Input
-                label="Company"
-                name="company"
-                autoComplete="organization"
-                defaultValue={address.company || undefined}
-                data-testid="company-input"
+                label="Full Name"
+                name="full_name"
+                required
+                autoComplete="name"
+                defaultValue={address.first_name && address.last_name ? `${address.first_name} ${address.last_name}` : address.first_name || undefined}
+                data-testid="full-name-input"
               />
               <Input
                 label="Address"
@@ -162,37 +137,12 @@ const EditAddress: React.FC<EditAddressProps> = ({
                 defaultValue={address.address_1 || undefined}
                 data-testid="address-1-input"
               />
-              <Input
-                label="Apartment, suite, etc."
-                name="address_2"
-                autoComplete="address-line2"
-                defaultValue={address.address_2 || undefined}
-                data-testid="address-2-input"
-              />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
-                <Input
-                  label="Postal code"
-                  name="postal_code"
-                  required
-                  autoComplete="postal-code"
-                  defaultValue={address.postal_code || undefined}
-                  data-testid="postal-code-input"
-                />
-                <Input
-                  label="City"
-                  name="city"
-                  required
-                  autoComplete="locality"
-                  defaultValue={address.city || undefined}
-                  data-testid="city-input"
-                />
-              </div>
-              <Input
-                label="Province / State"
-                name="province"
-                autoComplete="address-level1"
-                defaultValue={address.province || undefined}
-                data-testid="state-input"
+              <DistrictSelect
+                name="city"
+                value={cityValue}
+                onChange={(e) => setCityValue(e.target.value)}
+                required
+                data-testid="city-input"
               />
               <CountrySelect
                 name="country_code"
@@ -205,6 +155,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
               <Input
                 label="Phone"
                 name="phone"
+                required
                 autoComplete="phone"
                 defaultValue={address.phone || undefined}
                 data-testid="phone-input"
@@ -221,13 +172,14 @@ const EditAddress: React.FC<EditAddressProps> = ({
               <Button
                 type="reset"
                 variant="secondary"
+                size="large"
                 onClick={close}
-                className="h-10"
+                className="py-4 text-base font-semibold h-auto"
                 data-testid="cancel-button"
               >
                 Cancel
               </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
+              <SubmitButton data-testid="save-button" className="w-auto">Save</SubmitButton>
             </div>
           </Modal.Footer>
         </form>

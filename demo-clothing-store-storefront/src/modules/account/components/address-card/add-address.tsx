@@ -8,6 +8,7 @@ import useToggleState from "@lib/hooks/use-toggle-state"
 import CountrySelect from "@modules/checkout/components/country-select"
 import Input from "@modules/common/components/input"
 import Modal from "@modules/common/components/modal"
+import DistrictSelect from "@modules/checkout/components/district-select"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import { HttpTypes } from "@medusajs/types"
 import { addCustomerAddress } from "@lib/data/customer"
@@ -20,6 +21,7 @@ const AddAddress = ({
   addresses: HttpTypes.StoreCustomerAddress[]
 }) => {
   const [successState, setSuccessState] = useState(false)
+  const [cityValue, setCityValue] = useState("")
   const { state, open, close: closeModal } = useToggleState(false)
 
   const [formState, formAction] = useActionState(addCustomerAddress, {
@@ -63,28 +65,13 @@ const AddAddress = ({
         </Modal.Title>
         <form action={formAction}>
           <Modal.Body>
-            <div className="flex flex-col gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
-                <Input
-                  label="First name"
-                  name="first_name"
-                  required
-                  autoComplete="given-name"
-                  data-testid="first-name-input"
-                />
-                <Input
-                  label="Last name"
-                  name="last_name"
-                  required
-                  autoComplete="family-name"
-                  data-testid="last-name-input"
-                />
-              </div>
+            <div className="flex flex-col gap-y-2 w-full">
               <Input
-                label="Company"
-                name="company"
-                autoComplete="organization"
-                data-testid="company-input"
+                label="Full Name"
+                name="full_name"
+                required
+                autoComplete="name"
+                data-testid="full-name-input"
               />
               <Input
                 label="Address"
@@ -93,33 +80,12 @@ const AddAddress = ({
                 autoComplete="address-line1"
                 data-testid="address-1-input"
               />
-              <Input
-                label="Apartment, suite, etc."
-                name="address_2"
-                autoComplete="address-line2"
-                data-testid="address-2-input"
-              />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
-                <Input
-                  label="Postal code"
-                  name="postal_code"
-                  required
-                  autoComplete="postal-code"
-                  data-testid="postal-code-input"
-                />
-                <Input
-                  label="City"
-                  name="city"
-                  required
-                  autoComplete="locality"
-                  data-testid="city-input"
-                />
-              </div>
-              <Input
-                label="Province / State"
-                name="province"
-                autoComplete="address-level1"
-                data-testid="state-input"
+              <DistrictSelect
+                name="city"
+                value={cityValue}
+                onChange={(e) => setCityValue(e.target.value)}
+                required
+                data-testid="city-input"
               />
               <CountrySelect
                 region={region}
@@ -131,6 +97,7 @@ const AddAddress = ({
               <Input
                 label="Phone"
                 name="phone"
+                required
                 autoComplete="phone"
                 data-testid="phone-input"
               />
@@ -149,13 +116,14 @@ const AddAddress = ({
               <Button
                 type="reset"
                 variant="secondary"
+                size="large"
                 onClick={close}
-                className="h-10"
+                className="py-4 text-base font-semibold h-auto"
                 data-testid="cancel-button"
               >
                 Cancel
               </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
+              <SubmitButton data-testid="save-button" className="w-auto">Save</SubmitButton>
             </div>
           </Modal.Footer>
         </form>

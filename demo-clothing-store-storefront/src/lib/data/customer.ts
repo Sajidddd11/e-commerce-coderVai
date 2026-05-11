@@ -54,6 +54,7 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
     .catch(medusaError)
 
   const cacheTag = await getCacheTag("customers")
+  // @ts-ignore
   revalidateTag(cacheTag)
 
   return updateRes
@@ -94,6 +95,7 @@ export async function signup(_currentState: unknown, formData: FormData) {
     await setAuthToken(loginToken as string)
 
     const customerCacheTag = await getCacheTag("customers")
+    // @ts-ignore
     revalidateTag(customerCacheTag)
 
     await transferCart()
@@ -114,6 +116,7 @@ export async function login(_currentState: unknown, formData: FormData) {
       .then(async (token) => {
         await setAuthToken(token as string)
         const customerCacheTag = await getCacheTag("customers")
+        // @ts-ignore
         revalidateTag(customerCacheTag)
       })
   } catch (error: any) {
@@ -133,11 +136,13 @@ export async function signout(countryCode: string) {
   await removeAuthToken()
 
   const customerCacheTag = await getCacheTag("customers")
+  // @ts-ignore
   revalidateTag(customerCacheTag)
 
   await removeCartId()
 
   const cartCacheTag = await getCacheTag("carts")
+  // @ts-ignore
   revalidateTag(cartCacheTag)
 
   redirect(`/${countryCode}/account`)
@@ -155,6 +160,7 @@ export async function transferCart() {
   await sdk.store.cart.transferCart(cartId, {}, headers)
 
   const cartCacheTag = await getCacheTag("carts")
+  // @ts-ignore
   revalidateTag(cartCacheTag)
 }
 
@@ -165,9 +171,19 @@ export const addCustomerAddress = async (
   const isDefaultBilling = (currentState.isDefaultBilling as boolean) || false
   const isDefaultShipping = (currentState.isDefaultShipping as boolean) || false
 
+  const fullName = formData.get("full_name") as string
+  let firstName = formData.get("first_name") as string
+  let lastName = formData.get("last_name") as string
+
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ')
+    firstName = nameParts[0] || fullName
+    lastName = nameParts.slice(1).join(' ') || firstName
+  }
+
   const address = {
-    first_name: formData.get("first_name") as string,
-    last_name: formData.get("last_name") as string,
+    first_name: firstName,
+    last_name: lastName,
     company: formData.get("company") as string,
     address_1: formData.get("address_1") as string,
     address_2: formData.get("address_2") as string,
@@ -188,6 +204,7 @@ export const addCustomerAddress = async (
     .createAddress(address, {}, headers)
     .then(async ({ customer }) => {
       const customerCacheTag = await getCacheTag("customers")
+      // @ts-ignore
       revalidateTag(customerCacheTag)
       return { success: true, error: null }
     })
@@ -207,6 +224,7 @@ export const deleteCustomerAddress = async (
     .deleteAddress(addressId, headers)
     .then(async () => {
       const customerCacheTag = await getCacheTag("customers")
+      // @ts-ignore
       revalidateTag(customerCacheTag)
       return { success: true, error: null }
     })
@@ -226,9 +244,19 @@ export const updateCustomerAddress = async (
     return { success: false, error: "Address ID is required" }
   }
 
+  const fullName = formData.get("full_name") as string
+  let firstName = formData.get("first_name") as string
+  let lastName = formData.get("last_name") as string
+
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ')
+    firstName = nameParts[0] || fullName
+    lastName = nameParts.slice(1).join(' ') || firstName
+  }
+
   const address = {
-    first_name: formData.get("first_name") as string,
-    last_name: formData.get("last_name") as string,
+    first_name: firstName,
+    last_name: lastName,
     company: formData.get("company") as string,
     address_1: formData.get("address_1") as string,
     address_2: formData.get("address_2") as string,
@@ -252,6 +280,7 @@ export const updateCustomerAddress = async (
     .updateAddress(addressId, address, {}, headers)
     .then(async () => {
       const customerCacheTag = await getCacheTag("customers")
+      // @ts-ignore
       revalidateTag(customerCacheTag)
       return { success: true, error: null }
     })

@@ -22,6 +22,7 @@ import {
     getCacheTag,
     getCartId,
 } from "./cookies"
+import { retrieveCustomer } from "./customer"
 
 /**
  * Prepares the entire checkout in one atomic operation
@@ -87,6 +88,51 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
 
         await sdk.store.cart.update(cartId, addressData, {}, headers)
 
+        // Save address to customer profile if logged in and it doesn't exist
+        try {
+            const customer = await retrieveCustomer()
+            if (customer) {
+                const shipping = addressData.shipping_address as any
+                const addressExists = customer.addresses?.some(a => 
+                    a.address_1 === shipping.address_1 &&
+                    a.city === shipping.city &&
+                    a.phone === shipping.phone
+                )
+                
+                if (!addressExists) {
+                    if (customer.addresses && customer.addresses.length > 0) {
+                        // Update the default or first address
+                        const addressToUpdate = customer.addresses.find(a => a.is_default_shipping) || customer.addresses[0]
+                        await sdk.store.customer.updateAddress(addressToUpdate.id, {
+                            first_name: shipping.first_name || "",
+                            last_name: shipping.last_name || "",
+                            address_1: shipping.address_1 || "",
+                            city: shipping.city || "",
+                            country_code: shipping.country_code || "",
+                            phone: shipping.phone || "",
+                        }, {}, headers)
+                    } else {
+                        // Create a new address
+                        await sdk.store.customer.createAddress({
+                            first_name: shipping.first_name || "",
+                            last_name: shipping.last_name || "",
+                            address_1: shipping.address_1 || "",
+                            city: shipping.city || "",
+                            country_code: shipping.country_code || "",
+                            phone: shipping.phone || "",
+                            is_default_shipping: true,
+                        }, {}, headers)
+                    }
+                    
+                    const customerCacheTag = await getCacheTag("customers")
+                    // @ts-ignore
+                    revalidateTag(customerCacheTag)
+                }
+            }
+        } catch (err) {
+            console.error("Failed to auto-save address to customer profile:", err)
+        }
+
         // Step 2: Set shipping method
         await sdk.store.cart.addShippingMethod(
             cartId,
@@ -135,8 +181,10 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
 
         // Revalidate cache
         const cartCacheTag = await getCacheTag("carts")
+        // @ts-ignore
         revalidateTag(cartCacheTag)
         const fulfillmentCacheTag = await getCacheTag("fulfillment")
+        // @ts-ignore
         revalidateTag(fulfillmentCacheTag)
     } catch (error: any) {
         // Re-throw redirect errors (Next.js uses these internally)

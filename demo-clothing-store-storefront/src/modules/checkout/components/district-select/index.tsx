@@ -23,6 +23,7 @@ type DistrictSelectProps = {
     value: string
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
     required?: boolean
+    name?: string
     "data-testid"?: string
 }
 
@@ -30,6 +31,7 @@ export default function DistrictSelect({
     value,
     onChange,
     required = false,
+    name = "shipping_address.city",
     "data-testid": dataTestId
 }: DistrictSelectProps) {
     const [isOpen, setIsOpen] = useState(false)
@@ -68,7 +70,7 @@ export default function DistrictSelect({
         // Trigger onChange event with the selected district
         const syntheticEvent = {
             target: {
-                name: "shipping_address.city",
+                name: name,
                 value: district
             }
         } as React.ChangeEvent<HTMLInputElement>
@@ -97,7 +99,7 @@ export default function DistrictSelect({
                 {/* Hidden input for form submission */}
                 <input
                     type="hidden"
-                    name="shipping_address.city"
+                    name={name}
                     value={inputValue}
                     required={required}
                 />

@@ -81,11 +81,14 @@ const ShippingAddress = ({
     isSyncingFromCart.current = true
 
     // Ensure cart is not null and has a shipping_address before setting form data
-    if (cart && cart.shipping_address) {
+    if (cart && cart.shipping_address && cart.shipping_address.first_name) {
       setFormAddress(cart?.shipping_address, cart?.email)
-    }
-
-    if (cart && !cart.email && customer?.email) {
+    } else if (customer && customer.addresses && customer.addresses.length > 0) {
+      // Auto-fill from customer's default or first address if cart address is empty
+      const defaultShipping = customer.addresses.find((a) => a.is_default_shipping)
+      const addressToUse = defaultShipping || customer.addresses[0]
+      setFormAddress(addressToUse as any, customer.email)
+    } else if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
 
@@ -93,7 +96,7 @@ const ShippingAddress = ({
     setTimeout(() => {
       isSyncingFromCart.current = false
     }, 100)
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer]) // Add cart and customer as dependencies
 
   // Notify parent when delivery type changes
   useEffect(() => {

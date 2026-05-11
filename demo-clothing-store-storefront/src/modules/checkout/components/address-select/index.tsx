@@ -81,23 +81,14 @@ const AddressSelect = ({
                       <span className="text-left text-base-semi">
                         {address.first_name} {address.last_name}
                       </span>
-                      {address.company && (
-                        <span className="text-small-regular text-ui-fg-base">
-                          {address.company}
-                        </span>
-                      )}
                       <div className="flex flex-col text-left text-base-regular mt-2">
                         <span>
                           {address.address_1}
-                          {address.address_2 && (
-                            <span>, {address.address_2}</span>
-                          )}
                         </span>
                         <span>
-                          {address.postal_code}, {address.city}
+                          {address.city}
                         </span>
                         <span>
-                          {address.province && `${address.province}, `}
                           {address.country_code?.toUpperCase()}
                         </span>
                       </div>
