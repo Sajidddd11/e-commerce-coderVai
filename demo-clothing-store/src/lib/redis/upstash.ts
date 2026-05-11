@@ -1,32 +1,65 @@
 import { Redis } from '@upstash/redis'
+import IORedis from 'ioredis'
 
 /**
- * Upstash Redis client for caching payment sessions and cart data
- * Falls back to in-memory storage if Upstash is not configured
+ * Redis client that prioritizes:
+ * 1. Local Redis (REDIS_URL) - fastest
+ * 2. Upstash Redis (cloud) - fallback for serverless
+ * 3. In-memory storage - last resort
  */
 class UpstashRedisService {
-  private client: Redis | null = null
+  private upstashClient: Redis | null = null
+  private localClient: IORedis | null = null
   private inMemoryStore: Map<string, { value: any; expiresAt: number | null }> = new Map()
   private isConfigured: boolean = false
+  private clientType: 'local' | 'upstash' | 'memory' = 'memory'
 
   constructor() {
+    // Priority 1: Try local Redis first (much faster!)
+    const redisUrl = process.env.REDIS_URL
+    if (redisUrl) {
+      try {
+        this.localClient = new IORedis(redisUrl, {
+          maxRetriesPerRequest: 3,
+          enableReadyCheck: true,
+          lazyConnect: true,
+        })
+
+        this.localClient.connect().then(() => {
+          this.isConfigured = true
+          this.clientType = 'local'
+          console.log('[Redis] Local Redis client connected successfully')
+        }).catch((err) => {
+          console.warn('[Redis] Local Redis connection failed, trying Upstash...', err.message)
+          this.tryUpstash()
+        })
+
+      } catch (error) {
+        console.warn('[Redis] Failed to initialize local Redis:', error)
+        this.tryUpstash()
+      }
+    } else {
+      this.tryUpstash()
+    }
+  }
+
+  private tryUpstash() {
+    // Priority 2: Try Upstash (cloud Redis)
     const url = process.env.UPSTASH_REDIS_REST_URL
     const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
     if (url && token) {
       try {
-        this.client = new Redis({
-          url,
-          token,
-        })
+        this.upstashClient = new Redis({ url, token })
         this.isConfigured = true
-        console.log('[Upstash] Redis client initialized successfully')
+        this.clientType = 'upstash'
+        console.log('[Redis] Upstash Redis client initialized')
       } catch (error) {
-        console.warn('[Upstash] Failed to initialize Redis client:', error)
-        this.isConfigured = false
+        console.warn('[Redis] Failed to initialize Upstash:', error)
+        console.warn('[Redis] Using in-memory fallback')
       }
     } else {
-      console.warn('[Upstash] Redis not configured. Using in-memory fallback.')
+      console.warn('[Redis] No Redis configured. Using in-memory storage.')
     }
   }
 
@@ -34,16 +67,25 @@ class UpstashRedisService {
    * Set a value with optional expiration (in seconds)
    */
   async set(key: string, value: any, expirationSeconds?: number): Promise<void> {
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured) {
       try {
-        if (expirationSeconds) {
-          await this.client.setex(key, expirationSeconds, JSON.stringify(value))
-        } else {
-          await this.client.set(key, JSON.stringify(value))
+        if (this.clientType === 'local' && this.localClient) {
+          // Use local Redis (ioredis)
+          if (expirationSeconds) {
+            await this.localClient.setex(key, expirationSeconds, JSON.stringify(value))
+          } else {
+            await this.localClient.set(key, JSON.stringify(value))
+          }
+        } else if (this.clientType === 'upstash' && this.upstashClient) {
+          // Use Upstash Redis
+          if (expirationSeconds) {
+            await this.upstashClient.setex(key, expirationSeconds, JSON.stringify(value))
+          } else {
+            await this.upstashClient.set(key, JSON.stringify(value))
+          }
         }
-      } catch (error) {
-        console.error('[Upstash] Error setting value:', error)
-        // Fallback to in-memory
+      } catch (error: any) {
+        // Silently fall back to in-memory
         this.setInMemory(key, value, expirationSeconds)
       }
     } else {
@@ -52,17 +94,23 @@ class UpstashRedisService {
   }
 
   /**
-   * Get a value by key
+   * Get a value from Redis
    */
   async get<T = any>(key: string): Promise<T | null> {
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured) {
       try {
-        const value = await this.client.get(key)
+        let value: string | null = null
+
+        if (this.clientType === 'local' && this.localClient) {
+          value = await this.localClient.get(key)
+        } else if (this.clientType === 'upstash' && this.upstashClient) {
+          value = await this.upstashClient.get(key)
+        }
+
         if (value === null || value === undefined) return null
         return (typeof value === 'string' ? JSON.parse(value) : value) as T
       } catch (error) {
-        console.error('[Upstash] Error getting value:', error)
-        // Fallback to in-memory
+        // Silently fall back to in-memory
         return this.getInMemory<T>(key)
       }
     } else {
@@ -71,14 +119,18 @@ class UpstashRedisService {
   }
 
   /**
-   * Delete a key
+   * Delete a value from Redis
    */
   async del(key: string): Promise<void> {
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured) {
       try {
-        await this.client.del(key)
+        if (this.clientType === 'local' && this.localClient) {
+          await this.localClient.del(key)
+        } else if (this.clientType === 'upstash' && this.upstashClient) {
+          await this.upstashClient.del(key)
+        }
       } catch (error) {
-        console.error('[Upstash] Error deleting value:', error)
+        // Silently handle error
       }
     }
     this.inMemoryStore.delete(key)
@@ -88,12 +140,19 @@ class UpstashRedisService {
    * Check if a key exists
    */
   async exists(key: string): Promise<boolean> {
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured) {
       try {
-        const result = await this.client.exists(key)
+        let result: number = 0
+
+        if (this.clientType === 'local' && this.localClient) {
+          result = await this.localClient.exists(key)
+        } else if (this.clientType === 'upstash' && this.upstashClient) {
+          result = await this.upstashClient.exists(key)
+        }
+
         return result === 1
       } catch (error) {
-        console.error('[Upstash] Error checking existence:', error)
+        // Silently fall back
         return this.inMemoryStore.has(key)
       }
     } else {
@@ -102,14 +161,18 @@ class UpstashRedisService {
   }
 
   /**
-   * Set expiration on an existing key (in seconds)
+   * Set expiration on a key
    */
   async expire(key: string, seconds: number): Promise<void> {
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured) {
       try {
-        await this.client.expire(key, seconds)
+        if (this.clientType === 'local' && this.localClient) {
+          await this.localClient.expire(key, seconds)
+        } else if (this.clientType === 'upstash' && this.upstashClient) {
+          await this.upstashClient.expire(key, seconds)
+        }
       } catch (error) {
-        console.error('[Upstash] Error setting expiration:', error)
+        // Silently handle error  
       }
     } else {
       const item = this.inMemoryStore.get(key)

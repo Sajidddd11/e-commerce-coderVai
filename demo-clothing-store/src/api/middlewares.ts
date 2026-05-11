@@ -1,10 +1,12 @@
-import { defineMiddlewares } from "@medusajs/framework/http"
+import { defineMiddlewares, authenticate } from "@medusajs/framework/http"
 import type {
   MedusaRequest,
   MedusaResponse,
   MedusaNextFunction,
 } from "@medusajs/framework/http"
 import { enrichPaymentContext } from "./middlewares/enrich-payment-context"
+import { blockIfEditor } from "./middlewares/block-if-editor"
+import { auditDeleteLog } from "./middlewares/audit-log"
 
 /**
  * Middleware to add publishable API key to SSLCommerz callback requests
@@ -35,11 +37,11 @@ async function addPublishableKeyForSslCallbacks(
   } else {
     console.log(`[SSLCommerz Middleware] Publishable key already present`)
   }
-  
+
   // Also try setting it directly on the request object
-  ;(req as any).headers = req.headers || {}
-  ;(req as any).headers["x-publishable-api-key"] = publishableKey
-  
+  ; (req as any).headers = req.headers || {}
+    ; (req as any).headers["x-publishable-api-key"] = publishableKey
+
   // Set in rawHeaders if available
   if ((req as any).rawHeaders) {
     const rawHeaders = (req as any).rawHeaders as string[]
@@ -68,6 +70,33 @@ export default defineMiddlewares({
       matcher: /^\/store\/sslcommerz\/(success|fail|cancel|ipn)/,
       middlewares: [addPublishableKeyForSslCallbacks],
     },
+    // ─── File size limit: reject uploads > 500 KB ──────────────────────────
+    {
+      matcher: "/admin/uploads",
+      method: ["POST"],
+      middlewares: [
+        (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+          const contentLength = parseInt(req.headers["content-length"] || "0", 10)
+          // 500 KB + some overhead for multipart form boundaries
+          if (contentLength > 600 * 1024) {
+            return res.status(413).json({
+              message: "File size exceeds the 500 KB limit. Please compress the image before uploading.",
+              type: "invalid_data",
+            })
+          }
+          next()
+        },
+      ],
+    },
+    // ─── RBAC: Block restricted actions for editor-role users ──────────────
+    // ─── Audit: Log all successful DELETE requests ──────────────────────────
+    {
+      matcher: "/admin",
+      middlewares: [
+        authenticate("user", ["session", "bearer"]),
+        blockIfEditor,
+        auditDeleteLog,
+      ],
+    },
   ],
 })
-

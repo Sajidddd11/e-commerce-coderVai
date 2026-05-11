@@ -59,7 +59,7 @@ BULKSMSBD_BRAND_NAME=Your Store Name
 
 #### Test Balance Check
 ```bash
-curl http://localhost:9000/admin/sms/balance
+curl http://localhost:9001/admin/sms/balance
 ```
 
 Expected response:
@@ -73,7 +73,7 @@ Expected response:
 
 #### Test Manual SMS
 ```bash
-curl -X POST http://localhost:9000/admin/sms/send \
+curl -X POST http://localhost:9001/admin/sms/send \
   -H "Content-Type: application/json" \
   -d '{
     "numbers": ["8801712345678"],
@@ -83,12 +83,12 @@ curl -X POST http://localhost:9000/admin/sms/send \
 
 #### View SMS Logs
 ```bash
-curl http://localhost:9000/admin/sms/logs
+curl http://localhost:9001/admin/sms/logs
 ```
 
 #### View SMS Statistics
 ```bash
-curl http://localhost:9000/admin/sms/stats
+curl http://localhost:9001/admin/sms/stats
 ```
 
 ---
@@ -127,7 +127,7 @@ Invalid formats will be rejected with a warning in logs:
 Query the database to see all SMS attempts:
 
 ```bash
-curl http://localhost:9000/admin/sms/logs?limit=10
+curl http://localhost:9001/admin/sms/logs?limit=10
 ```
 
 Look at the `status` field:
@@ -148,7 +148,7 @@ Common issues:
 
 Verify by checking balance:
 ```bash
-curl http://localhost:9000/admin/sms/balance
+curl http://localhost:9001/admin/sms/balance
 ```
 
 ---
@@ -207,7 +207,7 @@ fetch('/admin/sms/logs?status=failed&limit=50')
 - ✅ Does the order have a phone number in shipping or billing address?
 - ✅ Is the phone number in valid format?
 - ✅ Check server logs for `[Bulk SMS BD]` messages
-- ✅ Check SMS logs: `curl http://localhost:9000/admin/sms/logs?limit=1`
+- ✅ Check SMS logs: `curl http://localhost:9001/admin/sms/logs?limit=1`
 
 ### Issue 3: "Invalid phone number format"
 **Symptom:** Log shows `Invalid Bangladeshi phone number format`
@@ -296,5 +296,4 @@ curl -X POST http://bulksmsbd.net/api/smsapi \
    - Server can reach `bulksmsbd.net` (not blocked by firewall)
    - Environment variables are loaded correctly
    - No errors in server startup logs
-
 

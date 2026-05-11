@@ -24,4 +24,3 @@ export const GET = async (_req: MedusaRequest, res: MedusaResponse) => {
   }
 }
 
-

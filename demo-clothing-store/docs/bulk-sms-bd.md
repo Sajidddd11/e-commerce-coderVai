@@ -38,7 +38,7 @@ Two admin routes are available for quick testing:
 Example call:
 
 ```bash
-curl -X POST http://localhost:9000/admin/sms/send \
+curl -X POST http://localhost:9001/admin/sms/send \
   -H "Content-Type: application/json" \
   -d '{"numbers":["88017XXXXXXX"],"message":"Your Medusa order shipped."}'
 ```
