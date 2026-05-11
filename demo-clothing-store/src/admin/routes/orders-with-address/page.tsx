@@ -522,7 +522,7 @@ const OrdersWithAddressPage = () => {
               </div>
             </div>
             <div class="invoice-header-right">
-              <img src="${logoImage}" alt="Al-Ariya" style="width: 120px; height: auto; object-fit: contain;" />
+              <img src="${logoImage}" alt="Zahan" style="width: 120px; height: auto; object-fit: contain;" />
             </div>
           </div>
 

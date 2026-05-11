@@ -157,7 +157,7 @@ const PerfumeVolumesPage = () => {
                 </head>
                 <body>
                     <div class="header">
-                        <h1 style="margin: 0;">Al-Ariya Perfume Bottle Library</h1>
+                        <h1 style="margin: 0;">Zahan Perfume Bottle Library</h1>
                         <p style="color: #6b7280; margin-top: 5px;">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
                     </div>
 
@@ -234,9 +234,9 @@ const PerfumeVolumesPage = () => {
                             Clicking on a volume allows you to upload its specific bottles and set base prices inside.
                         </Text>
                     </div>
-                    <Button 
-                        variant="secondary" 
-                        onClick={handlePrintAll} 
+                    <Button
+                        variant="secondary"
+                        onClick={handlePrintAll}
                         disabled={isPrinting || volumes.length === 0}
                     >
                         <Receipt />
