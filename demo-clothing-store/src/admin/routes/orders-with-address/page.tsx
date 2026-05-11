@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import codImage from "../../assets/cod.png"
 import sslImage from "../../assets/ssl.png"
-import logoImage from "../../assets/logo.png"
+import logoImage from "../../assets/Zahan Fashion simplified.svg"
 
 const OrdersWithAddressPage = () => {
   const navigate = useNavigate()
@@ -522,7 +522,7 @@ const OrdersWithAddressPage = () => {
               </div>
             </div>
             <div class="invoice-header-right">
-              <img src="${logoImage}" alt="Zahan" style="width: 120px; height: auto; object-fit: contain;" />
+              <img src="${logoImage}" alt="Zahan" style="width: 180px; height: auto; object-fit: contain;" />
             </div>
           </div>
 
