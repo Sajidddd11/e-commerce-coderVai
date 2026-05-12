@@ -66,10 +66,10 @@ export default function TrustBadges() {
                 <p className="text-white text-[13px] text-left leading-tight">
                   {badge.id === "hotline" ? (
                     <a
-                      href="tel:+8809677610610"
-                      className="text-white text-left font-medium hover:text-gray-300 transition-colors"
+                      href="tel:+8801304117711"
+                      className="text-[#56aebf] font-semibold block"
                     >
-                      +8809677610610
+                      +8801304117711
                     </a>
                   ) : (
                     badge.title

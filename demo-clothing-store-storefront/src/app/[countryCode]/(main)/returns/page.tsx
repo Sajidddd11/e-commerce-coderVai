@@ -71,9 +71,8 @@ export default function ReturnsPage() {
                         <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-900">Step 1: Contact Us</h3>
                         <p>Initiate a return by contacting our customer service within 7 days of delivery:</p>
                         <ul className="list-disc pl-6 space-y-2">
-                            <li>Email: <a href="mailto:returns@zahan.com" className="text-blue-600 hover:underline">returns@zahan.com</a></li>
-                            <li>Phone: +880-XXXX-XXXXXX</li>
-                            <li>WhatsApp: +880 1XXX-XXXXXX</li>
+                            <li>Email: <a href="mailto:support@zahan.com.bd" className="text-blue-600 hover:underline">support@zahan.com.bd</a></li>
+                            <li>Phone / WhatsApp: +8801304117711</li>
                         </ul>
                         <p className="mt-3">Provide your order number, reason for return, and photos of the item (if defective/damaged).</p>
 
@@ -239,9 +238,8 @@ export default function ReturnsPage() {
                         </p>
                         <div className="mt-4 space-y-2">
                             <p><strong>Customer Service</strong></p>
-                            <p>Email: <a href="mailto:returns@zahan.com" className="text-blue-600 hover:underline">returns@zahan.com</a></p>
-                            <p>Phone: +880-XXXX-XXXXXX</p>
-                            <p>WhatsApp: +880 1XXX-XXXXXX</p>
+                            <p>Email: <a href="mailto:support@zahan.com.bd" className="text-blue-600 hover:underline">support@zahan.com.bd</a></p>
+                            <p>Phone / WhatsApp: +8801304117711</p>
                             <p>Hours: Saturday - Thursday, 10 AM - 8 PM (Bangladesh Time)</p>
                         </div>
                         <p className="mt-4">

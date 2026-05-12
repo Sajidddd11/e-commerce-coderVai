@@ -178,9 +178,9 @@ export default function TermsOfServicePage() {
                         <p>For questions about these Terms, please contact us:</p>
                         <div className="mt-4 space-y-2">
                             <p><strong>Zahan Fashion and Lifestyle</strong></p>
-                            <p>Email: <a href="mailto:support@zahan.com" className="text-blue-600 hover:underline">support@zahan.com</a></p>
-                            <p>Phone: +880-XXXX-XXXXXX</p>
-                            <p>Address: [Your Business Address], Dhaka, Bangladesh</p>
+                            <p>Email: <a href="mailto:support@zahan.com.bd" className="text-blue-600 hover:underline">support@zahan.com.bd</a></p>
+                            <p>Phone / WhatsApp: +8801304117711</p>
+                            <p>Address: ৫০/এ, পুরানা পল্টন, হাবিব সেন্টার, (৬ষ্ঠ তলা), ঢাকা-১০০০</p>
                         </div>
                     </section>
                 </div>

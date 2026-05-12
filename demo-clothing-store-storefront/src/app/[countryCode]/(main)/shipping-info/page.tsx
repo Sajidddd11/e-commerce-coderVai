@@ -227,9 +227,8 @@ export default function ShippingInfoPage() {
                             If you have questions about shipping or need to modify your delivery address, please contact our customer service:
                         </p>
                         <div className="mt-4 space-y-2">
-                            <p>Email: <a href="mailto:support@zahan.com" className="text-blue-600 hover:underline">support@zahan.com</a></p>
-                            <p>Phone: +880-XXXX-XXXXXX</p>
-                            <p>WhatsApp: +880 1XXX-XXXXXX</p>
+                            <p>Email: <a href="mailto:support@zahan.com.bd" className="text-blue-600 hover:underline">support@zahan.com.bd</a></p>
+                            <p>Phone / WhatsApp: +8801304117711</p>
                             <p>Hours: Saturday - Thursday, 10 AM - 8 PM (Bangladesh Time)</p>
                         </div>
                     </section>

@@ -130,7 +130,7 @@ export default async function Footer() {
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink href="/terms" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
+                <LocalizedClientLink href="/terms-of-service" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Terms & Conditions
                 </LocalizedClientLink>
               </li>
@@ -280,7 +280,7 @@ export default async function Footer() {
                 Privacy Policy
               </LocalizedClientLink>
               <span className="text-gray-700">|</span>
-              <LocalizedClientLink href="/terms" className="text-gray-500 hover:text-[#56aebf] transition-colors">
+              <LocalizedClientLink href="/terms-of-service" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 Terms & Conditions
               </LocalizedClientLink>
             </div>
