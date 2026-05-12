@@ -17,9 +17,7 @@ export default async function testSmsIntegration({ container }: ExecArgs) {
   // Test 1: Environment Variables
   logger.info("\n[Test 1] Checking environment variables...")
   const requiredEnvVars = [
-    "BULKSMSBD_API_KEY",
-    "BULKSMSBD_SENDER_ID",
-    "BULKSMSBD_API_URL",
+    "SMSNETBD_API_KEY",
   ]
 
   let envCheckPassed = true
@@ -125,15 +123,15 @@ export default async function testSmsIntegration({ container }: ExecArgs) {
 
     // Test 6: Subscriber Configuration
     logger.info("\n[Test 6] Checking subscriber configuration...")
-    const notifyFlag = process.env.BULKSMSBD_NOTIFY_ORDER_PLACED
+    const notifyFlag = process.env.SMSNETBD_NOTIFY_ORDER_PLACED
     if (!notifyFlag || ["true", "1", "yes"].includes(notifyFlag.toLowerCase())) {
       logger.info("  ✓ Order SMS notifications are ENABLED")
     } else {
       logger.warn("  ⚠ Order SMS notifications are DISABLED")
-      logger.warn("    Set BULKSMSBD_NOTIFY_ORDER_PLACED=true to enable")
+      logger.warn("    Set SMSNETBD_NOTIFY_ORDER_PLACED=true to enable")
     }
 
-    const brandName = process.env.BULKSMSBD_BRAND_NAME || "Medusa Store"
+    const brandName = process.env.SMSNETBD_BRAND_NAME || "Medusa Store"
     logger.info(`  ✓ Brand name: "${brandName}"`)
     logger.info("✅ Subscriber configuration check passed!")
 

@@ -1,14 +1,19 @@
-type BulkSmsSendParams = {
+// ---------------------------------------------------------------------------
+// sms.net.bd  –  SMS client
+// Provider docs: https://api.sms.net.bd/sendsms
+//
+// API parameters (POST)
+//   api_key   – required
+//   msg       – required  (message body)
+//   to        – required  (number with country code 880, or standard 01X)
+//   sender_id – optional  (approved sender ID)
+//   content_id– optional  (approved campaign content ID)
+// ---------------------------------------------------------------------------
+
+type SmsNetSendParams = {
   numbers: string[] | string
   message: string
   senderId?: string
-  type?: string
-}
-
-type BulkSmsManyParams = {
-  payload: { number: string; message: string }[]
-  senderId?: string
-  type?: string
 }
 
 export type BulkSmsResponse = {
@@ -24,43 +29,31 @@ export type BulkSmsBalanceResponse = BulkSmsResponse & {
   validity?: string
 }
 
-type BulkSmsClientOptions = {
+type SmsNetClientOptions = {
   apiKey: string
-  senderId: string
-  apiUrl?: string
-  balanceUrl?: string
-  defaultType?: string
+  senderId?: string
 }
 
-const DEFAULT_SMS_API_URL = process.env.BULKSMSBD_API_URL || "http://bulksmsbd.net/api/smsapi"
-const DEFAULT_BALANCE_URL =
-  process.env.BULKSMSBD_BALANCE_URL || "http://bulksmsbd.net/api/getBalanceApi"
+const SMS_API_URL = "https://api.sms.net.bd/sendsms"
+const BALANCE_API_URL = "https://api.sms.net.bd/balance"
 
 export class BulkSmsBdClient {
-  private readonly config: Required<BulkSmsClientOptions>
+  private readonly apiKey: string
+  private readonly senderId?: string
 
-  constructor(options: BulkSmsClientOptions) {
+  constructor(options: SmsNetClientOptions) {
     if (!options.apiKey) {
-      throw new Error("Bulk SMS BD API key is missing")
+      throw new Error("sms.net.bd API key is missing")
     }
-
-    if (!options.senderId) {
-      throw new Error("Bulk SMS BD sender ID is missing")
-    }
-
-    this.config = {
-      apiKey: options.apiKey,
-      senderId: options.senderId,
-      apiUrl: options.apiUrl || DEFAULT_SMS_API_URL,
-      balanceUrl: options.balanceUrl || DEFAULT_BALANCE_URL,
-      defaultType: options.defaultType || process.env.BULKSMSBD_DEFAULT_TYPE || "text",
-    }
+    this.apiKey = options.apiKey
+    this.senderId = options.senderId
   }
 
   /**
-   * Send the same message to one or many numbers (comma separated under the hood)
+   * Send the same message to one or many numbers.
+   * For single transactional SMS, only the first number is used.
    */
-  async send(params: BulkSmsSendParams): Promise<BulkSmsResponse> {
+  async send(params: SmsNetSendParams): Promise<BulkSmsResponse> {
     const numbers = this.normalizeNumbers(params.numbers)
 
     if (!numbers.length) {
@@ -71,77 +64,45 @@ export class BulkSmsBdClient {
       throw new Error("`message` is required")
     }
 
-    const search = new URLSearchParams({
-      api_key: this.config.apiKey,
-      type: params.type || this.config.defaultType,
-      senderid: params.senderId || this.config.senderId,
-      number: numbers.join(","),
-      message: params.message,
+    // sms.net.bd accepts comma-separated numbers for campaign SMS.
+    // For transactional (single), use just the first number.
+    const to = numbers.join(",")
+
+    const body = new URLSearchParams({
+      api_key: this.apiKey,
+      msg: params.message,
+      to,
     })
 
-    const url = `${this.config.apiUrl}?${search.toString()}`
+    const senderId = params.senderId || this.senderId
+    if (senderId) {
+      body.set("sender_id", senderId)
+    }
 
-    const response = await fetch(url, {
+    const response = await fetch(SMS_API_URL, {
       method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
     })
 
-    const body = await response.text()
-
-    return this.parseResponse(body)
+    const text = await response.text()
+    return this.parseResponse(text)
   }
 
   /**
-   * Send different messages to different recipients (Bulk SMS BD "messages" parameter)
+   * Check account balance.
+   * sms.net.bd returns: { error: 0, msg: "...", data: { balance: "123.00" } }
    */
-  async sendCustomized(params: BulkSmsManyParams): Promise<BulkSmsResponse> {
-    if (!params.payload?.length) {
-      throw new Error("`payload` must include at least one message entry")
-    }
-
-    const formatted = params.payload
-      .filter((entry) => entry.number && entry.message)
-      .map((entry) => `${entry.number}##${entry.message}`)
-
-    if (!formatted.length) {
-      throw new Error("`payload` must contain valid numbers and messages")
-    }
-
-    const search = new URLSearchParams({
-      api_key: this.config.apiKey,
-      type: params.type || this.config.defaultType,
-      senderid: params.senderId || this.config.senderId,
-      messages: formatted.join("||"),
-    })
-
-    const url = `${this.config.apiUrl}?${search.toString()}`
-
-    const response = await fetch(url, {
-      method: "POST",
-    })
-
-    const body = await response.text()
-    return this.parseResponse(body)
-  }
-
   async getBalance(): Promise<BulkSmsBalanceResponse> {
-    const search = new URLSearchParams({
-      api_key: this.config.apiKey,
-    })
-
-    const url = `${this.config.balanceUrl}?${search.toString()}`
+    const url = `${BALANCE_API_URL}?api_key=${encodeURIComponent(this.apiKey)}`
     const response = await fetch(url, { method: "GET" })
-    const body = await response.text()
-    const parsed = this.parseResponse(body) as BulkSmsBalanceResponse
+    const text = await response.text()
+    const parsed = this.parseResponse(text) as BulkSmsBalanceResponse
 
-    // Simple heuristics: API often returns `{"current_balance":"123.00","validity":"2025-12-01"}`
     if (parsed.data && typeof parsed.data === "object") {
-      const balance = Number((parsed.data as any).current_balance)
-      if (!Number.isNaN(balance)) {
-        parsed.balance = balance
-      }
-      const validity = (parsed.data as any).validity
-      if (validity) {
-        parsed.validity = validity
+      const bal = Number((parsed.data as any).balance)
+      if (!Number.isNaN(bal)) {
+        parsed.balance = bal
       }
     }
 
@@ -152,68 +113,65 @@ export class BulkSmsBdClient {
     if (Array.isArray(numbers)) {
       return numbers.map((n) => n.toString().trim()).filter(Boolean)
     }
-
     if (typeof numbers === "string") {
       return numbers
         .split(/[,|\s]+/)
         .map((n) => n.trim())
         .filter(Boolean)
     }
-
     return []
   }
 
+  /**
+   * sms.net.bd response format:
+   *   Success: { "error": 0, "msg": "Request Submitted Successfully", "data": { "batch_id": 12345 } }
+   *   Failure: { "error": 420, "msg": "Invalid API Key" }
+   */
   private parseResponse(body: string): BulkSmsResponse {
     let data: Record<string, any> | string | undefined
     let code: number | null = null
     let description = body?.trim() || ""
+    let success = false
 
     try {
       const json = JSON.parse(body)
       data = json
-      code = Number(json?.response_code ?? json?.code ?? json?.status)
-      description =
-        json?.message || json?.response_description || json?.response || description
+      // sms.net.bd uses `error: 0` for success, non-zero for failure
+      const errorCode = Number(json?.error ?? json?.code ?? json?.status ?? null)
+      code = errorCode
+      description = json?.msg || json?.message || json?.response || description
+      success = errorCode === 0
     } catch {
       data = body
       const match = body?.match(/(\d{3,4})/)
       code = match ? Number(match[1]) : null
+      success = /submitted successfully/i.test(description)
     }
 
-    const success = code === 202 || /Submitted Successfully/i.test(description)
-
-    return {
-      code,
-      success,
-      description,
-      raw: body,
-      data,
-    }
+    return { code, success, description, raw: body, data }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Singleton factory – env vars
+//   SMSNETBD_API_KEY   – required
+//   SMSNETBD_SENDER_ID – optional
+// ---------------------------------------------------------------------------
 
 let singleton: BulkSmsBdClient | undefined
 
 export const getBulkSmsClient = () => {
-  if (singleton) {
-    return singleton
-  }
+  if (singleton) return singleton
 
-  const apiKey = process.env.BULKSMSBD_API_KEY
-  const senderId = process.env.BULKSMSBD_SENDER_ID
-
-  if (!apiKey || !senderId) {
-    throw new Error("Bulk SMS BD credentials are not configured in the environment")
+  const apiKey = process.env.SMSNETBD_API_KEY
+  if (!apiKey) {
+    throw new Error("SMSNETBD_API_KEY is not configured in the environment")
   }
 
   singleton = new BulkSmsBdClient({
     apiKey,
-    senderId,
-    apiUrl: process.env.BULKSMSBD_API_URL,
-    balanceUrl: process.env.BULKSMSBD_BALANCE_URL,
-    defaultType: process.env.BULKSMSBD_DEFAULT_TYPE,
+    senderId: process.env.SMSNETBD_SENDER_ID,
   })
 
   return singleton
 }
-

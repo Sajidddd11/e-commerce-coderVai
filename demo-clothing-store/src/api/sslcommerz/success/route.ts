@@ -7,7 +7,7 @@ import {
 import { getBulkSmsClient } from "../../../lib/sms/bulk-sms-bd"
 
 const shouldNotify = () => {
-  const flag = process.env.BULKSMSBD_NOTIFY_ORDER_PLACED
+  const flag = process.env.SMSNETBD_NOTIFY_ORDER_PLACED
   if (!flag) {
     return true
   }
@@ -135,7 +135,7 @@ const sendOrderSms = async (req: MedusaRequest, sessionId: string) => {
 
     // Send SMS
     const client = getBulkSmsClient()
-    const storeName = process.env.BULKSMSBD_BRAND_NAME || "Medusa Store"
+    const storeName = process.env.SMSNETBD_BRAND_NAME || "Medusa Store"
     const customerName = `${
       cart?.shipping_address?.first_name || ""
     } ${cart?.shipping_address?.last_name || ""}`.trim()

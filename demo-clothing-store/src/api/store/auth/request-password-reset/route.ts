@@ -71,10 +71,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
         // Send SMS
         const smsClient = getBulkSmsClient()
-        const storeName = process.env.BULKSMSBD_BRAND_NAME || "Medusa Store"
+        const storeName = process.env.SMSNETBD_BRAND_NAME || "Medusa Store"
         const phoneLastFour = customer.phone.slice(-4)
 
-        const message = `Your ${storeName} password reset OTP: ${otp}\\n\\nValid for 5 minutes. Do not share this code.`
+        const message = `Your ${storeName} password reset OTP: ${otp}\n\nValid for 5 minutes. Do not share this code.`
 
         const smsResult = await smsClient.send({
             numbers: customer.phone,
