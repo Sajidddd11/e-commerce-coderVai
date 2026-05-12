@@ -2,6 +2,7 @@ import { listCategories, filterCategoriesWithProducts } from "@lib/data/categori
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, MailIcon, PhoneIcon, SecurePaymentIcon } from "@modules/common/icons/social-icons"
 import TrustBadges from "@modules/layout/components/trust-badges"
+import WholesaleLink from "@modules/common/components/wholesale-link"
 import Image from "next/image"
 
 export default async function Footer() {
@@ -52,6 +53,14 @@ export default async function Footer() {
           <div className="text-center md:text-left glassmorphism-section p-5 rounded-2xl">
             <h3 className="text-[#56aebf] font-semibold text-base mb-4">Shop</h3>
             <ul className="space-y-2.5">
+              <li>
+                <LocalizedClientLink
+                  href="/offers"
+                  className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block font-medium"
+                >
+                  <span className="text-[#56aebf] mr-1">✦</span> Offers & Deals
+                </LocalizedClientLink>
+              </li>
               {productCategories
                 .filter((c) => !c.parent_category)
                 .slice(0, 8)
@@ -78,9 +87,9 @@ export default async function Footer() {
                 </LocalizedClientLink>
               </li>
               <li>
-                <a href="mailto:partners@zahan.com.bd" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
+                <WholesaleLink className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Wholesale & Collaboration
-                </a>
+                </WholesaleLink>
               </li>
               <li>
                 <LocalizedClientLink href="/contact" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
