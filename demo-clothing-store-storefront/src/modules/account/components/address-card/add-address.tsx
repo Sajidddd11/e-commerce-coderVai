@@ -10,6 +10,7 @@ import Input from "@modules/common/components/input"
 import Modal from "@modules/common/components/modal"
 import DistrictSelect from "@modules/checkout/components/district-select"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
+import AddressLabelSelector from "@modules/common/components/address-label-selector"
 import { HttpTypes } from "@medusajs/types"
 import { addCustomerAddress } from "@lib/data/customer"
 
@@ -22,6 +23,7 @@ const AddAddress = ({
 }) => {
   const [successState, setSuccessState] = useState(false)
   const [cityValue, setCityValue] = useState("")
+  const [companyValue, setCompanyValue] = useState("")
   const { state, open, close: closeModal } = useToggleState(false)
 
   const [formState, formAction] = useActionState(addCustomerAddress, {
@@ -100,6 +102,11 @@ const AddAddress = ({
                 required
                 autoComplete="phone"
                 data-testid="phone-input"
+              />
+              <AddressLabelSelector
+                name="company"
+                value={companyValue}
+                onChange={setCompanyValue}
               />
             </div>
             {formState.error && (

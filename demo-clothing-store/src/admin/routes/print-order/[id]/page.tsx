@@ -203,6 +203,12 @@ const PrintOrderPage = () => {
             <div style={{ marginLeft: "20px" }}>
                 {address?.first_name} {address?.last_name}
                 <br />
+                {address?.company && (
+                    <>
+                        <strong>[{address.company}]</strong>
+                        <br />
+                    </>
+                )}
                 {address?.address_1}
                 <br />
                 {address?.address_2 && (

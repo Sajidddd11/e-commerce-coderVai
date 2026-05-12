@@ -78,8 +78,13 @@ const AddressSelect = ({
                       data-testid="shipping-address-radio"
                     />
                     <div className="flex flex-col">
-                      <span className="text-left text-base-semi">
-                        {address.first_name} {address.last_name}
+                      <span className="text-left text-base-semi flex items-center gap-x-2 flex-wrap">
+                        <span>{address.first_name} {address.last_name}</span>
+                        {address.company && (
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 border border-gray-200">
+                            {address.company}
+                          </span>
+                        )}
                       </span>
                       <div className="flex flex-col text-left text-base-regular mt-2">
                         <span>

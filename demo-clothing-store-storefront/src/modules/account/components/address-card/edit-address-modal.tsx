@@ -11,6 +11,7 @@ import Modal from "@modules/common/components/modal"
 import DistrictSelect from "@modules/checkout/components/district-select"
 import DotSpinner from "@modules/common/components/dot-spinner"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
+import AddressLabelSelector from "@modules/common/components/address-label-selector"
 import { HttpTypes } from "@medusajs/types"
 import {
   deleteCustomerAddress,
@@ -31,6 +32,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
   const [removing, setRemoving] = useState(false)
   const [successState, setSuccessState] = useState(false)
   const [cityValue, setCityValue] = useState(address.city || "")
+  const [companyValue, setCompanyValue] = useState(address.company || "")
   const { state, open, close: closeModal } = useToggleState(false)
 
   const [formState, formAction] = useActionState(updateCustomerAddress, {
@@ -76,10 +78,15 @@ const EditAddress: React.FC<EditAddressProps> = ({
       >
         <div className="flex flex-col">
           <Heading
-            className="text-left text-base-semi"
+            className="text-left text-base-semi flex items-center gap-x-2 flex-wrap"
             data-testid="address-name"
           >
-            {address.first_name} {address.last_name}
+            <span>{address.first_name} {address.last_name}</span>
+            {address.company && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 border border-gray-200">
+                {address.company}
+              </span>
+            )}
           </Heading>
           <Text className="flex flex-col text-left text-base-regular mt-2">
             <span data-testid="address-address">
@@ -159,6 +166,11 @@ const EditAddress: React.FC<EditAddressProps> = ({
                 autoComplete="phone"
                 defaultValue={address.phone || undefined}
                 data-testid="phone-input"
+              />
+              <AddressLabelSelector
+                name="company"
+                value={companyValue}
+                onChange={setCompanyValue}
               />
             </div>
             {formState.error && (

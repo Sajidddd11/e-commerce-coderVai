@@ -101,9 +101,16 @@ const Addresses = ({
                   <Text className="txt-medium-plus text-ui-fg-base mb-1">
                     Shipping Address
                   </Text>
-                  <Text className="txt-medium text-ui-fg-subtle">
-                    {cart.shipping_address.first_name}{" "}
-                    {cart.shipping_address.last_name}
+                  <Text className="txt-medium text-ui-fg-subtle flex items-center gap-x-2 flex-wrap">
+                    <span>
+                      {cart.shipping_address.first_name}{" "}
+                      {cart.shipping_address.last_name}
+                    </span>
+                    {cart.shipping_address.company && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 border border-gray-200">
+                        {cart.shipping_address.company}
+                      </span>
+                    )}
                   </Text>
                   <Text className="txt-medium text-ui-fg-subtle">
                     {cart.shipping_address.address_1}{" "}

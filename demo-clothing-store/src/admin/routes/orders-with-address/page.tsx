@@ -198,9 +198,9 @@ const OrdersWithAddressPage = () => {
     // Only include address parts, NOT name or phone
     const parts: string[] = []
 
-    // Add company if available
+    // Add company (address label) if available
     if (address.company) {
-      parts.push(address.company)
+      parts.push(`[${address.company}]`)
     }
 
     // Add address lines
@@ -543,6 +543,7 @@ const OrdersWithAddressPage = () => {
           <div class="section-title">Shipping Address</div>
           <div style="margin-left: 20px;">
             ${address?.first_name || ""} ${address?.last_name || ""}<br/>
+            ${address?.company ? `<strong>[${address.company}]</strong><br/>` : ""}
             ${address?.address_1 || ""}<br/>
             ${address?.address_2 ? address.address_2 + "<br/>" : ""}
             ${address?.city || ""}, ${address?.province || ""} ${address?.postal_code || ""}<br/>

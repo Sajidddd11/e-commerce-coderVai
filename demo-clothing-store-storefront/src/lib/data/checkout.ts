@@ -79,6 +79,7 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
                 city: formData.get("shipping_address.city") as string,
                 country_code: countryCode,
                 phone: formData.get("shipping_address.phone") as string,
+                company: formData.get("shipping_address.company") as string,
             },
             email: formData.get("email") as string,
             metadata: {
@@ -113,6 +114,7 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
                             city: shipping.city || "",
                             country_code: shipping.country_code || "",
                             phone: shipping.phone || "",
+                            company: shipping.company || "",
                         }, {}, headers)
                     } else {
                         // Create a new address
@@ -123,6 +125,7 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
                             city: shipping.city || "",
                             country_code: shipping.country_code || "",
                             phone: shipping.phone || "",
+                            company: shipping.company || "",
                             is_default_shipping: true,
                         }, {}, headers)
                     }

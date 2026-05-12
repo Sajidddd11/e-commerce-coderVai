@@ -22,9 +22,16 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
           <Text className="txt-medium-plus font-semibold text-ui-fg-base mb-1">
             Shipping Address
           </Text>
-          <Text className="txt-medium text-ui-fg-subtle">
-            {order.shipping_address?.first_name}{" "}
-            {order.shipping_address?.last_name}
+          <Text className="txt-medium text-ui-fg-subtle flex items-center gap-x-2 flex-wrap">
+            <span>
+              {order.shipping_address?.first_name}{" "}
+              {order.shipping_address?.last_name}
+            </span>
+            {order.shipping_address?.company && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 border border-gray-200">
+                {order.shipping_address.company}
+              </span>
+            )}
           </Text>
           <Text className="txt-medium text-ui-fg-subtle">
             {order.shipping_address?.address_1}{" "}

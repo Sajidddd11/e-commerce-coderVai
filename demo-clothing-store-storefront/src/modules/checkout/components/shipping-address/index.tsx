@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 import DistrictSelect from "../district-select"
+import AddressLabelSelector from "@modules/common/components/address-label-selector"
 
 const ShippingAddress = ({
   customer,
@@ -31,6 +32,7 @@ const ShippingAddress = ({
     "shipping_address.city": cart?.shipping_address?.city || "",
     "shipping_address.country_code": cart?.shipping_address?.country_code || "",
     "shipping_address.phone": cart?.shipping_address?.phone || "",
+    "shipping_address.company": cart?.shipping_address?.company || "",
     email: cart?.email || "",
     delivery_instructions: (cart?.metadata?.delivery_instructions as string) || "",
   })
@@ -53,6 +55,17 @@ const ShippingAddress = ({
     [customer?.addresses, countriesInRegion]
   )
 
+  const isUsingSavedAddress = useMemo(() => {
+    if (!addressesInRegion || addressesInRegion.length === 0) return false;
+    
+    // Check if current form data exactly matches a saved address's core fields
+    return addressesInRegion.some(a => 
+      a.address_1 === formData["shipping_address.address_1"] &&
+      a.city === formData["shipping_address.city"] &&
+      a.phone === formData["shipping_address.phone"]
+    );
+  }, [formData, addressesInRegion]);
+
   const setFormAddress = (
     address?: HttpTypes.StoreCartAddress,
     email?: string
@@ -68,6 +81,7 @@ const ShippingAddress = ({
         "shipping_address.city": address?.city || "",
         "shipping_address.country_code": address?.country_code || "",
         "shipping_address.phone": address?.phone || "",
+        "shipping_address.company": address?.company || "",
       }))
 
     email &&
@@ -162,6 +176,7 @@ const ShippingAddress = ({
             city: formData["shipping_address.city"],
             country_code: formData["shipping_address.country_code"],
             phone: formData["shipping_address.phone"],
+            company: formData["shipping_address.company"],
           },
           email: formData.email,
         })
@@ -272,6 +287,19 @@ const ShippingAddress = ({
           required
           data-testid="shipping-country-select"
         />
+        
+        {!isUsingSavedAddress ? (
+          <div className="small:col-span-2 mt-2 mb-2">
+            <AddressLabelSelector
+              name="shipping_address.company"
+              value={formData["shipping_address.company"] || ""}
+              onChange={(val) => handleChange({ target: { name: "shipping_address.company", value: val } } as any)}
+            />
+          </div>
+        ) : (
+          <input type="hidden" name="shipping_address.company" value={formData["shipping_address.company"] || ""} />
+        )}
+
         <div className="small:col-span-2">
           <Input
             label="Delivery Instructions (Optional)"
