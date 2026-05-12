@@ -63,7 +63,7 @@ export default async function Footer() {
               </li>
               {productCategories
                 .filter((c) => !c.parent_category)
-                .slice(0, 8)
+                .slice(0, 4)
                 .map((c) => (
                   <li key={c.id}>
                     <LocalizedClientLink
@@ -74,6 +74,34 @@ export default async function Footer() {
                     </LocalizedClientLink>
                   </li>
                 ))}
+              {productCategories.filter((c) => !c.parent_category).length > 4 && (
+                <li>
+                  <details className="group">
+                    <summary className="flex items-center justify-center md:justify-start gap-2 cursor-pointer list-none text-[#56aebf] text-sm hover:text-white transition-colors duration-200 font-medium pt-1">
+                      <span className="group-open:hidden">Show More</span>
+                      <span className="hidden group-open:inline">Show Less</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-open:-rotate-180">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </summary>
+                    <ul className="space-y-2.5 mt-2.5 pt-2.5 border-t border-white/5">
+                      {productCategories
+                        .filter((c) => !c.parent_category)
+                        .slice(4, 10)
+                        .map((c) => (
+                          <li key={c.id}>
+                            <LocalizedClientLink
+                              href={`/categories/${c.handle}`}
+                              className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block"
+                            >
+                              {c.name}
+                            </LocalizedClientLink>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -87,7 +115,7 @@ export default async function Footer() {
                 </LocalizedClientLink>
               </li>
               <li>
-                <WholesaleLink className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
+                <WholesaleLink className="text-left text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Wholesale & Collaboration
                 </WholesaleLink>
               </li>
