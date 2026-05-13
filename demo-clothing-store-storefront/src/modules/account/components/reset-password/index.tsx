@@ -2,6 +2,7 @@ import { useState } from "react"
 import Input from "@modules/common/components/input"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import { toast } from "@medusajs/ui"
 
 type Props = {
     resetToken: string
@@ -40,6 +41,9 @@ const ResetPassword = ({ resetToken, resetPassword, onSuccess }: Props) => {
             setLoading(false)
         } else {
             setLoading(false)
+            toast.success("Password reset successful", {
+                description: "You can now sign in with your new password.",
+            })
             onSuccess()
         }
     }

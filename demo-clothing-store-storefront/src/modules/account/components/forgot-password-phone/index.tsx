@@ -2,6 +2,7 @@ import { useState } from "react"
 import Input from "@modules/common/components/input"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import { toast } from "@medusajs/ui"
 
 type Props = {
     requestPasswordReset: (email: string) => Promise<{ error: string | null; phone?: string }>
@@ -29,6 +30,9 @@ const ForgotPasswordPhone = ({ requestPasswordReset, onSuccess, onCancel }: Prop
             setLoading(false)
         } else if (result.phone) {
             setLoading(false)
+            toast.success("OTP sent", {
+                description: `An OTP code has been sent to your phone number ending in ${result.phone.slice(-4)}.`,
+            })
             onSuccess(result.phone)
         } else {
             setError("Failed to get phone number from server")

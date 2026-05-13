@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useActionState } from "react"
 import { PencilSquare as Edit, Trash } from "@medusajs/icons"
-import { Button, Heading, Text, clx } from "@medusajs/ui"
+import { Button, Heading, Text, clx, toast } from "@medusajs/ui"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
 import CountrySelect from "@modules/checkout/components/country-select"
@@ -48,6 +48,9 @@ const EditAddress: React.FC<EditAddressProps> = ({
 
   useEffect(() => {
     if (successState) {
+      toast.success("Address updated", {
+        description: "Your address has been successfully updated.",
+      })
       close()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,6 +65,9 @@ const EditAddress: React.FC<EditAddressProps> = ({
   const removeAddress = async () => {
     setRemoving(true)
     await deleteCustomerAddress(address.id)
+    toast.success("Address removed", {
+      description: "The address has been removed from your address book.",
+    })
     setRemoving(false)
   }
 

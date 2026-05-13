@@ -100,7 +100,7 @@ export async function signup(_currentState: unknown, formData: FormData) {
 
     await transferCart()
 
-    return createdCustomer
+    return { success: true }
   } catch (error: any) {
     return error.toString()
   }
@@ -128,6 +128,8 @@ export async function login(_currentState: unknown, formData: FormData) {
   } catch (error: any) {
     return error.toString()
   }
+
+  return { success: true }
 }
 
 export async function signout(countryCode: string) {

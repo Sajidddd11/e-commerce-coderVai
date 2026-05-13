@@ -1,6 +1,6 @@
 "use client"
 
-import { clx } from "@medusajs/ui"
+import { clx, toast } from "@medusajs/ui"
 import { ArrowRightOnRectangle } from "@medusajs/icons"
 import { useParams, usePathname } from "next/navigation"
 
@@ -22,6 +22,9 @@ const AccountNav = ({
 
   const handleLogout = async () => {
     await signout(countryCode)
+    toast.success("Signed out", {
+      description: "You have been successfully signed out.",
+    })
   }
 
   return (

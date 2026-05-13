@@ -1,7 +1,7 @@
 "use client"
 
 import { Plus } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
+import { Button, Heading, toast } from "@medusajs/ui"
 import { useEffect, useState, useActionState } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -39,6 +39,9 @@ const AddAddress = ({
 
   useEffect(() => {
     if (successState) {
+      toast.success("Address added", {
+        description: "Your new address has been saved.",
+      })
       close()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

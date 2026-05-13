@@ -3,7 +3,7 @@
 import { addToCart, clearCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button, toast } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import QuantitySelector from "@modules/products/components/quantity-selector"
@@ -137,6 +137,10 @@ export default function ProductActions({
       variantId: selectedVariant.id,
       quantity: quantity,
       countryCode,
+    })
+
+    toast.success("Added to cart", {
+      description: `${product.title} has been added to your cart.`,
     })
 
     // Track Facebook Pixel AddToCart event
