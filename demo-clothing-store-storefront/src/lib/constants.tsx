@@ -82,9 +82,10 @@ export const isStripeLike = (providerId?: string) => {
 
 /* Social Media Links */
 export const socialMediaLinks = {
-  facebook: "https://www.facebook.com/zahanfashion",
-  instagram: "https://www.instagram.com/zahanfashion",
-  youtube: "https://www.youtube.com/@zahanfashion",
+  facebook: "https://www.facebook.com/zahan.com.bd",
+  instagram: "https://www.instagram.com/zahan.com.bd",
+  youtube: "https://youtube.com/@zahanbd",
+  tiktok: "https://www.tiktok.com/@zahantrade",
 }
 
 export const isPaypal = (providerId?: string) => {

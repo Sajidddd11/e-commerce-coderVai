@@ -4,6 +4,7 @@ import { FacebookIcon, InstagramIcon, YouTubeIcon, TikTokIcon, WhatsAppIcon, Mai
 import TrustBadges from "@modules/layout/components/trust-badges"
 import WholesaleLink from "@modules/common/components/wholesale-link"
 import Image from "next/image"
+import { socialMediaLinks } from "@lib/constants"
 
 export default async function Footer() {
   const allCategories = await listCategories()
@@ -185,7 +186,7 @@ export default async function Footer() {
             <h3 className="text-[#56aebf] font-semibold text-base mb-4">Connect With Us</h3>
             <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center md:justify-start">
               <a
-                href="https://facebook.com/zahan"
+                href={socialMediaLinks.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group"
@@ -197,7 +198,7 @@ export default async function Footer() {
               </a>
 
               <a
-                href="https://youtube.com/@zahan"
+                href={socialMediaLinks.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group"
@@ -209,7 +210,7 @@ export default async function Footer() {
               </a>
 
               <a
-                href="https://tiktok.com/@zahan"
+                href={socialMediaLinks.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group"
@@ -221,7 +222,7 @@ export default async function Footer() {
               </a>
 
               <a
-                href="https://www.instagram.com/zahan.com.bd"
+                href={socialMediaLinks.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group"
@@ -264,14 +265,17 @@ export default async function Footer() {
 
             {/* Social Icons */}
             <div className="flex gap-4">
-              <a href="https://www.instagram.com/zahan.com.bd" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
+              <a href={socialMediaLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <InstagramIcon size={20} />
               </a>
-              <a href="https://facebook.com/zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
+              <a href={socialMediaLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <FacebookIcon size={20} />
               </a>
-              <a href="https://youtube.com/@zahan" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
+              <a href={socialMediaLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
                 <YouTubeIcon size={20} />
+              </a>
+              <a href={socialMediaLinks.tiktok} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#56aebf] transition-colors">
+                <TikTokIcon size={20} />
               </a>
             </div>
 

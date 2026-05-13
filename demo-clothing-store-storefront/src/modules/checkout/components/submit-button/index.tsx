@@ -8,11 +8,13 @@ import LoadingLogo from "@modules/common/components/loading-logo"
 export function SubmitButton({
   children,
   variant = "primary",
+  size = "large",
   className,
   "data-testid": dataTestId,
 }: {
   children: React.ReactNode
   variant?: "primary" | "secondary" | "transparent" | "danger" | null
+  size?: "small" | "base" | "large"
   className?: string
   "data-testid"?: string
 }) {
@@ -29,7 +31,7 @@ export function SubmitButton({
         </>
       )}
       <LoadingButton
-        size="large"
+        size={size}
         className={className}
         type="submit"
         isLoading={false}
