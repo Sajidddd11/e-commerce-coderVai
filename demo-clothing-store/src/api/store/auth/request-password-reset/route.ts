@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { getBulkSmsClient } from "../../../../lib/sms/bulk-sms-bd"
 import { getOTPManager } from "../../../../lib/otp/otp-manager"
+import { sendOtpEmail } from "../../../../lib/email"
 
 /**
  * POST /store/auth/request-password-reset
@@ -91,6 +92,18 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
         // Record OTP request for rate limiting
         await otpManager.recordOTPRequest(customer.phone)
+
+        // Best-effort: also send OTP via email if customer has one
+        if (customer.email) {
+            sendOtpEmail({
+                to: customer.email as string,
+                name: customer.first_name || undefined,
+                otp,
+                expiryMinutes: 5,
+            }).catch((err: any) => {
+                console.error("[Brevo] Failed to send OTP email (non-fatal):", err?.message)
+            })
+        }
 
         return res.status(200).json({
             success: true,

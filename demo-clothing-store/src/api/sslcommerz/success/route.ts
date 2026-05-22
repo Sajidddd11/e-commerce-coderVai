@@ -5,6 +5,7 @@ import {
   respondWithRedirect,
 } from "../../store/sslcommerz/utils"
 import { getBulkSmsClient } from "../../../lib/sms/bulk-sms-bd"
+import { sendOrderConfirmationEmail } from "../../../lib/email"
 
 const shouldNotify = () => {
   const flag = process.env.SMSNETBD_NOTIFY_ORDER_PLACED
@@ -166,6 +167,26 @@ const sendOrderSms = async (req: MedusaRequest, sessionId: string) => {
       logger.info(
         `[Bulk SMS BD] Successfully sent SSLCommerz order SMS for ${reference} to ${phone}`
       )
+    }
+
+    // Best-effort: send order confirmation email
+    const emailAddress = cart?.email
+    if (emailAddress) {
+      const storeName = process.env.SMSNETBD_BRAND_NAME || "Zahan"
+      sendOrderConfirmationEmail({
+        to: emailAddress,
+        name: customerName || "Customer",
+        orderNumber: reference,
+        orderTotal: `BDT ${Number(cart?.total ?? 0).toLocaleString()}`,
+      }).then((result) => {
+        if (result.success) {
+          logger.info(`[Brevo] Order confirmation email sent to ${emailAddress} for order ${reference}`)
+        } else {
+          logger.warn(`[Brevo] Failed to send order confirmation email for ${reference}: ${result.error}`)
+        }
+      }).catch((err: any) => {
+        logger.error(`[Brevo] Order confirmation email error for ${reference}: ${err?.message}`)
+      })
     }
   } catch (error: any) {
     logger.error(

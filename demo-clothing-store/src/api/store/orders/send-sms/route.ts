@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { getBulkSmsClient } from "../../../../lib/sms/bulk-sms-bd"
 import { validateAndNormalizeBDPhone } from "../../../../lib/sms/phone-validator"
+import { sendOrderConfirmationEmail } from "../../../../lib/email"
 
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
@@ -25,7 +26,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     
     const order = await orderModuleService.retrieveOrder(order_id, {
       relations: ["shipping_address", "billing_address"],
-      select: ["id", "display_id"],
+      select: ["id", "display_id", "email", "currency_code", "total"],
     })
 
     logger.info(`[sms.net.bd] Loaded order ${order.id} display #${order.display_id}`)
@@ -75,6 +76,29 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     logger.info(`[sms.net.bd] Sent order placed SMS for ${orderNumber}`)
+
+    // Best-effort: send order confirmation email
+    if (order.email) {
+      const customerName = [
+        order.shipping_address?.first_name,
+        order.shipping_address?.last_name,
+      ].filter(Boolean).join(" ") || "Customer"
+
+      sendOrderConfirmationEmail({
+        to: order.email,
+        name: customerName,
+        orderNumber,
+        orderTotal: `${order.currency_code?.toUpperCase() ?? "BDT"} ${Number(order.total ?? 0).toLocaleString()}`,
+      }).then((result) => {
+        if (result.success) {
+          logger.info(`[Brevo] Order confirmation email sent to ${order.email}`)
+        } else {
+          logger.warn(`[Brevo] Failed to send order confirmation email: ${result.error}`)
+        }
+      }).catch((err: any) => {
+        logger.error(`[Brevo] Order confirmation email error: ${err?.message}`)
+      })
+    }
     
     return res.status(200).json({
       message: "SMS sent successfully",
