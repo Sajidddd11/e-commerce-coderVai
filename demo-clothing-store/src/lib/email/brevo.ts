@@ -79,7 +79,7 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResult> {
       ...(replyTo ? { replyTo } : {}),
     })
 
-    const messageId = response.data?.messageId
+    const messageId = response.messageId
 
     return { success: true, messageId }
   } catch (err: any) {

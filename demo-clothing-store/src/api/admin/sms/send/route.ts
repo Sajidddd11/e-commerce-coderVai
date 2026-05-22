@@ -40,7 +40,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       numbers,
       message: body.message,
       senderId: body.senderId,
-      type: body.type,
     })
 
     const statusCode = response.success ? 200 : 502
