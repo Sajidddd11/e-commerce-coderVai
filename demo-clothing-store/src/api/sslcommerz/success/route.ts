@@ -5,7 +5,7 @@ import {
   respondWithRedirect,
 } from "../../store/sslcommerz/utils"
 import { getBulkSmsClient } from "../../../lib/sms/bulk-sms-bd"
-import { sendOrderConfirmationEmail } from "../../../lib/email"
+import { sendOrderConfirmationEmail, OrderEmailItem } from "../../../lib/email"
 
 const shouldNotify = () => {
   const flag = process.env.SMSNETBD_NOTIFY_ORDER_PLACED
@@ -169,15 +169,37 @@ const sendOrderSms = async (req: MedusaRequest, sessionId: string) => {
       )
     }
 
-    // Best-effort: send order confirmation email
+    // Best-effort: send order confirmation email with product details
     const emailAddress = cart?.email
     if (emailAddress) {
-      const storeName = process.env.SMSNETBD_BRAND_NAME || "Zahan"
+      // Build items from cart line items
+      const cartItems: OrderEmailItem[] = ((cart?.items ?? []) as any[]).map((item: any) => {
+        const unitPrice = Number(item.unit_price ?? 0)
+        const qty = Number(item.quantity ?? 1)
+        const imageUrl =
+          item.thumbnail ||
+          item.variant?.thumbnail ||
+          undefined
+        return {
+          name: item.title || item.product_title || "Product",
+          variant: item.variant_title || undefined,
+          qty,
+          price: `BDT ${(unitPrice * qty).toLocaleString()}`,
+          imageUrl,
+        } as OrderEmailItem
+      })
+
       sendOrderConfirmationEmail({
         to: emailAddress,
         name: customerName || "Customer",
         orderNumber: reference,
         orderTotal: `BDT ${Number(cart?.total ?? 0).toLocaleString()}`,
+        items: cartItems,
+        shippingAddress: cart?.shipping_address ? {
+          line1: cart.shipping_address.address_1 || undefined,
+          line2: cart.shipping_address.address_2 || undefined,
+          city: cart.shipping_address.city || undefined,
+        } : undefined,
       }).then((result) => {
         if (result.success) {
           logger.info(`[Brevo] Order confirmation email sent to ${emailAddress} for order ${reference}`)

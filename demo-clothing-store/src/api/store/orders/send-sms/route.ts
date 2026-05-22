@@ -2,7 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { getBulkSmsClient } from "../../../../lib/sms/bulk-sms-bd"
 import { validateAndNormalizeBDPhone } from "../../../../lib/sms/phone-validator"
-import { sendOrderConfirmationEmail } from "../../../../lib/email"
+import { sendOrderConfirmationEmail, OrderEmailItem } from "../../../../lib/email"
 
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
@@ -25,7 +25,12 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     logger.info(`[sms.net.bd] Fetching order ${order_id} with shipping/billing relations`)
     
     const order = await orderModuleService.retrieveOrder(order_id, {
-      relations: ["shipping_address", "billing_address"],
+      relations: [
+        "shipping_address",
+        "billing_address",
+        "items",
+        "items.detail",
+      ],
       select: ["id", "display_id", "email", "currency_code", "total"],
     })
 
@@ -77,18 +82,46 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     logger.info(`[sms.net.bd] Sent order placed SMS for ${orderNumber}`)
 
-    // Best-effort: send order confirmation email
+    // Best-effort: send order confirmation email with product details
     if (order.email) {
       const customerName = [
         order.shipping_address?.first_name,
         order.shipping_address?.last_name,
       ].filter(Boolean).join(" ") || "Customer"
 
+      const currency = order.currency_code?.toUpperCase() ?? "BDT"
+
+      // Build item list from order line items
+      const items: OrderEmailItem[] = ((order as any).items ?? []).map((item: any) => {
+        const unitPrice = Number(item.unit_price ?? 0)
+        const qty = Number(item.quantity ?? 1)
+        // Try to get thumbnail from variant or product
+        const imageUrl =
+          item.thumbnail ||
+          item.variant?.thumbnail ||
+          item.product?.thumbnail ||
+          undefined
+
+        return {
+          name: item.product_title || item.title || "Product",
+          variant: item.variant_title || undefined,
+          qty,
+          price: `${currency} ${(unitPrice * qty).toLocaleString()}`,
+          imageUrl,
+        } as OrderEmailItem
+      })
+
       sendOrderConfirmationEmail({
         to: order.email,
         name: customerName,
         orderNumber,
-        orderTotal: `${order.currency_code?.toUpperCase() ?? "BDT"} ${Number(order.total ?? 0).toLocaleString()}`,
+        orderTotal: `${currency} ${Number(order.total ?? 0).toLocaleString()}`,
+        items,
+        shippingAddress: order.shipping_address ? {
+          line1: order.shipping_address.address_1 || undefined,
+          line2: order.shipping_address.address_2 || undefined,
+          city: order.shipping_address.city || undefined,
+        } : undefined,
       }).then((result) => {
         if (result.success) {
           logger.info(`[Brevo] Order confirmation email sent to ${order.email}`)

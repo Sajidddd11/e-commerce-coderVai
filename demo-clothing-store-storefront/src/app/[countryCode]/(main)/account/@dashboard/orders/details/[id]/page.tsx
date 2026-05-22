@@ -1,7 +1,7 @@
 import { retrieveOrder } from "@lib/data/orders"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 type Props = {
   params: Promise<{ id: string }>
@@ -26,7 +26,7 @@ export default async function OrderDetailPage(props: Props) {
   const order = await retrieveOrder(params.id).catch(() => null)
 
   if (!order) {
-    notFound()
+    redirect("/account")
   }
 
   return <OrderDetailsTemplate order={order} />

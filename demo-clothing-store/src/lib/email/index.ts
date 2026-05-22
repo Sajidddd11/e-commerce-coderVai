@@ -11,3 +11,5 @@ export {
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
 } from "./templates"
+
+export type { OrderEmailItem } from "./templates"
