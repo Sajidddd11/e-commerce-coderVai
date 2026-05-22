@@ -13,8 +13,8 @@ const storeUrl = () => process.env.NEXT_PUBLIC_STORE_URL || "https://zahan.com.b
 const C = {
   bg: "#f5f5f5",
   card: "#ffffff",
-  header: "#0a0a0a",
-  headerBorder: "rgba(111,232,255,0.4)",
+  header: "#ffffff",
+  headerBorder: "#e5e7eb",
   accent: "#6fe8ff",
   accentDark: "#0891b2",
   text: "#111827",
@@ -77,11 +77,9 @@ function emailWrapper(content: string, preheader = ""): string {
 
         <!-- ═══ HEADER ═══ -->
         <tr>
-          <td style="background:${C.header};border-radius:12px 12px 0 0;padding:28px 40px;text-align:center;border-bottom:2px solid ${C.headerBorder};">
-            <a href="${url}" style="text-decoration:none;">
-              <span class="font-montserrat" style="font-family:'Montserrat',-apple-system,sans-serif;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">
-                ${name}
-              </span>
+          <td style="background:${C.header};border-radius:12px 12px 0 0;padding:24px 40px;text-align:center;border-bottom:1px solid ${C.headerBorder};border-left:1px solid ${C.border};border-right:1px solid ${C.border};">
+            <a href="${url}" style="text-decoration:none;display:inline-block;">
+              <img src="${url}/finallogoblack.svg" alt="${name}" height="40" style="height:40px;width:auto;display:inline-block;border:0;" />
             </a>
           </td>
         </tr>

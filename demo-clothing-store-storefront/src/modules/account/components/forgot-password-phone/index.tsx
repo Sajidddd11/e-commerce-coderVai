@@ -31,7 +31,7 @@ const ForgotPasswordPhone = ({ requestPasswordReset, onSuccess, onCancel }: Prop
         } else if (result.phone) {
             setLoading(false)
             toast.success("OTP sent", {
-                description: `An OTP code has been sent to your phone number ending in ${result.phone.slice(-4)}.`,
+                description: `An OTP code has been sent to your email andphone number ending in ${result.phone.slice(-4)}.`,
             })
             onSuccess(result.phone)
         } else {
@@ -47,7 +47,7 @@ const ForgotPasswordPhone = ({ requestPasswordReset, onSuccess, onCancel }: Prop
         >
             <h1 className="text-large-semi uppercase mb-6">Forgot Password</h1>
             <p className="text-center text-base-regular text-ui-fg-base mb-8">
-                Enter your email to receive an OTP code via SMS
+                Enter your email to receive an OTP code
             </p>
             <form className="w-full" onSubmit={handleSubmit}>
                 <div className="flex flex-col w-full gap-y-2">
