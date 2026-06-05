@@ -68,6 +68,18 @@ const nextConfig = {
         protocol: "https",
         hostname: "e-com-cvit.s3.ap-south-1.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "*.zahan.com.bd",
+      },
+      {
+        protocol: "https",
+        hostname: "*.yourdomain.com",
+      },
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [
           {

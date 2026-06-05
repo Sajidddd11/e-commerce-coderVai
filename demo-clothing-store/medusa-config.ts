@@ -20,14 +20,16 @@ module.exports = defineConfig({
       secure: false,
       sameSite: "lax",
     },
-    // AWS RDS requires SSL encryption
-    databaseDriverOptions: {
-      connection: {
-        ssl: {
-          rejectUnauthorized: false, // AWS RDS uses self-signed certificates
-        },
-      },
-    },
+    // AWS RDS requires SSL encryption, but standard VPS Docker DBs do not run SSL by default
+    databaseDriverOptions: process.env.DATABASE_URL?.includes("rds.amazonaws.com")
+      ? {
+          connection: {
+            ssl: {
+              rejectUnauthorized: false, // AWS RDS uses self-signed certificates
+            },
+          },
+        }
+      : {},
   },
   // Index Engine temporarily disabled - migrations need SSL fix
   // Will re-enable after fixing migration SSL issues

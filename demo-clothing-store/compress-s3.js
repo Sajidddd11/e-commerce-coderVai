@@ -95,7 +95,6 @@ async function processImages() {
                             Body: compressedBuffer,
                             // If we converted PNG to WebP, we tell the browser it's a webp even though key ends in .png
                             ContentType: metadata.format === 'png' ? 'image/webp' : (getResponse.ContentType || `image/${metadata.format}`),
-                            ACL: 'public-read'
                         });
                         
                         await client.send(putCommand);
