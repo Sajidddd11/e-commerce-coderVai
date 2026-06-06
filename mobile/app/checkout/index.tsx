@@ -22,10 +22,12 @@ import { useCartStore } from "@stores/cart-store"
 import { useAuthStore } from "@stores/auth-store"
 import { useRegionStore } from "@stores/region-store"
 import { useCheckoutStore } from "@stores/checkout-store"
+import { AddressSelect } from "@components/checkout/AddressSelect"
 import { listCartShippingMethods } from "@api/fulfillment"
 import { listCartPaymentMethods } from "@api/payment"
 import { prepareCheckout } from "@api/checkout"
 import { updateCart } from "@api/cart"
+import { listCustomerAddresses } from "@api/customer"
 import {
   autoSelectShippingMethod,
   calculateShippingCost,
@@ -57,6 +59,19 @@ export default function CheckoutScreen() {
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [savedAddresses, setSavedAddresses] = useState<
+    HttpTypes.StoreCustomerAddress[]
+  >([])
+
+  useEffect(() => {
+    if (!customer) {
+      setSavedAddresses([])
+      return
+    }
+    listCustomerAddresses().then((list) => {
+      setSavedAddresses(list ?? [])
+    })
+  }, [customer])
 
   const currency = cart?.currency_code || region?.currency_code || "bdt"
 
@@ -293,6 +308,22 @@ export default function CheckoutScreen() {
           </Section>
 
           <Section title="Shipping Address">
+            {savedAddresses.length > 0 ? (
+              <AddressSelect
+                addresses={savedAddresses}
+                addressInput={form}
+                onSelect={(address) => {
+                  setForm({
+                    fullName: `${address.first_name ?? ""} ${address.last_name ?? ""}`.trim(),
+                    address1: address.address_1 ?? "",
+                    district: address.city ?? "",
+                    phone: address.phone ?? "",
+                    company: address.company ?? "",
+                  })
+                }}
+              />
+            ) : null}
+
             <Input
               label="Full Name"
               value={form.fullName}
