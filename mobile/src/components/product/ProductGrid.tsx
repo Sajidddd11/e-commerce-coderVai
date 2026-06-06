@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  ActivityIndicator,
 } from "react-native"
 import { HttpTypes } from "@medusajs/types"
 import { ProductCard } from "./ProductCard"
@@ -22,6 +23,7 @@ interface ProductGridProps {
   onEndReached?: () => void
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null
   ListEmptyComponent?: React.ComponentType<any> | React.ReactElement | null
+  loadingMore?: boolean
 }
 
 const H_PAD = spacing.sm
@@ -35,6 +37,7 @@ export function ProductGrid({
   onEndReached,
   ListHeaderComponent,
   ListEmptyComponent,
+  loadingMore = false,
 }: ProductGridProps) {
   const { width: screenWidth } = useWindowDimensions()
   const columnWidth = (screenWidth - H_PAD * 2 - GAP) / 2
@@ -102,7 +105,7 @@ export function ProductGrid({
       style={styles.scroll}
       contentContainerStyle={styles.content}
       onScroll={handleScroll}
-      scrollEventThrottle={400}
+      scrollEventThrottle={16}
       refreshControl={
         onRefresh ? (
           <RefreshControl
@@ -118,6 +121,11 @@ export function ProductGrid({
         {renderColumn(leftColumn)}
         {renderColumn(rightColumn)}
       </View>
+      {loadingMore ? (
+        <View style={styles.loadingMore}>
+          <ActivityIndicator size="small" color={colors.brand.teal} />
+        </View>
+      ) : null}
     </ScrollView>
   )
 }
@@ -142,5 +150,10 @@ const styles = StyleSheet.create({
   skeletonWrap: {
     paddingHorizontal: H_PAD,
     paddingTop: spacing.sm,
+  },
+  loadingMore: {
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
   },
 })

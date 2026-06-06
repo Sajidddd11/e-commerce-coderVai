@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Text } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
@@ -36,7 +36,15 @@ export default function ShopScreen() {
     HttpTypes.StoreProductCategory[]
   >([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<SortOptions>("created_at")
+  
+  // Initialize state directly from sortParam if present on mount
+  const [sortBy, setSortBy] = useState<SortOptions>(() => {
+    if (sortParam && ["price_asc", "price_desc", "created_at", "best_selling"].includes(sortParam)) {
+      return sortParam as SortOptions
+    }
+    return "created_at"
+  })
+
   const [searchInput, setSearchInput] = useState("")
   const [query, setQuery] = useState("")
   const [page, setPage] = useState(1)
@@ -44,6 +52,11 @@ export default function ShopScreen() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
+
+  // Track request count to avoid race conditions with multiple concurrent fetches
+  const requestCountRef = useRef(0)
+  // Track if a page is currently loading to prevent duplicate scroll triggers
+  const isLoadingMoreRef = useRef(false)
 
   const { suggestions, loading: suggestionsLoading } =
     useSearchSuggestions(searchInput)
@@ -85,6 +98,7 @@ export default function ShopScreen() {
 
   const fetchPage = useCallback(
     async (pageToLoad: number, replace: boolean) => {
+      const requestId = ++requestCountRef.current
       const queryParams: Record<string, unknown> = { limit: PAGE_SIZE }
       if (query) queryParams.q = query
       if (activeCategory) queryParams.category_id = [activeCategory]
@@ -95,6 +109,11 @@ export default function ShopScreen() {
         sortBy,
         queryParams,
       })
+
+      // If a newer request has been started since this one resolved, ignore this response
+      if (requestId !== requestCountRef.current) {
+        return
+      }
 
       setHasMore(!!nextPage)
       setProducts((prev) =>
@@ -112,12 +131,19 @@ export default function ShopScreen() {
   }, [isReady, fetchPage])
 
   const onEndReached = useCallback(() => {
-    if (loadingMore || !hasMore || loading) return
-    const next = page + 1
+    if (isLoadingMoreRef.current || !hasMore || loading) return
+    
+    isLoadingMoreRef.current = true
     setLoadingMore(true)
+    
+    const next = page + 1
     setPage(next)
-    fetchPage(next, false).finally(() => setLoadingMore(false))
-  }, [loadingMore, hasMore, loading, page, fetchPage])
+    
+    fetchPage(next, false).finally(() => {
+      isLoadingMoreRef.current = false
+      setLoadingMore(false)
+    })
+  }, [hasMore, loading, page, fetchPage])
 
   return (
     <Screen background="white">
@@ -204,6 +230,7 @@ export default function ShopScreen() {
         <ProductGrid
           products={products}
           loading={loading}
+          loadingMore={loadingMore}
           onEndReached={onEndReached}
           ListEmptyComponent={
             !loading ? (
