@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { View, ScrollView, Pressable, StyleSheet, Text, TextInput } from "react-native"
+import { View, ScrollView, Pressable, StyleSheet, Text, TextInput, ActivityIndicator } from "react-native"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { Minus, Plus, Trash2, ShoppingBag, X } from "lucide-react-native"
@@ -28,6 +28,25 @@ export default function CartScreen() {
   const [promoError, setPromoError] = useState<string | null>(null)
   const [promoLoading, setPromoLoading] = useState(false)
   const [freeShipping, setFreeShipping] = useState<FreeShippingInfo | null>(null)
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null)
+
+  const handleUpdate = async (itemId: string, newQty: number) => {
+    setUpdatingItemId(itemId)
+    try {
+      await update(itemId, newQty)
+    } finally {
+      setUpdatingItemId(null)
+    }
+  }
+
+  const handleRemove = async (itemId: string) => {
+    setUpdatingItemId(itemId)
+    try {
+      await remove(itemId)
+    } finally {
+      setUpdatingItemId(null)
+    }
+  }
 
   useEffect(() => {
     refresh()
@@ -87,7 +106,11 @@ export default function CartScreen() {
             Browse products and add your favourites.
           </Text>
           <Pressable
-            style={[styles.checkoutBtn, { marginTop: 24 }]}
+            style={({ pressed }) => [
+              styles.checkoutBtn,
+              { marginTop: 24 },
+              pressed && { opacity: 0.8 },
+            ]}
             onPress={() => router.push("/(tabs)/shop")}
           >
             <Text style={styles.checkoutBtnText}>Browse Products</Text>
@@ -144,23 +167,33 @@ export default function CartScreen() {
 
                   <View style={styles.stepper}>
                     <Pressable
-                      disabled={isMutating}
+                      disabled={isMutating || !!updatingItemId}
                       onPress={() =>
                         item.quantity > 1
-                          ? update(item.id, item.quantity - 1)
-                          : remove(item.id)
+                          ? handleUpdate(item.id, item.quantity - 1)
+                          : handleRemove(item.id)
                       }
-                      style={styles.stepBtn}
+                      style={({ pressed }) => [
+                        styles.stepBtn,
+                        pressed && { opacity: 0.6 },
+                      ]}
                     >
                       <Minus size={12} color={colors.brand.teal} />
                     </Pressable>
-                    <Text style={styles.stepCount}>
-                      {item.quantity}
-                    </Text>
+                    {updatingItemId === item.id ? (
+                      <ActivityIndicator size="small" color={colors.brand.teal} style={{ width: 20 }} />
+                    ) : (
+                      <Text style={styles.stepCount}>
+                        {item.quantity}
+                      </Text>
+                    )}
                     <Pressable
-                      disabled={isMutating}
-                      onPress={() => update(item.id, item.quantity + 1)}
-                      style={styles.stepBtn}
+                      disabled={isMutating || !!updatingItemId}
+                      onPress={() => handleUpdate(item.id, item.quantity + 1)}
+                      style={({ pressed }) => [
+                        styles.stepBtn,
+                        pressed && { opacity: 0.6 },
+                      ]}
                     >
                       <Plus size={12} color={colors.brand.teal} />
                     </Pressable>
@@ -174,10 +207,18 @@ export default function CartScreen() {
                       })}
                     </Text>
                     <Pressable
-                      onPress={() => remove(item.id)}
-                      style={styles.removeBtn}
+                      disabled={isMutating || !!updatingItemId}
+                      onPress={() => handleRemove(item.id)}
+                      style={({ pressed }) => [
+                        styles.removeBtn,
+                        pressed && { opacity: 0.6 },
+                      ]}
                     >
-                      <Trash2 size={16} color={colors.error} />
+                      {updatingItemId === item.id ? (
+                        <ActivityIndicator size="small" color={colors.error} />
+                      ) : (
+                        <Trash2 size={16} color={colors.error} />
+                      )}
                     </Pressable>
                   </View>
                 </View>
@@ -196,11 +237,18 @@ export default function CartScreen() {
               onChangeText={setPromoInput}
             />
             <Pressable
-              style={styles.promoBtn}
+              style={({ pressed }) => [
+                styles.promoBtn,
+                pressed && { opacity: 0.8 },
+              ]}
               onPress={onApplyPromo}
               disabled={promoLoading}
             >
-              <Text style={styles.promoBtnText}>Apply</Text>
+              {promoLoading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={styles.promoBtnText}>Apply</Text>
+              )}
             </Pressable>
           </View>
           {promoError && <Text style={styles.promoError}>{promoError}</Text>}
@@ -214,6 +262,7 @@ export default function CartScreen() {
                   <Pressable
                     onPress={() => onRemovePromo(p.code as string)}
                     hitSlop={6}
+                    style={({ pressed }) => [pressed && { opacity: 0.5 }]}
                   >
                     <X size={12} color={colors.brand.teal} />
                   </Pressable>
@@ -266,8 +315,12 @@ export default function CartScreen() {
 
       <View style={styles.checkoutContainer}>
         <Pressable
-          style={styles.checkoutBtn}
-          disabled={isMutating}
+          style={({ pressed }) => [
+            styles.checkoutBtn,
+            (isMutating || !!updatingItemId) && { backgroundColor: colors.grey[40] },
+            pressed && { opacity: 0.8 },
+          ]}
+          disabled={isMutating || !!updatingItemId}
           onPress={() => router.push("/checkout")}
         >
           <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
@@ -421,7 +474,7 @@ const styles = StyleSheet.create({
   },
   promoBtn: {
     backgroundColor: colors.brand.teal,
-    borderRadius: 9999, // rounded-full
+    borderRadius: 8, // rounded-lg
     paddingHorizontal: 16, // px-4
     paddingVertical: 8, // py-2
     justifyContent: "center",
