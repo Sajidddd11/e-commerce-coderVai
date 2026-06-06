@@ -118,6 +118,9 @@ export async function deleteLineItem(
   if (!cartId) throw new Error("Missing cart ID when deleting line item")
 
   const headers = await getAuthHeaders()
+
+  // The Medusa v2 SDK deleteLineItem returns a DeletedResponse, not the
+  // updated cart. We ignore its return value and re-fetch the full cart.
   await sdk.store.cart.deleteLineItem(cartId, lineId, headers)
 
   return retrieveCart(cartId)
@@ -169,10 +172,13 @@ export async function setShippingMethod({
 /**
  * Initiate a payment session. Mirrors web initiatePaymentSession — always
  * enriches the request with a cart snapshot (SSLCommerz provider reads it).
+ * Also injects `return_url` for mobile so the backend redirects back to the
+ * app deep link instead of the web storefront after payment.
  */
 export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
-  data: HttpTypes.StoreInitializePaymentSession
+  data: HttpTypes.StoreInitializePaymentSession,
+  options?: { returnUrl?: string }
 ) {
   const headers = await getAuthHeaders()
 
@@ -186,6 +192,9 @@ export async function initiatePaymentSession(
         billing_address: cart.billing_address,
         shipping_address: cart.shipping_address,
       },
+      // Tell the backend where to redirect after SSLCommerz processes payment.
+      // The backend stores this in session data and uses it in respondWithRedirect.
+      ...(options?.returnUrl ? { return_url: options.returnUrl } : {}),
     },
   }
 

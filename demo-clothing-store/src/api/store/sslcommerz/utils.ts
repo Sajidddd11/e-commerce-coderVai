@@ -103,6 +103,8 @@ export const respondWithRedirect = async (
 ) => {
   // Get cart ID from payment session data or payment collection
   let cartId: string | null = null
+  let sessionReturnUrl: string | null = null
+
   if (tranId) {
     try {
       const paymentModule = req.scope.resolve(Modules.PAYMENT)
@@ -110,9 +112,12 @@ export const respondWithRedirect = async (
       if (session) {
         const sessionData = session.data as any
         cartId = sessionData?.cart_id || null
-        console.log(`[SSLCommerz] Retrieved cart_id from session: ${cartId}`)
+        // Mobile apps pass a custom return_url (deep link) when initiating the session
+        sessionReturnUrl = sessionData?.return_url || null
 
-        // If cart_id is null, log the full session data for debugging
+        console.log(`[SSLCommerz] Retrieved cart_id from session: ${cartId}`)
+        console.log(`[SSLCommerz] return_url from session: ${sessionReturnUrl}`)
+
         if (!cartId) {
           console.log(`[SSLCommerz] Full session data:`, JSON.stringify(sessionData, null, 2))
           console.log(`[SSLCommerz] Note: cart_id is null. Will rely on frontend cookies/localStorage.`)
@@ -123,33 +128,47 @@ export const respondWithRedirect = async (
     }
   }
 
-  const baseUrl = process.env.SSL_RETURN_URL || "http://localhost:8000"
+  // Prefer session-level return_url (set by mobile), fall back to env (used by web)
+  const baseUrl = sessionReturnUrl || process.env.SSL_RETURN_URL || "http://localhost:8000"
 
   if (baseUrl) {
     try {
-      const target = new URL(baseUrl)
-      target.pathname = "/checkout/sslcommerz-callback"
-      target.searchParams.set("ssl_status", status)
-
+      // Build query string params
+      const params = new URLSearchParams()
+      params.set("ssl_status", status)
       if (tranId) {
-        target.searchParams.set("ssl_tran_id", tranId)
-        target.searchParams.set("session_id", tranId)
+        params.set("ssl_tran_id", tranId)
+        params.set("session_id", tranId)
       }
-
-      // Pass cart_id if we have it
       if (cartId) {
-        target.searchParams.set("cart_id", cartId)
+        params.set("cart_id", cartId)
       }
-
       if (extra) {
         Object.entries(extra).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            target.searchParams.set(key, String(value))
+            params.set(key, String(value))
           }
         })
       }
 
-      return res.redirect(target.toString())
+      const qs = params.toString()
+
+      // For deep-link schemes (e.g. zahan://...), URL constructor won't work.
+      // Append query string manually and redirect.
+      let targetUrl: string
+      if (/^https?:\/\//i.test(baseUrl)) {
+        const target = new URL(baseUrl)
+        target.pathname = "/checkout/sslcommerz-callback"
+        params.forEach((value, key) => target.searchParams.set(key, value))
+        targetUrl = target.toString()
+      } else {
+        // Deep link: zahan://payment/sslcommerz?ssl_status=success&...
+        const separator = baseUrl.includes("?") ? "&" : "?"
+        targetUrl = `${baseUrl}${separator}${qs}`
+      }
+
+      console.log(`[SSLCommerz] Redirecting to: ${targetUrl}`)
+      return res.redirect(targetUrl)
     } catch (error) {
       console.error(`[SSLCommerz] Failed to redirect:`, error)
       // fallback to JSON

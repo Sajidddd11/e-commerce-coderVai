@@ -47,6 +47,8 @@ type SslCommerzSessionData = {
   cart_id?: string
   selected_gateway?: string
   gateway_list?: any[]
+  /** Where to redirect after payment — mobile deep link or web URL */
+  return_url?: string
 }
 
 const SUCCESS_STATUSES = new Set(["VALID", "VALIDATED", "AUTHORIZED", "COMPLETED", "PAID"])
@@ -311,7 +313,7 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
       )
     }
 
-    // Store cart_id and gateway list in session data for easy retrieval later
+    // Store cart_id, gateway list, and return_url in session data for easy retrieval later
     const sessionData: SslCommerzSessionData = {
       tran_id: sessionId,
       gateway_url: response.GatewayPageURL,
@@ -322,6 +324,8 @@ export class SSLCommerzPaymentProvider extends AbstractPaymentProvider {
       selected_gateway: (data as any)?.selected_gateway,
       // Store the gateway list (desc array) which contains redirectGatewayURL for each gateway
       gateway_list: response.desc || [],
+      // Return URL: mobile passes its deep link; web omits this (falls back to SSL_RETURN_URL env)
+      return_url: (data as any)?.return_url ?? undefined,
     }
 
     // Cache session data in Redis for 1 hour (3600 seconds)

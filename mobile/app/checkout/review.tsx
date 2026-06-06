@@ -25,6 +25,7 @@ export default function CheckoutReviewScreen() {
   const router = useRouter()
   const cart = useCartStore((s) => s.cart)
   const setCart = useCartStore((s) => s.setCart)
+  const clearCart = useCartStore((s) => s.clear)
   const resetForm = useCheckoutStore((s) => s.reset)
 
   const [placing, setPlacing] = useState(false)
@@ -48,9 +49,8 @@ export default function CheckoutReviewScreen() {
     const result = await placeOrder(cart!.id)
     if (result.type === "order") {
       await sendOrderSms(result.order.id).catch(() => {})
-      await storage.remove(STORAGE_KEYS.cartId).catch(() => {})
+      await clearCart()
       await resetForm()
-      setCart(null)
       router.replace(`/order/${result.order.id}/confirmed`)
       return
     }

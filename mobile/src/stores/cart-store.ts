@@ -66,7 +66,14 @@ export const useCartStore = create<CartState>((set) => ({
     set({ isMutating: true })
     try {
       const cart = await updateLineItem({ lineId, quantity })
-      set({ cart, itemCount: getCartItemCount(cart) })
+      if (cart) set({ cart, itemCount: getCartItemCount(cart) })
+    } catch (e) {
+      console.warn("[cart] update failed", e)
+      // Re-sync from server so UI reflects true state
+      try {
+        const fresh = await retrieveCart()
+        set({ cart: fresh, itemCount: getCartItemCount(fresh) })
+      } catch {}
     } finally {
       set({ isMutating: false })
     }
@@ -76,7 +83,19 @@ export const useCartStore = create<CartState>((set) => ({
     set({ isMutating: true })
     try {
       const cart = await deleteLineItem(lineId)
-      set({ cart, itemCount: getCartItemCount(cart) })
+      if (cart) {
+        set({ cart, itemCount: getCartItemCount(cart) })
+      } else {
+        // deleteLineItem returned null – re-fetch to get fresh state
+        const fresh = await retrieveCart()
+        set({ cart: fresh, itemCount: getCartItemCount(fresh) })
+      }
+    } catch (e) {
+      console.warn("[cart] remove failed", e)
+      try {
+        const fresh = await retrieveCart()
+        set({ cart: fresh, itemCount: getCartItemCount(fresh) })
+      } catch {}
     } finally {
       set({ isMutating: false })
     }
