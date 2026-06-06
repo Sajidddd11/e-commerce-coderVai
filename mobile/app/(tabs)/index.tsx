@@ -80,7 +80,28 @@ export default function HomeScreen() {
     setRefreshing(false)
   }, [load])
 
-  const hasCarousel = slides.some((s) => /^https?:\/\//.test(s.image))
+  const localSlides: HeroSlide[] = [
+    {
+      image: require("../../Hero/1.jpeg"),
+      title: "New Season\nArrivals",
+      subtitle: "2026 COLLECTION",
+      link: "/(tabs)/shop" as any,
+    },
+    {
+      image: require("../../Hero/2.jpeg"),
+      title: "Summer\nEssentials",
+      subtitle: "TRENDING NOW",
+      link: "/(tabs)/shop" as any,
+    },
+    {
+      image: require("../../Hero/3.jpeg"),
+      title: "Everyday\nComfort",
+      subtitle: "MUST HAVES",
+      link: "/(tabs)/shop" as any,
+    }
+  ]
+
+  const carouselSlides = slides.length > 0 ? slides : localSlides
 
   return (
     <Screen>
@@ -98,7 +119,7 @@ export default function HomeScreen() {
       >
         <AnnouncementBar />
 
-        {hasCarousel ? <HeroCarousel slides={slides} /> : <HeroBanner />}
+        <HeroCarousel slides={carouselSlides} />
 
         {categories.length > 0 || loading ? (
           <View>

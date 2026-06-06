@@ -4,7 +4,7 @@ import {
   Pressable,
   StyleSheet,
   useWindowDimensions,
-  Animated,
+  FlatList,
 } from "react-native"
 import { Image } from "expo-image"
 import { useRouter, Href } from "expo-router"
@@ -16,74 +16,94 @@ interface HeroCarouselProps {
   slides: HeroSlide[]
 }
 
-/** Auto-playing hero carousel with a crossfade between remote banner images. */
 export function HeroCarousel({ slides }: HeroCarouselProps) {
   const router = useRouter()
   const { width } = useWindowDimensions()
   const [index, setIndex] = useState(0)
-  const opacity = useRef(new Animated.Value(1)).current
+  const listRef = useRef<FlatList>(null)
 
-  const remoteSlides = slides.filter((s) => /^https?:\/\//.test(s.image))
+  const validSlides = slides.filter((s) => s.image != null)
 
   useEffect(() => {
-    if (remoteSlides.length <= 1) return
+    if (validSlides.length <= 1) return
     const timer = setInterval(() => {
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: animation.duration.normal,
-        useNativeDriver: true,
-      }).start(() => {
-        setIndex((i) => (i + 1) % remoteSlides.length)
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: animation.duration.normal,
-          useNativeDriver: true,
-        }).start()
+      setIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % validSlides.length
+        listRef.current?.scrollToIndex({ index: nextIndex, animated: true })
+        return nextIndex
       })
-    }, animation.heroAutoplayInterval)
+    }, animation.heroAutoplayInterval || 4000)
     return () => clearInterval(timer)
-  }, [remoteSlides.length, opacity])
+  }, [validSlides.length])
 
-  if (remoteSlides.length === 0) return null
+  if (validSlides.length === 0) return null
 
-  const slide = remoteSlides[index]
-  const height = 176 // Match HeroBanner
+  // Restore the exact image aspect ratio so it doesn't crop (destroy the ratio)
+  // We make it "bigger" by letting it bleed edge-to-edge (removing padding).
+  const frameAspectRatio = 1280 / 591 
+  const itemWidth = width // Full screen width
 
-  const toLink = () => {
-    if (!slide.link) return
-    router.push(slide.link as Href)
-  }
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setIndex(viewableItems[0].index || 0)
+    }
+  }).current
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current
 
-  return (
-    <View style={[styles.wrap, { paddingHorizontal: spacing.base }]}>
-      <Pressable onPress={toLink}>
-        <Animated.View style={{ opacity, height, borderRadius: borderRadius.large, overflow: "hidden" }}>
+  const renderItem = ({ item }: { item: HeroSlide }) => {
+    const toLink = () => {
+      if (!item.link) return
+      router.push(item.link as Href)
+    }
+
+    return (
+      <View style={{ width: itemWidth }}>
+        <Pressable onPress={toLink} style={styles.slideWrap}>
           <Image
-            source={slide.image}
-            style={[styles.image, { height }]}
+            source={item.image}
+            style={styles.image}
             contentFit="cover"
             transition={200}
           />
-          {slide.title || slide.subtitle ? (
+          {item.title || item.subtitle ? (
             <View style={styles.overlay}>
-              {slide.subtitle ? (
+              {item.subtitle ? (
                 <ThemedText variant="bodySmall" color={colors.brand.teal} style={styles.subtitle}>
-                  {slide.subtitle}
+                  {item.subtitle}
                 </ThemedText>
               ) : null}
-              {slide.title ? (
+              {item.title ? (
                 <ThemedText variant="sectionHeading" color={colors.grey[0]} style={styles.title}>
-                  {slide.title}
+                  {item.title}
                 </ThemedText>
               ) : null}
             </View>
           ) : null}
-        </Animated.View>
-      </Pressable>
+        </Pressable>
+      </View>
+    )
+  }
 
-      {remoteSlides.length > 1 ? (
+  return (
+    <View style={styles.wrap}>
+      <View style={[styles.listContainer, { aspectRatio: frameAspectRatio }]}>
+        <FlatList
+          ref={listRef}
+          data={validSlides}
+          renderItem={renderItem}
+          keyExtractor={(_, idx) => idx.toString()}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          scrollEventThrottle={16}
+        />
+      </View>
+
+      {validSlides.length > 1 ? (
         <View style={styles.dots}>
-          {remoteSlides.map((_, i) => (
+          {validSlides.map((_, i) => (
             <View
               key={i}
               style={[
@@ -104,8 +124,18 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
 
 const styles = StyleSheet.create({
   wrap: { paddingTop: spacing.base, position: "relative" },
+  listContainer: {
+    width: "100%",
+    overflow: "hidden",
+  },
+  slideWrap: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
   image: {
     width: "100%",
+    height: "100%",
     backgroundColor: colors.slate[900],
   },
   overlay: {

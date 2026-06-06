@@ -9,6 +9,17 @@ interface CategoryTilesProps {
   categories: HttpTypes.StoreProductCategory[]
 }
 
+const categoryImages: Record<string, any> = {
+  "sneakers": require("../../../assets/categories/sneakers.png"),
+  "bags": require("../../../assets/categories/bags.png"),
+  "home-appliances": require("../../../assets/categories/home-appliances.png"),
+  "jerseys": require("../../../assets/categories/jerseys.png"),
+  "watches": require("../../../assets/categories/watches.png"),
+  "headphones": require("../../../assets/categories/headphones.png"),
+  "electric-products": require("../../../assets/categories/electric-products.png"),
+  "pets": require("../../../assets/categories/pets.png"),
+}
+
 export function CategoryTiles({ categories }: CategoryTilesProps) {
   const router = useRouter()
 
@@ -19,7 +30,8 @@ export function CategoryTiles({ categories }: CategoryTilesProps) {
       contentContainerStyle={styles.container}
     >
       {categories.map((category) => {
-        const thumb = (category as any).products?.[0]?.thumbnail
+        // Fallback to product thumbnail if no specific category image
+        const thumb = categoryImages[category.handle] || (category as any).products?.[0]?.thumbnail
         return (
           <Pressable
             key={category.id}

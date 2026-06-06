@@ -3,6 +3,7 @@ import { useRouter } from "expo-router"
 import { Search } from "lucide-react-native"
 import { colors } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
+import { useAnimatedPlaceholder } from "@hooks/useAnimatedPlaceholder"
 
 interface HeaderProps {
   showSearch?: boolean
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 export function Header({ showSearch = true }: HeaderProps) {
   const router = useRouter()
+  const animatedPlaceholder = useAnimatedPlaceholder()
 
   return (
     <View style={styles.header}>
@@ -24,7 +26,7 @@ export function Header({ showSearch = true }: HeaderProps) {
             style={styles.placeholder}
             numberOfLines={1}
           >
-            Search products...
+            {animatedPlaceholder}
           </Text>
           <View style={styles.searchBtn}>
             <Search size={12} color="white" />
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16, // px-4
-    paddingTop: 40, // pt-10
+    paddingTop: 12, // Reduced from 40
     paddingBottom: 12, // pb-3
     backgroundColor: "white",
     borderBottomWidth: 1,

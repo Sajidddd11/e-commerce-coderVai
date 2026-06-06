@@ -1,9 +1,12 @@
+import { useEffect, useState } from "react"
 import { Pressable, View, StyleSheet, Text } from "react-native"
 import { Image } from "expo-image"
 import { Link } from "expo-router"
+import { Star } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@utils/get-product-price"
 import { masonryAspectForIndex } from "@utils/masonry-columns"
+import { getProductReviews } from "@api/enhancements"
 import { colors, shadows } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { ProductPrice } from "./ProductPrice"
@@ -40,6 +43,19 @@ export function ProductCard({
   squareImage = false,
   variant = "shop",
 }: ProductCardProps) {
+  const [rating, setRating] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!product?.id) return
+    let mounted = true
+    getProductReviews(product.id).then((res) => {
+      if (mounted && res.average > 0) setRating(res.average)
+    })
+    return () => {
+      mounted = false
+    }
+  }, [product?.id])
+
   if (!product?.id) return null
 
   const { cheapestPrice } = getProductPrice({ product })
@@ -91,6 +107,13 @@ export function ProductCard({
                 </View>
               ) : null}
             </View>
+
+            {rating ? (
+              <View style={styles.bottomLeftBadge}>
+                <Star size={10} color="#EAB308" fill="#EAB308" />
+                <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+              </View>
+            ) : null}
 
             {onSale && cheapestPrice ? (
               <View style={[styles.originalBadge, isHome ? styles.originalBadgeHome : styles.originalBadgeShop]}>
@@ -216,6 +239,24 @@ const styles = StyleSheet.create({
   },
   originalStrikeShop: {
     fontSize: fontSize[10], // text-[10px]
+  },
+  bottomLeftBadge: {
+    position: "absolute",
+    bottom: 8,
+    left: 8,
+    zIndex: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 4,
+  },
+  ratingText: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize[10],
+    color: "#111827",
   },
   soldOut: {
     ...StyleSheet.absoluteFillObject,

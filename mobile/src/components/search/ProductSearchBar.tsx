@@ -8,6 +8,8 @@ import {
 } from "react-native"
 import { Search, X } from "lucide-react-native"
 import { colors } from "@design/theme"
+import { fontFamily, fontSize } from "@design/typography"
+import { useAnimatedPlaceholder } from "@hooks/useAnimatedPlaceholder"
 
 interface ProductSearchBarProps extends Pick<TextInputProps, "autoFocus"> {
   value: string
@@ -26,10 +28,12 @@ export function ProductSearchBar({
   onFocus,
   onBlur,
   onClear,
-  placeholder = "Search products...",
+  placeholder,
   autoFocus,
 }: ProductSearchBarProps) {
   const [focused, setFocused] = useState(false)
+  const animatedPlaceholder = useAnimatedPlaceholder()
+  const displayPlaceholder = placeholder || animatedPlaceholder
 
   const submit = () => {
     const term = value.trim()
@@ -49,8 +53,8 @@ export function ProductSearchBar({
           setFocused(false)
           onBlur?.()
         }}
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
+        placeholder={displayPlaceholder}
+        placeholderTextColor="#6B7280"
         returnKeyType="search"
         onSubmitEditing={submit}
         autoFocus={autoFocus}
@@ -73,7 +77,7 @@ export function ProductSearchBar({
       ) : null}
 
       <Pressable onPress={submit} style={styles.submitBtn}>
-        <Search size={16} color="white" />
+        <Search size={12} color="white" />
       </Pressable>
     </View>
   )
@@ -84,29 +88,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    borderRadius: 8, // rounded-lg
+    borderRadius: 9999, // rounded-full to match home page
     borderWidth: 2,
-    borderColor: colors.grey[20], // border-gray-200
-    overflow: "hidden",
+    borderColor: "#E5E7EB", // border-gray-200
+    paddingLeft: 12,
+    paddingRight: 6,
+    paddingVertical: 6,
+    gap: 8,
   },
   input: {
     flex: 1,
-    height: 40, // h-10
-    paddingHorizontal: 16, // px-4
-    fontFamily: "Inter-Regular",
-    fontSize: 14, // text-sm
-    color: colors.slate[900], // text-gray-900
+    padding: 0,
+    fontFamily: fontFamily.interRegular,
+    fontSize: fontSize.xs,
+    color: "#111827",
     backgroundColor: "transparent",
+    minHeight: 24, // Matches the button height
   },
   iconBtn: {
-    paddingHorizontal: 8,
-    height: "100%",
+    paddingHorizontal: 4,
     justifyContent: "center",
   },
   submitBtn: {
-    width: 44, // w-11
-    height: 40, // h-10
-    backgroundColor: colors.brand.teal, // bg-[#56AEBF]
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#56AEBF",
     justifyContent: "center",
     alignItems: "center",
   },

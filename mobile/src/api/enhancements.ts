@@ -10,7 +10,7 @@ import { getAuthHeaders } from "@utils/storage"
 
 export interface HeroSlide {
   id?: string
-  image: string
+  image: string | any
   title?: string
   subtitle?: string
   link?: string
@@ -120,21 +120,34 @@ export async function getProductReviews(
   productId: string
 ): Promise<{ reviews: ProductReview[]; average: number; count: number }> {
   return sdk.client
-    .fetch<{ reviews: ProductReview[]; average_rating?: number; count?: number }>(
+    .fetch<any>(
       `/store/reviews/product/${productId}`,
       { method: "GET" }
     )
-    .then((data) => ({
-      reviews: data.reviews ?? [],
-      average: data.average_rating ?? 0,
-      count: data.count ?? data.reviews?.length ?? 0,
-    }))
+    .then((data) => {
+      const reviews: ProductReview[] = data.reviews ?? []
+      const count = data.count ?? reviews.length ?? 0
+      
+      let average = data.average_rating ?? data.average ?? 0
+      
+      // If average wasn't provided but we have reviews, compute it manually
+      if (!average && reviews.length > 0) {
+        const sum = reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0)
+        average = sum / reviews.length
+      }
+
+      return {
+        reviews,
+        average,
+        count,
+      }
+    })
     .catch(() => ({ reviews: [], average: 0, count: 0 }))
 }
 
 export async function createProductReview(
   productId: string,
-  body: { rating: number; title?: string; content?: string }
+  body: { rating: number; title?: string; content?: string; customer_name?: string; customer_email?: string }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const headers = await getAuthHeaders()

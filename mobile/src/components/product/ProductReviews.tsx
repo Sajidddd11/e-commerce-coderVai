@@ -29,6 +29,7 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
 
 export function ProductReviews({ productId }: { productId: string }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const customer = useAuthStore((s) => s.customer)
   const [reviews, setReviews] = useState<ProductReview[]>([])
   const [average, setAverage] = useState(0)
   const [count, setCount] = useState(0)
@@ -58,7 +59,21 @@ export function ProductReviews({ productId }: { productId: string }) {
   const submit = async () => {
     setError(null)
     setSubmitting(true)
-    const res = await createProductReview(productId, { rating, title, content })
+    
+    let customer_name = undefined;
+    if (customer?.first_name || customer?.last_name) {
+      customer_name = `${customer.first_name ?? ""} ${customer.last_name ?? ""}`.trim()
+    } else if (customer?.email) {
+      customer_name = customer.email.split("@")[0]
+    }
+    
+    const res = await createProductReview(productId, { 
+      rating, 
+      title, 
+      content,
+      customer_name,
+      customer_email: customer?.email
+    })
     setSubmitting(false)
     if (res.success) {
       setModalOpen(false)
