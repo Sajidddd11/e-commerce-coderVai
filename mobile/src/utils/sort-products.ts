@@ -1,7 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 
 /** Ported from web src/lib/util/sort-products.ts */
-export type SortOptions = "price_asc" | "price_desc" | "created_at"
+export type SortOptions = "price_asc" | "price_desc" | "created_at" | "best_selling"
 
 type SortableProduct = {
   created_at?: string | null

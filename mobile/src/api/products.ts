@@ -83,13 +83,66 @@ export async function listProductsWithSort({
 }> {
   const limit = queryParams?.limit || 12
 
-  const {
-    response: { products, count },
-  } = await listProducts({
-    pageParam: 0,
-    queryParams: { ...queryParams, limit: 100 },
-    countryCode,
-  })
+  let products: HttpTypes.StoreProduct[] = []
+  let count = 0
+
+  if (sortBy === "best_selling") {
+    const region = await getRegion(countryCode)
+    if (region) {
+      try {
+        const res = await sdk.client.fetch<{ products: HttpTypes.StoreProduct[]; count: number }>(
+          "/store/best-selling",
+          {
+            method: "GET",
+            query: { region_id: region.id, limit: 100 }
+          }
+        )
+        products = res.products ?? []
+      } catch (err) {
+        if (__DEV__) console.warn("[listProductsWithSort] best-selling fetch failed", err)
+        products = []
+      }
+    }
+
+    // Apply filters client-side
+    if (queryParams?.q && typeof queryParams.q === "string") {
+      const qLower = queryParams.q.toLowerCase()
+      products = products.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(qLower) ||
+          p.subtitle?.toLowerCase().includes(qLower) ||
+          p.description?.toLowerCase().includes(qLower)
+      )
+    }
+
+    if (queryParams?.category_id) {
+      const categoryIds = Array.isArray(queryParams.category_id)
+        ? queryParams.category_id
+        : [queryParams.category_id]
+      products = products.filter((p) =>
+        p.categories?.some((cat) => categoryIds.includes(cat.id))
+      )
+    }
+
+    if (queryParams?.collection_id) {
+      const collectionIds = Array.isArray(queryParams.collection_id)
+        ? queryParams.collection_id
+        : [queryParams.collection_id]
+      products = products.filter((p) =>
+        p.collection_id && collectionIds.includes(p.collection_id)
+      )
+    }
+
+    count = products.length
+  } else {
+    const res = await listProducts({
+      pageParam: 0,
+      queryParams: { ...queryParams, limit: 100 },
+      countryCode,
+    })
+    products = res.response.products
+    count = res.response.count
+  }
 
   const sortedProducts = sortProducts(products, sortBy)
 

@@ -18,6 +18,7 @@ import { fontFamily, fontSize } from "@design/typography"
 
 const SORT_OPTIONS: { key: SortOptions; label: string }[] = [
   { key: "created_at", label: "Latest" },
+  { key: "best_selling", label: "Best Selling" },
   { key: "price_asc", label: "Price ↑" },
   { key: "price_desc", label: "Price ↓" },
 ]
@@ -26,7 +27,7 @@ const PAGE_SIZE = 12
 
 export default function ShopScreen() {
   const router = useRouter()
-  const { q: qParam } = useLocalSearchParams<{ q?: string }>()
+  const { q: qParam, sortBy: sortParam } = useLocalSearchParams<{ q?: string; sortBy?: string }>()
   const countryCode = useRegionStore((s) => s.countryCode)
   const isReady = useRegionStore((s) => s.isReady)
 
@@ -55,6 +56,12 @@ export default function ShopScreen() {
       setShowSuggestions(false)
     }
   }, [qParam])
+
+  useEffect(() => {
+    if (sortParam && ["price_asc", "price_desc", "created_at", "best_selling"].includes(sortParam)) {
+      setSortBy(sortParam as SortOptions)
+    }
+  }, [sortParam])
 
   const runSearch = (term: string) => {
     const trimmed = term.trim()
@@ -113,7 +120,7 @@ export default function ShopScreen() {
   }, [loadingMore, hasMore, loading, page, fetchPage])
 
   return (
-    <Screen style={{ backgroundColor: "white" }}>
+    <Screen background="white">
       <View style={styles.headerArea}>
         <View style={styles.searchRow}>
           <ProductSearchBar

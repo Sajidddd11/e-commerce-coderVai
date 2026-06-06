@@ -138,7 +138,15 @@ export default function HomeScreen() {
 
         {bestSelling.length > 0 ? (
           <View>
-            <SectionHeader title="Best Selling" />
+            <SectionHeader
+              title="Best Selling"
+              onSeeAll={() =>
+                router.push({
+                  pathname: "/(tabs)/shop",
+                  params: { sortBy: "best_selling" },
+                })
+              }
+            />
             <ProductRail products={bestSelling} />
           </View>
         ) : null}
