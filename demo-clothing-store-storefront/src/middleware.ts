@@ -104,9 +104,6 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
-  // Detect Facebook's crawler (and other social scrapers) to allow
-  // Meta Pixel domain verification and Open Graph tag scraping.
-  // These bots must NOT be redirected to a country-code path.
   const userAgent = request.headers.get("user-agent") || ""
   const isSocialBot =
     userAgent.toLowerCase().includes("facebookexternalhit") ||
@@ -114,11 +111,6 @@ export async function middleware(request: NextRequest) {
     userAgent.toLowerCase().includes("twitterbot") ||
     userAgent.toLowerCase().includes("linkedinbot") ||
     userAgent.toLowerCase().includes("whatsapp")
-
-  // Allow social bots to reach any page without country-code redirection
-  if (isSocialBot) {
-    return NextResponse.next()
-  }
 
   let redirectUrl = request.nextUrl.href
 
@@ -162,6 +154,13 @@ export async function middleware(request: NextRequest) {
   // If no country code is set, we redirect to the relevant region.
   if (!urlHasCountryCode && countryCode) {
     redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
+    
+    // Rewrite instead of redirect for social bots so they index the universal URL
+    // and correctly load OG tags without dropping them on 307 redirects.
+    if (isSocialBot) {
+      return NextResponse.rewrite(`${redirectUrl}`)
+    }
+    
     response = NextResponse.redirect(`${redirectUrl}`, 307)
   } else if (!urlHasCountryCode && !countryCode) {
     // Handle case where no valid country code exists (empty regions)

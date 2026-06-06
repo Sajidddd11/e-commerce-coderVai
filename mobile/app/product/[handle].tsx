@@ -193,7 +193,7 @@ export default function ProductScreen() {
     const variant = product.variants?.find((v) => v.id === chosen)
     const variantText = variant?.title && variant.title !== "Default Title" ? ` - Variant: ${variant.title}` : ""
     const storeUrl = process.env.EXPO_PUBLIC_STOREFRONT_URL || "https://codervai.com"
-    const productUrl = chosen ? `${storeUrl}/products/${product.handle}?v_id=${chosen}` : `${storeUrl}/products/${product.handle}`
+    const productUrl = chosen ? `${storeUrl}/bd/products/${product.handle}?v_id=${chosen}` : `${storeUrl}/bd/products/${product.handle}`
     const message = `Hi, I'm interested in this product: ${product.title}${variantText}.\n${productUrl}`
     const phone = process.env.EXPO_PUBLIC_WHATSAPP_NUMBER || ""
     const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`
@@ -207,7 +207,7 @@ export default function ProductScreen() {
     try {
       const chosen = resolveVariant()
       const storeUrl = process.env.EXPO_PUBLIC_STOREFRONT_URL || "https://codervai.com"
-      const url = chosen ? `${storeUrl}/products/${product.handle}?v_id=${chosen}` : `${storeUrl}/products/${product.handle}`
+      const url = chosen ? `${storeUrl}/bd/products/${product.handle}?v_id=${chosen}` : `${storeUrl}/bd/products/${product.handle}`
       await Share.share({
         message: `Check out ${product.title}!\n${url}`,
         url: url,
