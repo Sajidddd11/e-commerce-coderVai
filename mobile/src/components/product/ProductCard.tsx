@@ -131,9 +131,9 @@ export function ProductCard({
           </View>
 
           <View style={[styles.footer, isHome ? styles.footerHome : styles.footerShop]}>
-            {productType && !isHome ? (
+            {!isHome ? (
               <Text numberOfLines={1} style={styles.type}>
-                {productType.toUpperCase()}
+                {productType ? productType.toUpperCase() : " "}
               </Text>
             ) : null}
 
@@ -276,12 +276,14 @@ const styles = StyleSheet.create({
   footerHome: {
     padding: 10, // p-2.5
     backgroundColor: colors.grey[10], // bg-gray-100 (grey shade)
+    height: 90, // Fixes card height, pushes empty space to bottom instead of between title and price
   },
   footerShop: {
     paddingHorizontal: 8, // px-2
     paddingTop: 6, // pt-1.5
     paddingBottom: 8, // pb-2
     backgroundColor: colors.grey[10], // bg-gray-100
+    height: 84, // Fixes card height
   },
   type: {
     fontFamily: fontFamily.interRegular,

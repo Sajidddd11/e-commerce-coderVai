@@ -7,7 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Text
+  Text,
+  TextInput
 } from "react-native"
 import { useRouter } from "expo-router"
 import { ChevronLeft, ChevronDown } from "lucide-react-native"
@@ -15,6 +16,7 @@ import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import { Input } from "@components/ui/Input"
 import { DistrictPicker } from "@components/checkout/DistrictPicker"
+import { AddressLabelSelector } from "@components/checkout/AddressLabelSelector"
 import { PaymentIcon } from "@components/checkout/PaymentIcon"
 import { useCartStore } from "@stores/cart-store"
 import { useAuthStore } from "@stores/auth-store"
@@ -23,6 +25,7 @@ import { useCheckoutStore } from "@stores/checkout-store"
 import { listCartShippingMethods } from "@api/fulfillment"
 import { listCartPaymentMethods } from "@api/payment"
 import { prepareCheckout } from "@api/checkout"
+import { updateCart } from "@api/cart"
 import {
   autoSelectShippingMethod,
   calculateShippingCost,
@@ -32,6 +35,7 @@ import {
 import { convertToLocale } from "@utils/money"
 import { trackInitiateCheckout } from "@utils/facebook-analytics"
 import { colors } from "@design/theme"
+import { paymentInfoMap } from "@design/constants"
 
 export default function CheckoutScreen() {
   const router = useRouter()
@@ -106,7 +110,66 @@ export default function CheckoutScreen() {
     }
   }, [shippingMethods, form.deliveryType, form.district])
 
+  // Auto-save address to cart with debouncing (mirrors web logic)
+  useEffect(() => {
+    // Only auto-save if we have the district (so backend can determine shipping options)
+    if (!form.district.trim() || !cart?.id || !countryCode) {
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      const nameParts = form.fullName.trim().split(" ")
+      const firstName = nameParts[0] ?? ""
+      const lastName = nameParts.slice(1).join(" ") || firstName
+
+      try {
+        await updateCart({
+          shipping_address: {
+            first_name: firstName,
+            last_name: lastName,
+            address_1: form.address1,
+            city: form.district,
+            country_code: countryCode,
+            phone: form.phone,
+            company: form.company,
+          },
+          email: form.email,
+        })
+        
+        // Refresh shipping methods since the address changed
+        const methods = await listCartShippingMethods(cart.id)
+        if (methods) {
+          setShippingMethods(methods)
+        }
+      } catch (e) {
+        console.warn("Failed to auto-save address", e)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [
+    form.fullName,
+    form.phone,
+    form.email,
+    form.address1,
+    form.district,
+    form.company,
+    cart?.id,
+    countryCode,
+  ])
+
+  const getShippingLabel = () => {
+    if (form.deliveryType === "pickup") return "Collect From Store"
+    if (!form.district) return ""
+    // Match web logic: only the city of "Dhaka" = Inside Dhaka
+    const isInsideDhaka = form.district.toLowerCase() === "dhaka"
+    return isInsideDhaka ? "Inside Dhaka" : "Outside Dhaka"
+  }
+
   const shippingCost = useMemo(() => {
+    if (form.deliveryType === "home" && form.district) {
+      return calculateShippingCost(form.district, form.deliveryType)
+    }
     const selected = shippingMethods.find((m) => m.id === form.shippingMethodId)
     if (selected && typeof selected.amount === "number") return selected.amount
     return calculateShippingCost(form.district, form.deliveryType)
@@ -155,9 +218,8 @@ export default function CheckoutScreen() {
     }
   }
 
-  // Split name for UI
-  const firstName = form.fullName.split(" ")[0] || ""
-  const lastName = form.fullName.split(" ").slice(1).join(" ") || ""
+
+  const selectedShippingMethod = shippingMethods.find((m) => m.id === form.shippingMethodId)
 
   return (
     <Screen edges={["top"]}>
@@ -202,51 +264,43 @@ export default function CheckoutScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Section title="Contact">
-            <Input
-              label="Email address"
-              value={form.email}
-              onChangeText={(v) => setForm({ email: v })}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholder="your@email.com"
-            />
+          <Section title="Delivery Type">
+            <View style={{ flexDirection: "row", gap: 16 }}>
+              <Pressable
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                onPress={() => setForm({ deliveryType: "home" })}
+              >
+                <View style={[styles.radio, form.deliveryType === "home" && styles.radioActive]}>
+                  {form.deliveryType === "home" && <View style={styles.radioInner} />}
+                </View>
+                <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900] }}>
+                  Home Delivery
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                onPress={() => setForm({ deliveryType: "pickup" })}
+              >
+                <View style={[styles.radio, form.deliveryType === "pickup" && styles.radioActive]}>
+                  {form.deliveryType === "pickup" && <View style={styles.radioInner} />}
+                </View>
+                <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900] }}>
+                  Collect From Store Pickup
+                </Text>
+              </Pressable>
+            </View>
           </Section>
 
           <Section title="Shipping Address">
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <View style={{ flex: 1 }}>
-                <Input
-                  label="First Name"
-                  value={firstName}
-                  onChangeText={(v) => setForm({ fullName: `${v} ${lastName}`.trim() })}
-                  autoCapitalize="words"
-                  placeholder="First name"
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Input
-                  label="Last Name"
-                  value={lastName}
-                  onChangeText={(v) => setForm({ fullName: `${firstName} ${v}`.trim() })}
-                  autoCapitalize="words"
-                  placeholder="Last name"
-                />
-              </View>
-            </View>
-            
             <Input
-              label="Address Line"
-              value={form.address1}
-              onChangeText={(v) => setForm({ address1: v })}
-              placeholder="House, road, area"
+              label="Full Name"
+              value={form.fullName}
+              onChangeText={(v) => setForm({ fullName: v })}
+              autoCapitalize="words"
+              placeholder="Full name"
             />
-            <DistrictPicker
-              label="District"
-              value={form.district}
-              onChange={(d) => setForm({ district: d })}
-            />
-            
+
             <View style={styles.phoneInputWrap}>
               <Text style={styles.inputLabel}>Phone Number</Text>
               <View style={styles.phoneInputBox}>
@@ -262,27 +316,40 @@ export default function CheckoutScreen() {
                 />
               </View>
             </View>
-          </Section>
 
-          <Section title="Delivery Type">
-            {loadingOptions ? (
-              <ActivityIndicator color={colors.brand.teal} />
-            ) : shippingMethods.length === 0 ? (
-              <Text style={{ color: colors.grey[50], fontSize: 12 }}>
-                No delivery options available.
-              </Text>
-            ) : (
-              <View style={styles.toggleRow}>
-                {shippingMethods.map((m) => (
-                  <ToggleChip
-                    key={m.id}
-                    label={`${m.name} ${convertToLocale({ amount: m.amount ?? 0, currency_code: currency })}`}
-                    active={form.shippingMethodId === m.id}
-                    onPress={() => setForm({ shippingMethodId: m.id })}
-                  />
-                ))}
-              </View>
-            )}
+            <Input
+              label="Email address"
+              value={form.email}
+              onChangeText={(v) => setForm({ email: v })}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholder="your@email.com"
+            />
+
+            <DistrictPicker
+              label="District"
+              value={form.district}
+              onChange={(d) => setForm({ district: d })}
+            />
+
+            <Input
+              label="Address Line"
+              value={form.address1}
+              onChangeText={(v) => setForm({ address1: v })}
+              placeholder="House, road, area"
+            />
+
+            <AddressLabelSelector
+              value={form.company}
+              onChange={(val) => setForm({ company: val })}
+            />
+
+            <Input
+              label="Delivery Instructions (Optional)"
+              value={form.deliveryInstructions}
+              onChangeText={(v) => setForm({ deliveryInstructions: v })}
+              placeholder="e.g. Leave with security guard"
+            />
           </Section>
 
           <Section title="Payment Method">
@@ -291,7 +358,8 @@ export default function CheckoutScreen() {
             ) : (
               <View style={{ gap: 8 }}>
                 {paymentMethods.map((p) => {
-                  const isCod = p.id === "manual"
+                  const info = paymentInfoMap[p.id] || { title: p.id, iconKey: "default" }
+                  const isCod = p.id.startsWith("pp_system_default")
                   const selected = form.paymentProviderId === p.id
                   return (
                     <Pressable
@@ -308,22 +376,18 @@ export default function CheckoutScreen() {
                       </View>
                       <View style={{ flex: 1, gap: 2 }}>
                         <Text style={styles.paymentTitle}>
-                          {isCod ? "Cash on Delivery" : "Online Payment"}
+                          {info.title}
                         </Text>
                         <Text style={styles.paymentDesc}>
-                          {isCod ? "Pay when you receive" : "bKash · Nagad · Card"}
+                          {isCod 
+                            ? "Pay when you receive" 
+                            : p.id.includes("bkash")
+                              ? "Pay securely via bKash"
+                              : p.id.includes("nagad")
+                                ? "Pay securely via Nagad"
+                                : "Visa · Mastercard · Amex"
+                          }
                         </Text>
-                        
-                        {!isCod && selected && (
-                          <View style={styles.paymentMethodsRow}>
-                            <View style={styles.paymentMethodPill}>
-                              <Text style={[styles.paymentMethodPillText, { color: "#E2136E" }]}>bKash</Text>
-                            </View>
-                            <View style={styles.paymentMethodPill}>
-                              <Text style={[styles.paymentMethodPillText, { color: "#F26522" }]}>Nagad</Text>
-                            </View>
-                          </View>
-                        )}
                       </View>
                     </Pressable>
                   )
@@ -340,6 +404,15 @@ export default function CheckoutScreen() {
         </ScrollView>
 
         <View style={styles.footer}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+            <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900], fontSize: 14 }}>
+              Shipping {getShippingLabel() ? `(${getShippingLabel()})` : ""}
+            </Text>
+            <Text style={{ fontFamily: "Inter-SemiBold", color: colors.slate[900], fontSize: 14 }}>
+              {convertToLocale({ amount: shippingCost, currency_code: currency })}
+            </Text>
+          </View>
+
           <Pressable
             style={styles.reviewBtn}
             disabled={!canSubmit || submitting}

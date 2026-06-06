@@ -9,6 +9,7 @@ interface ProductPriceProps {
   variantId?: string
   size?: "sm" | "lg"
   compact?: boolean
+  color?: string
 }
 
 export function ProductPrice({
@@ -16,6 +17,7 @@ export function ProductPrice({
   variantId,
   size = "sm",
   compact = false,
+  color,
 }: ProductPriceProps) {
   const { cheapestPrice, variantPrice } = getProductPrice({ product, variantId })
   const price = variantId ? variantPrice : cheapestPrice
@@ -36,6 +38,7 @@ export function ProductPrice({
     return (
       <View style={styles.compactRow}>
         <Text
+          numberOfLines={1}
           style={[
             styles.compactPrice,
             { color: onSale ? "#EF4444" : "#111827" }
@@ -43,11 +46,6 @@ export function ProductPrice({
         >
           {price.calculated_price}
         </Text>
-        {onSale ? (
-          <Text style={styles.compactStrike}>
-            {price.original_price}
-          </Text>
-        ) : null}
       </View>
     )
   }
@@ -58,7 +56,7 @@ export function ProductPrice({
         style={[
           styles.price,
           size === "lg" ? styles.lg : undefined,
-          { color: onSale ? "#EF4444" : "#111827" }
+          { color: onSale ? "#EF4444" : color || "#111827" }
         ]}
       >
         {price.calculated_price}

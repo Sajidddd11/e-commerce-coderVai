@@ -7,6 +7,7 @@ import {
   deleteLineItem,
   applyPromotions,
   getCartItemCount,
+  removeCartId,
 } from "@api/cart"
 
 interface CartState {
@@ -20,6 +21,7 @@ interface CartState {
   remove: (lineId: string) => Promise<void>
   applyPromo: (codes: string[]) => Promise<void>
   setCart: (cart: HttpTypes.StoreCart | null) => void
+  clear: () => Promise<void>
 }
 
 export const useCartStore = create<CartState>((set) => ({
@@ -29,6 +31,16 @@ export const useCartStore = create<CartState>((set) => ({
   isMutating: false,
 
   setCart: (cart) => set({ cart, itemCount: getCartItemCount(cart) }),
+
+  clear: async () => {
+    set({ isMutating: true })
+    try {
+      await removeCartId()
+      set({ cart: null, itemCount: 0 })
+    } finally {
+      set({ isMutating: false })
+    }
+  },
 
   refresh: async () => {
     set({ isLoading: true })

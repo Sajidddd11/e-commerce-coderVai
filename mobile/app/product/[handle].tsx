@@ -11,7 +11,9 @@ import {
 import { Image } from "expo-image"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { ChevronLeft, ShoppingCart, ChevronRight } from "lucide-react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { HttpTypes } from "@medusajs/types"
+import Markdown from "react-native-markdown-display"
 import { Screen } from "@components/layout/Screen"
 import { Skeleton } from "@components/ui/Skeleton"
 import { ProductPrice } from "@components/product/ProductPrice"
@@ -46,10 +48,12 @@ export default function ProductScreen() {
   const { handle } = useLocalSearchParams<{ handle: string }>()
   const router = useRouter()
   const { width } = useWindowDimensions()
+  const insets = useSafeAreaInsets()
 
   const region = useRegionStore((s) => s.region)
   const countryCode = useRegionStore((s) => s.countryCode)
   const add = useCartStore((s) => s.add)
+  const clearCart = useCartStore((s) => s.clear)
   const isMutating = useCartStore((s) => s.isMutating)
 
   const [product, setProduct] = useState<HttpTypes.StoreProduct | null>(null)
@@ -155,6 +159,22 @@ export default function ProductScreen() {
       ])
     } catch {
       Alert.alert("Error", "Could not add to cart. Please try again.")
+    }
+  }
+
+  const onBuyNow = async () => {
+    if (!product) return
+    const chosen = resolveVariant()
+    if (!chosen) {
+      Alert.alert("Select options", "Please choose your preferred options first.")
+      return
+    }
+    try {
+      await clearCart()
+      await addChosen(chosen)
+      router.push("/checkout")
+    } catch {
+      Alert.alert("Error", "Could not process your request. Please try again.")
     }
   }
 
@@ -311,19 +331,26 @@ export default function ProductScreen() {
                     product={product}
                     variantId={variantId ?? undefined}
                     size="lg"
+                    color={colors.brand.teal}
                   />
                 </View>
               </View>
 
-              {product.description ? (
-                <Text style={styles.description}>
-                  {product.description}
-                </Text>
+              {product.subtitle ? (
+                <Markdown style={markdownStyles}>
+                  {product.subtitle.trim()}
+                </Markdown>
               ) : null}
 
               {renderOptions()}
 
               <View style={{ height: 16 }} />
+
+              {product.description ? (
+                <Markdown style={markdownStyles}>
+                  {product.description.trim()}
+                </Markdown>
+              ) : null}
 
               <ProductReviews productId={product.id} />
             </>
@@ -349,15 +376,25 @@ export default function ProductScreen() {
       </ScrollView>
 
       {product && !loading ? (
-        <View style={styles.addBar}>
+        <View style={[styles.addBar, { paddingBottom: Math.max(12, insets.bottom + 8) }]}>
           <Pressable
             style={[styles.addBtn, isMutating && { opacity: 0.7 }]}
             disabled={isMutating}
             onPress={onAdd}
           >
-            <ShoppingCart size={20} color="white" />
+            <ShoppingCart size={20} color={colors.brand.teal} />
             <Text style={styles.addBtnText}>
               {isMutating ? "Adding..." : "Add to Cart"}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.buyNowBtn, isMutating && { opacity: 0.7 }]}
+            disabled={isMutating}
+            onPress={onBuyNow}
+          >
+            <Text style={styles.buyNowText}>
+              {isMutating ? "Processing..." : "Buy Now"}
             </Text>
           </Pressable>
         </View>
@@ -516,21 +553,78 @@ const styles = StyleSheet.create({
     borderTopColor: "#E5E7EB", // border-gray-200
     paddingHorizontal: 16, // px-4
     paddingVertical: 12, // py-3
+    flexDirection: "row",
+    gap: 12,
   },
   addBtn: {
-    backgroundColor: "#56AEBF", // bg-[#56AEBF]
+    flex: 1,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#56AEBF",
     borderRadius: 8, // rounded-lg
     height: 56, // h-14
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 8, // gap-2
-    width: "100%",
   },
   addBtnText: {
     fontFamily: fontFamily.interSemiBold,
     fontSize: fontSize.sm, // text-sm
+    color: "#56AEBF",
+  },
+  buyNowBtn: {
+    flex: 1,
+    backgroundColor: "#56AEBF",
+    borderRadius: 8,
+    height: 56,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+  buyNowText: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.sm,
     color: "white",
+  },
+})
+
+const markdownStyles = StyleSheet.create({
+  body: {
+    fontFamily: fontFamily.interRegular,
+    fontSize: fontSize.sm,
+    lineHeight: 24,
+    color: "#4B5563", // text-gray-600
+  },
+  heading1: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.xl,
+    color: "#111827",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  heading2: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.lg,
+    color: "#111827",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  heading3: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.md,
+    color: "#111827",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  paragraph: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  list_item: {
+    marginTop: 4,
+    marginBottom: 4,
   },
 })
 

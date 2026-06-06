@@ -1,22 +1,23 @@
 import { HttpTypes } from "@medusajs/types"
 import {
-  DHAKA_METRO_DISTRICTS,
   SHIPPING_COSTS,
   paymentInfoMap,
 } from "@design/constants"
 import { DeliveryType } from "@stores/checkout-store"
 
-/** District → estimated shipping cost (BDT), matching web checkout logic. */
+/** District → estimated shipping cost (BDT), matching web checkout logic.
+ *  Only the city of "Dhaka" qualifies as Inside Dhaka (80 BDT);
+ *  every other district — including Gazipur, Narayanganj, etc. — is
+ *  Outside Dhaka (130 BDT), matching the web consolidated-checkout-form.
+ */
 export function calculateShippingCost(
   district: string,
   deliveryType: DeliveryType
 ): number {
   if (deliveryType === "pickup") return SHIPPING_COSTS.pickup
   if (!district) return SHIPPING_COSTS.outsideDhaka
-  const isDhakaMetro = DHAKA_METRO_DISTRICTS.some(
-    (d) => d.toLowerCase() === district.toLowerCase()
-  )
-  return isDhakaMetro ? SHIPPING_COSTS.dhakaMetro : SHIPPING_COSTS.outsideDhaka
+  const isInsideDhaka = district.toLowerCase() === "dhaka"
+  return isInsideDhaka ? SHIPPING_COSTS.dhakaMetro : SHIPPING_COSTS.outsideDhaka
 }
 
 /**
@@ -43,15 +44,16 @@ export function autoSelectShippingMethod(
     )
   }
 
-  const isDhakaMetro = DHAKA_METRO_DISTRICTS.some(
-    (d) => d.toLowerCase() === district.toLowerCase()
-  )
+  // Match web logic: only literal "dhaka" → Inside Dhaka method
+  const isInsideDhaka = district.toLowerCase() === "dhaka"
   const target = methods.find((m) => {
     const n = m.name?.toLowerCase() ?? ""
-    return isDhakaMetro ? n.includes("inside dhaka") : n.includes("outside dhaka")
+    return isInsideDhaka ? n.includes("inside dhaka") : n.includes("outside dhaka")
   })
 
-  return target ?? methods[0] ?? null
+  // Do NOT fall back to methods[0] — an incorrect fallback would lock the
+  // shipping method to Inside Dhaka even for outside-Dhaka districts.
+  return target ?? null
 }
 
 /**
