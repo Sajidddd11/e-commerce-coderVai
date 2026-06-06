@@ -101,15 +101,10 @@ export async function prepareCheckout(
       input.paymentProviderId
     )
 
-    await initiatePaymentSession(
-      cart,
-      {
-        provider_id: actualProviderId,
-        data: { selected_gateway: selectedGateway },
-      } as HttpTypes.StoreInitializePaymentSession,
-      // Pass mobile deep-link so backend redirects to app instead of web storefront
-      input.returnUrl ? { returnUrl: input.returnUrl } : undefined
-    )
+    await initiatePaymentSession(cart, {
+      provider_id: actualProviderId,
+      data: { selected_gateway: selectedGateway },
+    } as HttpTypes.StoreInitializePaymentSession)
 
     const refreshed = await retrieveCart(cartId)
     return { success: true, cart: refreshed ?? cart }

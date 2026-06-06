@@ -121,7 +121,8 @@ export async function deleteLineItem(
 
   // The Medusa v2 SDK deleteLineItem returns a DeletedResponse, not the
   // updated cart. We ignore its return value and re-fetch the full cart.
-  await sdk.store.cart.deleteLineItem(cartId, lineId, headers)
+  // SDK signature: deleteLineItem(cartId, lineItemId, query, headers)
+  await sdk.store.cart.deleteLineItem(cartId, lineId, {}, headers)
 
   return retrieveCart(cartId)
 }

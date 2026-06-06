@@ -222,8 +222,6 @@ export default function CheckoutScreen() {
         deliveryInstructions: form.deliveryInstructions,
         shippingMethodId: form.shippingMethodId,
         paymentProviderId: form.paymentProviderId,
-        // Tell the backend to redirect to the app deep link after SSLCommerz payment
-        returnUrl: `${process.env.EXPO_PUBLIC_APP_SCHEME || "zahan"}://payment/sslcommerz`,
       })
       if (!result.success) {
         setError(result.error ?? "Could not prepare your order.")

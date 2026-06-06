@@ -153,22 +153,60 @@ export const respondWithRedirect = async (
 
       const qs = params.toString()
 
-      // For deep-link schemes (e.g. zahan://...), URL constructor won't work.
-      // Append query string manually and redirect.
+      // For deep-link schemes (e.g. zahan://...), a server-side HTTP 302 redirect
+      // does NOT work in Chrome Custom Tabs on Android — the browser can't navigate
+      // to custom URL schemes via HTTP redirects. Instead, serve an HTML page that
+      // uses window.location to trigger the Android intent and open the app.
       let targetUrl: string
       if (/^https?:\/\//i.test(baseUrl)) {
         const target = new URL(baseUrl)
         target.pathname = "/checkout/sslcommerz-callback"
         params.forEach((value, key) => target.searchParams.set(key, value))
         targetUrl = target.toString()
+        console.log(`[SSLCommerz] Redirecting (web) to: ${targetUrl}`)
+        return res.redirect(targetUrl)
       } else {
         // Deep link: zahan://payment/sslcommerz?ssl_status=success&...
         const separator = baseUrl.includes("?") ? "&" : "?"
         targetUrl = `${baseUrl}${separator}${qs}`
+        console.log(`[SSLCommerz] Redirecting (deep-link HTML) to: ${targetUrl}`)
+
+        // Serve an HTML page that triggers the app via window.location.
+        // This works in Chrome Custom Tabs where HTTP 302 → custom scheme is blocked.
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Complete</title>
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; min-height: 100vh;
+           margin: 0; background: #f9f9f9; color: #333; text-align: center; padding: 24px; }
+    h2 { color: #16a34a; }
+    p { color: #555; }
+    a { color: #0070f3; }
+  </style>
+</head>
+<body>
+  <h2>Payment Successful</h2>
+  <p>Redirecting you back to the app…</p>
+  <p>If you are not redirected, <a href="${targetUrl}">tap here</a>.</p>
+  <script>
+    // Try to open the app via deep link
+    window.location.replace("${targetUrl}");
+    // Fallback: try after a short delay in case the first attempt is blocked
+    setTimeout(function() {
+      window.location.href = "${targetUrl}";
+    }, 500);
+  </script>
+</body>
+</html>`
+
+        res.setHeader("Content-Type", "text/html; charset=utf-8")
+        return res.status(200).send(html)
       }
 
-      console.log(`[SSLCommerz] Redirecting to: ${targetUrl}`)
-      return res.redirect(targetUrl)
     } catch (error) {
       console.error(`[SSLCommerz] Failed to redirect:`, error)
       // fallback to JSON

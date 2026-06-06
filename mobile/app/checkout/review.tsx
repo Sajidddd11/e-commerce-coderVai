@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { View, ScrollView, Pressable, StyleSheet } from "react-native"
 import { useRouter } from "expo-router"
-import * as WebBrowser from "expo-web-browser"
 import { ChevronLeft } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
@@ -12,14 +11,11 @@ import { useCartStore } from "@stores/cart-store"
 import { useCheckoutStore } from "@stores/checkout-store"
 import { placeOrder, retrieveCart } from "@api/cart"
 import { sendOrderSms } from "@api/orders"
-import { storage, STORAGE_KEYS } from "@utils/storage"
 import { paymentTitle } from "@utils/shipping"
 import { isManual, isSslCommerz } from "@design/constants"
 import { convertToLocale } from "@utils/money"
 import { colors, spacing, borderRadius } from "@design/theme"
 
-const APP_SCHEME = process.env.EXPO_PUBLIC_APP_SCHEME || "zahan"
-const SSL_RETURN_URL = `${APP_SCHEME}://payment/sslcommerz`
 
 export default function CheckoutReviewScreen() {
   const router = useRouter()
@@ -57,7 +53,7 @@ export default function CheckoutReviewScreen() {
     setError("Your order could not be completed. Please try again.")
   }
 
-  const startSslCommerz = async () => {
+  const startSslCommerz = () => {
     const data: any = session?.data ?? {}
     const selectedGateway = data.selected_gateway
     const gatewayList: any[] = data.gateway_list ?? []
@@ -73,20 +69,11 @@ export default function CheckoutReviewScreen() {
       return
     }
 
-    // Backup the cart id so the callback can resolve it.
-    await storage.set(STORAGE_KEYS.cartIdSsl, cart!.id).catch(() => {})
-
-    const result = await WebBrowser.openAuthSessionAsync(
-      redirectUrl,
-      SSL_RETURN_URL
+    // Open SSLCommerz inside the app using an in-app WebView.
+    // The WebView intercepts the backend callback URL and routes to the handler screen.
+    router.push(
+      `/payment/sslcommerz-webview?url=${encodeURIComponent(redirectUrl)}&cartId=${cart?.id ?? ""}`
     )
-
-    // If the deep link returns here, route to the callback handler.
-    if (result.type === "success" && result.url) {
-      const qs = result.url.split("?")[1] ?? ""
-      router.replace(`/payment/sslcommerz-callback?${qs}`)
-    }
-    // If dismissed/cancelled, stay on review so the user can retry.
   }
 
   const onPlaceOrder = async () => {
