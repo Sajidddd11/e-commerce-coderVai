@@ -7,13 +7,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Text
 } from "react-native"
 import { useRouter } from "expo-router"
-import { ChevronLeft, Check } from "lucide-react-native"
+import { ChevronLeft, ChevronDown } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
-import { ThemedText } from "@components/ui/ThemedText"
-import { Button } from "@components/ui/Button"
 import { Input } from "@components/ui/Input"
 import { DistrictPicker } from "@components/checkout/DistrictPicker"
 import { PaymentIcon } from "@components/checkout/PaymentIcon"
@@ -32,7 +31,7 @@ import {
 } from "@utils/shipping"
 import { convertToLocale } from "@utils/money"
 import { trackInitiateCheckout } from "@utils/facebook-analytics"
-import { colors, spacing, borderRadius } from "@design/theme"
+import { colors } from "@design/theme"
 
 export default function CheckoutScreen() {
   const router = useRouter()
@@ -57,12 +56,10 @@ export default function CheckoutScreen() {
 
   const currency = cart?.currency_code || region?.currency_code || "bdt"
 
-  // Hydrate the draft + prefill from the logged-in customer once.
   useEffect(() => {
     hydrate()
   }, [hydrate])
 
-  // Track InitiateCheckout once when the cart is available.
   useEffect(() => {
     if (!cart?.id) return
     trackInitiateCheckout({
@@ -70,7 +67,6 @@ export default function CheckoutScreen() {
       currency: cart.currency_code ?? undefined,
       numItems: cart.items?.length ?? 0,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart?.id])
 
   useEffect(() => {
@@ -82,10 +78,8 @@ export default function CheckoutScreen() {
     if (!form.email && customer.email) patch.email = customer.email
     if (!form.phone && customer.phone) patch.phone = customer.phone
     if (Object.keys(patch).length) setForm(patch)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customer])
 
-  // Load shipping options + payment providers.
   useEffect(() => {
     if (!cart?.id || !region?.id) return
     setLoadingOptions(true)
@@ -100,7 +94,6 @@ export default function CheckoutScreen() {
       .finally(() => setLoadingOptions(false))
   }, [cart?.id, region?.id])
 
-  // Auto-select the shipping method whenever delivery type / district change.
   useEffect(() => {
     if (!shippingMethods.length) return
     const match = autoSelectShippingMethod(
@@ -111,7 +104,6 @@ export default function CheckoutScreen() {
     if (match && match.id !== form.shippingMethodId) {
       setForm({ shippingMethodId: match.id })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shippingMethods, form.deliveryType, form.district])
 
   const shippingCost = useMemo(() => {
@@ -163,15 +155,41 @@ export default function CheckoutScreen() {
     }
   }
 
+  // Split name for UI
+  const firstName = form.fullName.split(" ")[0] || ""
+  const lastName = form.fullName.split(" ").slice(1).join(" ") || ""
+
   return (
     <Screen edges={["top"]}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.back} hitSlop={8}>
-          <ChevronLeft size={24} color={colors.grey[90]} />
+        <Pressable onPress={() => router.back()} style={styles.headerIcon}>
+          <ChevronLeft size={20} color={colors.slate[900]} />
         </Pressable>
-        <ThemedText variant="sectionHeading" color={colors.grey[90]}>
-          Checkout
-        </ThemedText>
+        <Text style={styles.headerTitle}>Checkout</Text>
+        <View style={styles.headerIcon} />
+      </View>
+
+      <View style={styles.stepIndicator}>
+        <View style={styles.stepItem}>
+          <View style={styles.stepCircleActive}>
+            <Text style={styles.stepNumberActive}>1</Text>
+          </View>
+          <Text style={styles.stepLabelActive}>Details</Text>
+        </View>
+        <View style={styles.stepLine} />
+        <View style={styles.stepItem}>
+          <View style={styles.stepCircle}>
+            <Text style={styles.stepNumber}>2</Text>
+          </View>
+          <Text style={styles.stepLabel}>Review</Text>
+        </View>
+        <View style={styles.stepLine} />
+        <View style={styles.stepItem}>
+          <View style={styles.stepCircle}>
+            <Text style={styles.stepNumber}>3</Text>
+          </View>
+          <Text style={styles.stepLabel}>Confirm</Text>
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -184,36 +202,41 @@ export default function CheckoutScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Contact */}
           <Section title="Contact">
             <Input
-              label="Email"
+              label="Email address"
               value={form.email}
               onChangeText={(v) => setForm({ email: v })}
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholder="you@example.com"
+              placeholder="your@email.com"
             />
           </Section>
 
-          {/* Shipping address */}
-          <Section title="Shipping address">
+          <Section title="Shipping Address">
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  label="First Name"
+                  value={firstName}
+                  onChangeText={(v) => setForm({ fullName: `${v} ${lastName}`.trim() })}
+                  autoCapitalize="words"
+                  placeholder="First name"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Input
+                  label="Last Name"
+                  value={lastName}
+                  onChangeText={(v) => setForm({ fullName: `${firstName} ${v}`.trim() })}
+                  autoCapitalize="words"
+                  placeholder="Last name"
+                />
+              </View>
+            </View>
+            
             <Input
-              label="Full name"
-              value={form.fullName}
-              onChangeText={(v) => setForm({ fullName: v })}
-              autoCapitalize="words"
-              placeholder="e.g. Rahim Uddin"
-            />
-            <Input
-              label="Phone"
-              value={form.phone}
-              onChangeText={(v) => setForm({ phone: v })}
-              keyboardType="phone-pad"
-              placeholder="01XXXXXXXXX"
-            />
-            <Input
-              label="Address"
+              label="Address Line"
               value={form.address1}
               onChangeText={(v) => setForm({ address1: v })}
               placeholder="House, road, area"
@@ -223,105 +246,111 @@ export default function CheckoutScreen() {
               value={form.district}
               onChange={(d) => setForm({ district: d })}
             />
-          </Section>
-
-          {/* Delivery type */}
-          <Section title="Delivery type">
-            <View style={styles.toggleRow}>
-              <ToggleChip
-                label="Home delivery"
-                active={form.deliveryType === "home"}
-                onPress={() => setForm({ deliveryType: "home" })}
-              />
-              <ToggleChip
-                label="Store pickup"
-                active={form.deliveryType === "pickup"}
-                onPress={() => setForm({ deliveryType: "pickup" })}
-              />
+            
+            <View style={styles.phoneInputWrap}>
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <View style={styles.phoneInputBox}>
+                <View style={styles.phonePrefix}>
+                  <Text style={styles.phonePrefixText}>+880</Text>
+                </View>
+                <TextInput
+                  style={styles.phoneInput}
+                  value={form.phone}
+                  onChangeText={(v) => setForm({ phone: v })}
+                  keyboardType="phone-pad"
+                  placeholder="01XXXXXXXXX"
+                />
+              </View>
             </View>
           </Section>
 
-          {/* Shipping method */}
-          <Section title="Delivery option">
+          <Section title="Delivery Type">
             {loadingOptions ? (
               <ActivityIndicator color={colors.brand.teal} />
             ) : shippingMethods.length === 0 ? (
-              <ThemedText variant="bodySmall" color={colors.grey[50]}>
+              <Text style={{ color: colors.grey[50], fontSize: 12 }}>
                 No delivery options available.
-              </ThemedText>
+              </Text>
             ) : (
-              shippingMethods.map((m) => (
-                <SelectRow
-                  key={m.id}
-                  selected={form.shippingMethodId === m.id}
-                  onPress={() => setForm({ shippingMethodId: m.id })}
-                  title={m.name ?? "Delivery"}
-                  right={convertToLocale({
-                    amount: m.amount ?? 0,
-                    currency_code: currency,
-                  })}
-                />
-              ))
+              <View style={styles.toggleRow}>
+                {shippingMethods.map((m) => (
+                  <ToggleChip
+                    key={m.id}
+                    label={`${m.name} ${convertToLocale({ amount: m.amount ?? 0, currency_code: currency })}`}
+                    active={form.shippingMethodId === m.id}
+                    onPress={() => setForm({ shippingMethodId: m.id })}
+                  />
+                ))}
+              </View>
             )}
           </Section>
 
-          {/* Payment method */}
-          <Section title="Payment method">
+          <Section title="Payment Method">
             {loadingOptions ? (
               <ActivityIndicator color={colors.brand.teal} />
             ) : (
-              paymentMethods.map((p) => (
-                <SelectRow
-                  key={p.id}
-                  selected={form.paymentProviderId === p.id}
-                  onPress={() => setForm({ paymentProviderId: p.id })}
-                  title={paymentTitle(p.id)}
-                  icon={<PaymentIcon providerId={p.id} />}
-                />
-              ))
+              <View style={{ gap: 8 }}>
+                {paymentMethods.map((p) => {
+                  const isCod = p.id === "manual"
+                  const selected = form.paymentProviderId === p.id
+                  return (
+                    <Pressable
+                      key={p.id}
+                      onPress={() => setForm({ paymentProviderId: p.id })}
+                      style={[
+                        styles.paymentCard,
+                        selected && isCod && styles.paymentCardActiveCod,
+                        selected && !isCod && styles.paymentCardActiveOther,
+                      ]}
+                    >
+                      <View style={[styles.radio, selected && styles.radioActive]}>
+                        {selected && <View style={styles.radioInner} />}
+                      </View>
+                      <View style={{ flex: 1, gap: 2 }}>
+                        <Text style={styles.paymentTitle}>
+                          {isCod ? "Cash on Delivery" : "Online Payment"}
+                        </Text>
+                        <Text style={styles.paymentDesc}>
+                          {isCod ? "Pay when you receive" : "bKash · Nagad · Card"}
+                        </Text>
+                        
+                        {!isCod && selected && (
+                          <View style={styles.paymentMethodsRow}>
+                            <View style={styles.paymentMethodPill}>
+                              <Text style={[styles.paymentMethodPillText, { color: "#E2136E" }]}>bKash</Text>
+                            </View>
+                            <View style={styles.paymentMethodPill}>
+                              <Text style={[styles.paymentMethodPillText, { color: "#F26522" }]}>Nagad</Text>
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                  )
+                })}
+              </View>
             )}
           </Section>
 
-          {/* Delivery instructions */}
-          <Section title="Delivery instructions (optional)">
-            <Input
-              value={form.deliveryInstructions}
-              onChangeText={(v) => setForm({ deliveryInstructions: v })}
-              placeholder="Any notes for the courier"
-              multiline
-              numberOfLines={3}
-              style={styles.textArea}
-            />
-          </Section>
-
           {error ? (
-            <ThemedText
-              variant="bodySmall"
-              color={colors.error}
-              style={styles.error}
-            >
+            <Text style={styles.error}>
               {error}
-            </ThemedText>
+            </Text>
           ) : null}
         </ScrollView>
 
-        {/* Sticky summary + CTA */}
         <View style={styles.footer}>
-          <View style={styles.summaryRow}>
-            <ThemedText variant="body" color={colors.grey[60]}>
-              Total
-            </ThemedText>
-            <ThemedText variant="subheading" color={colors.grey[90]}>
-              {convertToLocale({ amount: total, currency_code: currency })}
-            </ThemedText>
-          </View>
-          <Button
-            title="Review Order"
-            fullWidth
-            loading={submitting}
-            disabled={!canSubmit}
+          <Pressable
+            style={styles.reviewBtn}
+            disabled={!canSubmit || submitting}
             onPress={onSubmit}
-          />
+          >
+            {submitting ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.reviewBtnText}>Review Order →</Text>
+            )}
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </Screen>
@@ -337,9 +366,9 @@ function Section({
 }) {
   return (
     <View style={styles.section}>
-      <ThemedText variant="subheading" color={colors.grey[90]}>
+      <Text style={styles.sectionTitle}>
         {title}
-      </ThemedText>
+      </Text>
       <View style={styles.sectionBody}>{children}</View>
     </View>
   )
@@ -359,63 +388,17 @@ function ToggleChip({
       onPress={onPress}
       style={[
         styles.toggleChip,
-        {
-          borderColor: active ? colors.brand.teal : colors.grey[20],
-          backgroundColor: active ? colors.brand.tealMuted : colors.grey[0],
-        },
+        active ? styles.toggleChipActive : styles.toggleChipInactive
       ]}
     >
-      <ThemedText
-        variant="bodyMedium"
-        color={active ? colors.brand.teal : colors.grey[70]}
-      >
-        {label}
-      </ThemedText>
-    </Pressable>
-  )
-}
-
-function SelectRow({
-  selected,
-  onPress,
-  title,
-  right,
-  icon,
-}: {
-  selected: boolean
-  onPress: () => void
-  title: string
-  right?: string
-  icon?: React.ReactNode
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.selectRow,
-        { borderColor: selected ? colors.brand.teal : colors.grey[20] },
-      ]}
-    >
-      <View
+      <Text
         style={[
-          styles.radio,
-          {
-            borderColor: selected ? colors.brand.teal : colors.grey[30],
-            backgroundColor: selected ? colors.brand.teal : "transparent",
-          },
+          styles.toggleChipText,
+          active ? styles.toggleChipTextActive : styles.toggleChipTextInactive
         ]}
       >
-        {selected ? <Check size={12} color={colors.grey[0]} /> : null}
-      </View>
-      {icon ? <View style={styles.rowIcon}>{icon}</View> : null}
-      <ThemedText variant="body" color={colors.grey[90]} style={styles.flex}>
-        {title}
-      </ThemedText>
-      {right ? (
-        <ThemedText variant="bodyMedium" color={colors.grey[80]}>
-          {right}
-        </ThemedText>
-      ) : null}
+        {label}
+      </Text>
     </Pressable>
   )
 }
@@ -425,62 +408,258 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
+    justifyContent: "space-between",
+    paddingHorizontal: 16, // px-4
+    paddingTop: 48, // pt-12
+    paddingBottom: 12, // pb-3
     borderBottomWidth: 1,
     borderBottomColor: colors.grey[20],
+    backgroundColor: "white",
   },
-  back: { padding: spacing.xs },
+  headerIcon: {
+    width: 32, // w-8
+    height: 32, // h-8
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 18, // text-lg
+    letterSpacing: -0.5, // tracking-tight
+    color: colors.slate[900],
+  },
+  stepIndicator: {
+    backgroundColor: "white",
+    flexDirection: "row",
+    padding: 16, // p-4
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  stepItem: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4, // gap-1
+  },
+  stepCircleActive: {
+    width: 28, // w-7
+    height: 28, // h-7
+    borderRadius: 14,
+    backgroundColor: colors.brand.teal, // bg-[#56AEBF]
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  stepNumberActive: {
+    color: "white",
+    fontSize: 11, // text-[11px]
+    fontWeight: "600",
+  },
+  stepLabelActive: {
+    color: colors.brand.teal,
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  stepCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: colors.grey[20],
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
+  },
+  stepNumber: {
+    color: colors.grey[50],
+    fontSize: 11,
+    fontWeight: "500",
+  },
+  stepLabel: {
+    color: colors.grey[50],
+    fontSize: 11,
+    fontWeight: "500",
+    marginTop: 2,
+  },
+  stepLine: {
+    width: 48, // w-12
+    height: 2, // h-0.5
+    backgroundColor: colors.grey[20],
+    marginHorizontal: 4, // mx-1
+    marginBottom: 16, // mb-4
+  },
   scroll: {
-    padding: spacing.base,
-    gap: spacing.lg,
-    paddingBottom: spacing["2xl"],
+    paddingHorizontal: 16, // px-4
+    paddingBottom: 112, // pb-28
+    gap: 24, // gap-6
+    paddingTop: 16,
   },
-  section: { gap: spacing.sm },
-  sectionBody: { gap: spacing.md },
-  toggleRow: { flexDirection: "row", gap: spacing.sm },
+  section: { gap: 12 }, // gap-3
+  sectionTitle: {
+    color: colors.slate[900],
+    fontSize: 16, // text-base
+    fontWeight: "600",
+    letterSpacing: -0.5,
+  },
+  sectionBody: { gap: 12 },
+  inputLabel: {
+    fontFamily: "Inter-Medium",
+    fontWeight: "500",
+    fontSize: 13, // text-[13px]
+    color: colors.slate[900],
+    marginBottom: 4,
+  },
+  phoneInputWrap: {
+    flexDirection: "column",
+    gap: 4,
+  },
+  phoneInputBox: {
+    flexDirection: "row",
+    height: 48, // h-12
+    borderWidth: 2,
+    borderColor: colors.grey[20],
+    borderRadius: 8, // rounded-lg
+    alignItems: "center",
+    backgroundColor: "white",
+    overflow: "hidden",
+  },
+  phonePrefix: {
+    height: "100%",
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    backgroundColor: colors.grey[10], // bg-[oklch(0.967_0.001_286.375)]
+    borderRightWidth: 1,
+    borderRightColor: colors.grey[20],
+  },
+  phonePrefixText: {
+    fontWeight: "600",
+    fontSize: 13,
+    color: colors.slate[900],
+  },
+  phoneInput: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 12,
+    fontSize: 14, // text-sm
+    color: colors.slate[900],
+  },
+  toggleRow: { flexDirection: "row", gap: 8 }, // gap-2
   toggleChip: {
     flex: 1,
+    height: 44, // h-11
+    borderRadius: 8, // rounded-lg
+    justifyContent: "center",
     alignItems: "center",
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.rounded,
-    borderWidth: 1,
   },
-  selectRow: {
+  toggleChipActive: {
+    backgroundColor: colors.slate[900],
+    borderWidth: 0,
+  },
+  toggleChipInactive: {
+    backgroundColor: "white",
+    borderWidth: 2,
+    borderColor: colors.grey[20],
+  },
+  toggleChipText: {
+    fontSize: 13,
+  },
+  toggleChipTextActive: {
+    color: "white",
+    fontWeight: "600",
+  },
+  toggleChipTextInactive: {
+    color: colors.slate[900],
+    fontWeight: "500",
+  },
+  paymentCard: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
+    padding: 16, // p-4
+    gap: 12, // gap-3
     borderWidth: 1,
-    borderRadius: borderRadius.rounded,
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.base,
+    borderColor: colors.grey[20],
+    borderRadius: 8, // rounded-lg
+    backgroundColor: "white",
+    alignItems: "flex-start",
+  },
+  paymentCardActiveCod: {
+    borderColor: colors.brand.teal, // border-l-[#56AEBF] border-1
+    borderLeftWidth: 4, // simulate border-l-[#56AEBF] slightly
+    backgroundColor: "rgba(86, 174, 191, 0.08)", // bg-[#56aebf]/8
+  },
+  paymentCardActiveOther: {
+    borderColor: colors.brand.teal,
+    borderLeftWidth: 4,
+    backgroundColor: "white",
   },
   radio: {
-    width: 20,
-    height: 20,
-    borderRadius: borderRadius.circle,
+    width: 20, // w-5
+    height: 20, // h-5
+    borderRadius: 10,
     borderWidth: 2,
-    alignItems: "center",
+    borderColor: colors.grey[20],
     justifyContent: "center",
+    alignItems: "center",
+    marginTop: 2, // mt-0.5
   },
-  rowIcon: { marginRight: -spacing.xs },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: "top",
-    paddingTop: spacing.md,
+  radioActive: {
+    borderColor: colors.brand.teal,
   },
-  error: { marginTop: spacing.xs },
+  radioInner: {
+    width: 10, // w-2.5
+    height: 10, // h-2.5
+    borderRadius: 5,
+    backgroundColor: colors.brand.teal,
+  },
+  paymentTitle: {
+    color: colors.slate[900],
+    fontSize: 14, // text-sm
+    fontWeight: "600",
+  },
+  paymentDesc: {
+    color: colors.grey[50], // text-[oklch(0.552...)]
+    fontSize: 12, // text-xs
+  },
+  paymentMethodsRow: {
+    flexDirection: "row",
+    gap: 6, // gap-1.5
+    flexWrap: "wrap",
+    marginTop: 4,
+  },
+  paymentMethodPill: {
+    paddingHorizontal: 8, // px-2
+    paddingVertical: 2, // py-0.5
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 2, // rounded-sm
+    backgroundColor: colors.grey[10],
+  },
+  paymentMethodPillText: {
+    fontSize: 11, // text-[11px]
+    fontWeight: "600",
+  },
+  error: { color: colors.error, fontSize: 12 },
   footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     borderTopWidth: 1,
     borderTopColor: colors.grey[20],
-    padding: spacing.base,
-    gap: spacing.sm,
-    backgroundColor: colors.grey[0],
+    padding: 16, // p-4
+    backgroundColor: "white",
   },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  reviewBtn: {
+    backgroundColor: colors.slate[900],
+    borderRadius: 8, // rounded-lg
+    height: 56, // h-14
+    justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
+    gap: 8, // gap-2
+  },
+  reviewBtnText: {
+    color: "white",
+    fontSize: 14, // text-sm
+    fontWeight: "600",
   },
 })

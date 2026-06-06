@@ -86,31 +86,31 @@ export const borderRadius = {
 export const shadows = {
   sm: {
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, // Increased from 0.05
+    shadowRadius: 4, // Increased from 2
+    elevation: 3, // Increased from 1
   },
   md: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   lg: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 15,
-    elevation: 6,
+    elevation: 8,
   },
   xl: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 25,
-    elevation: 10,
+    elevation: 12,
   },
   brandGlow: {
     shadowColor: colors.brand.teal,

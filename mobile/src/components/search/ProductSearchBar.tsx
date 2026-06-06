@@ -7,8 +7,7 @@ import {
   type TextInputProps,
 } from "react-native"
 import { Search, X } from "lucide-react-native"
-import { colors, spacing, borderRadius } from "@design/theme"
-import { fontFamily, fontSize } from "@design/typography"
+import { colors } from "@design/theme"
 
 interface ProductSearchBarProps extends Pick<TextInputProps, "autoFocus"> {
   value: string
@@ -20,7 +19,6 @@ interface ProductSearchBarProps extends Pick<TextInputProps, "autoFocus"> {
   placeholder?: string
 }
 
-/** Web-style search field — white surface, bordered, submit on right. */
 export function ProductSearchBar({
   value,
   onChangeText,
@@ -39,12 +37,7 @@ export function ProductSearchBar({
   }
 
   return (
-    <View
-      style={[
-        styles.wrap,
-        focused && styles.wrapFocused,
-      ]}
-    >
+    <View style={styles.wrap}>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -57,7 +50,7 @@ export function ProductSearchBar({
           onBlur?.()
         }}
         placeholder={placeholder}
-        placeholderTextColor={colors.grey[40]}
+        placeholderTextColor="#9CA3AF"
         returnKeyType="search"
         onSubmitEditing={submit}
         autoFocus={autoFocus}
@@ -75,12 +68,12 @@ export function ProductSearchBar({
           }}
           style={styles.iconBtn}
         >
-          <X size={18} color={colors.grey[50]} />
+          <X size={16} color={colors.grey[50]} />
         </Pressable>
       ) : null}
 
-      <Pressable onPress={submit} style={styles.submitBtn} hitSlop={4}>
-        <Search size={20} color={focused ? colors.brand.teal : colors.grey[50]} />
+      <Pressable onPress={submit} style={styles.submitBtn}>
+        <Search size={16} color="white" />
       </Pressable>
     </View>
   )
@@ -90,30 +83,31 @@ const styles = StyleSheet.create({
   wrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.grey[0],
-    borderRadius: borderRadius.rounded,
+    backgroundColor: "white",
+    borderRadius: 8, // rounded-lg
     borderWidth: 2,
-    borderColor: colors.grey[20],
-    paddingLeft: spacing.base,
-    paddingRight: spacing.xs,
-    minHeight: 44,
-  },
-  wrapFocused: {
-    borderColor: colors.brand.teal,
+    borderColor: colors.grey[20], // border-gray-200
+    overflow: "hidden",
   },
   input: {
     flex: 1,
-    paddingVertical: spacing.sm,
-    fontFamily: fontFamily.body,
-    fontSize: fontSize.base,
-    color: colors.grey[90],
+    height: 40, // h-10
+    paddingHorizontal: 16, // px-4
+    fontFamily: "Inter-Regular",
+    fontSize: 14, // text-sm
+    color: colors.slate[900], // text-gray-900
+    backgroundColor: "transparent",
   },
   iconBtn: {
-    padding: spacing.xs,
-    marginRight: spacing.xs,
+    paddingHorizontal: 8,
+    height: "100%",
+    justifyContent: "center",
   },
   submitBtn: {
-    padding: spacing.sm,
-    borderRadius: borderRadius.base,
+    width: 44, // w-11
+    height: 40, // h-10
+    backgroundColor: colors.brand.teal, // bg-[#56AEBF]
+    justifyContent: "center",
+    alignItems: "center",
   },
 })

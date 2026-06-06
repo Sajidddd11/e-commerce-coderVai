@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet, Text } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
@@ -13,7 +13,8 @@ import { useRegionStore } from "@stores/region-store"
 import { listProductsWithSort } from "@api/products"
 import { listCategories, filterCategoriesWithProducts } from "@api/categories"
 import { SortOptions } from "@utils/sort-products"
-import { colors, spacing, borderRadius } from "@design/theme"
+import { colors } from "@design/theme"
+import { fontFamily, fontSize } from "@design/typography"
 
 const SORT_OPTIONS: { key: SortOptions; label: string }[] = [
   { key: "created_at", label: "Latest" },
@@ -112,87 +113,84 @@ export default function ShopScreen() {
   }, [loadingMore, hasMore, loading, page, fetchPage])
 
   return (
-    <Screen>
-      <View style={styles.searchRow}>
-        <ProductSearchBar
-          value={searchInput}
-          onChangeText={(v) => {
-            setSearchInput(v)
-            setShowSuggestions(true)
-          }}
-          onSubmit={runSearch}
-          onFocus={() => setShowSuggestions(true)}
-          onClear={clearSearch}
-        />
+    <Screen style={{ backgroundColor: "white" }}>
+      <View style={styles.headerArea}>
+        <View style={styles.searchRow}>
+          <ProductSearchBar
+            value={searchInput}
+            onChangeText={(v) => {
+              setSearchInput(v)
+              setShowSuggestions(true)
+            }}
+            onSubmit={runSearch}
+            onFocus={() => setShowSuggestions(true)}
+            onClear={clearSearch}
+          />
 
-        {showSuggestions && searchInput.trim().length >= 2 ? (
-          <View style={styles.suggestWrap}>
-            <SearchSuggestionsPanel
-              query={searchInput}
-              suggestions={suggestions}
-              loading={suggestionsLoading}
-              variant="dropdown"
-              onSelectProduct={(handle) => {
-                setShowSuggestions(false)
-                router.push(`/product/${handle}`)
-              }}
-              onSelectCategory={(handle) => {
-                setShowSuggestions(false)
-                router.push(`/category/${handle}`)
-              }}
-              onSelectCollection={(title) => runSearch(title)}
-              onSelectPopular={runSearch}
-              onViewAll={runSearch}
-            />
+          {showSuggestions && searchInput.trim().length >= 2 ? (
+            <View style={styles.suggestWrap}>
+              <SearchSuggestionsPanel
+                query={searchInput}
+                suggestions={suggestions}
+                loading={suggestionsLoading}
+                variant="dropdown"
+                onSelectProduct={(handle) => {
+                  setShowSuggestions(false)
+                  router.push(`/product/${handle}`)
+                }}
+                onSelectCategory={(handle) => {
+                  setShowSuggestions(false)
+                  router.push(`/category/${handle}`)
+                }}
+                onSelectCollection={(title) => runSearch(title)}
+                onSelectPopular={runSearch}
+                onViewAll={runSearch}
+              />
+            </View>
+          ) : null}
+        </View>
+
+        {query ? (
+          <View style={styles.resultsHeader}>
+            <ThemedText variant="sectionHeading" color={colors.grey[90]}>
+              Results for "{query}"
+            </ThemedText>
           </View>
         ) : null}
-      </View>
 
-      {query ? (
-        <View style={styles.resultsHeader}>
-          <ThemedText variant="sectionHeading" color={colors.grey[90]}>
-            Results for "{query}"
-          </ThemedText>
-          <ThemedText variant="bodySmall" color={colors.grey[50]}>
-            Products matching your search
-          </ThemedText>
-        </View>
-      ) : null}
+        <View style={styles.filters}>
+          <CategoryChips
+            categories={categories}
+            activeId={activeCategory}
+            onSelect={setActiveCategory}
+          />
 
-      <View style={styles.filters}>
-        <CategoryChips
-          categories={categories}
-          activeId={activeCategory}
-          onSelect={setActiveCategory}
-        />
-
-        <View style={styles.sortRow}>
-          {SORT_OPTIONS.map((opt) => {
-            const active = sortBy === opt.key
-            return (
-              <Pressable
-                key={opt.key}
-                onPress={() => setSortBy(opt.key)}
-                style={[
-                  styles.sortChip,
-                  {
-                    borderColor: active ? colors.brand.teal : colors.grey[20],
-                    backgroundColor: active
-                      ? colors.brand.tealMuted
-                      : colors.grey[0],
-                  },
-                ]}
-              >
-                <ThemedText
-                  variant="bodySmall"
-                  color={active ? colors.brand.teal : colors.grey[60]}
+          <View style={styles.sortRow}>
+            {SORT_OPTIONS.map((opt) => {
+              const active = sortBy === opt.key
+              return (
+                <Pressable
+                  key={opt.key}
+                  onPress={() => setSortBy(opt.key)}
+                  style={[
+                    styles.sortChip,
+                    active ? styles.sortChipActive : styles.sortChipInactive
+                  ]}
                 >
-                  {opt.label}
-                </ThemedText>
-              </Pressable>
-            )
-          })}
+                  <Text
+                    style={[
+                      styles.sortText,
+                      active ? styles.sortTextActive : styles.sortTextInactive
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </View>
         </View>
+        <View style={styles.divider} />
       </View>
 
       <View style={styles.grid}>
@@ -218,41 +216,70 @@ export default function ShopScreen() {
 }
 
 const styles = StyleSheet.create({
-  searchRow: {
-    paddingHorizontal: spacing.base,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
+  headerArea: {
+    backgroundColor: "white",
     zIndex: 20,
   },
+  searchRow: {
+    paddingHorizontal: 16, // px-4
+    paddingTop: 16, // pt-4
+    paddingBottom: 12, // pb-3
+  },
   suggestWrap: {
-    marginTop: spacing.sm,
+    marginTop: 8,
   },
   resultsHeader: {
-    paddingHorizontal: spacing.base,
-    paddingBottom: spacing.sm,
-    gap: spacing.xs,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   filters: {
-    flexGrow: 0,
-    gap: spacing.sm,
+    paddingBottom: 12, // pb-3 (sort row container pb)
   },
   sortRow: {
     flexDirection: "row",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.base,
-    paddingBottom: spacing.xs,
+    gap: 8, // gap-2
+    paddingHorizontal: 16, // px-4
   },
   sortChip: {
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.circle,
+    paddingHorizontal: 16, // px-4
+    height: 32, // h-8
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 9999, // rounded-full
+    borderStyle: "solid",
+  },
+  sortChipActive: {
+    backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
+    borderColor: "#56AEBF", // border-[#56AEBF]
+    borderWidth: 2,
+  },
+  sortChipInactive: {
+    backgroundColor: "white",
+    borderColor: "#E5E7EB", // border-gray-200
     borderWidth: 1,
+  },
+  sortText: {
+    fontFamily: fontFamily.interMedium,
+    fontSize: fontSize.xs, // text-xs
+    lineHeight: 16, // leading-4
+  },
+  sortTextActive: {
+    fontFamily: fontFamily.interSemiBold,
+    color: "#56AEBF", // text-[#56AEBF]
+  },
+  sortTextInactive: {
+    color: "#6B7280", // text-gray-500
+  },
+  divider: {
+    height: 1, // h-px
+    backgroundColor: "#E5E7EB", // bg-gray-200
   },
   grid: {
     flex: 1,
+    backgroundColor: "white", // overflow-y-auto bg-white flex-1
   },
   empty: {
     alignItems: "center",
-    paddingVertical: spacing["4xl"],
+    paddingVertical: 64, // py-16
   },
 })

@@ -1,8 +1,8 @@
-import { View, Pressable, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet, Text } from "react-native"
 import { useRouter } from "expo-router"
 import { Search } from "lucide-react-native"
-import { colors, spacing, borderRadius } from "@design/theme"
-import { ThemedText } from "../ui/ThemedText"
+import { colors } from "@design/theme"
+import { fontFamily, fontSize } from "@design/typography"
 
 interface HeaderProps {
   showSearch?: boolean
@@ -13,12 +13,6 @@ export function Header({ showSearch = true }: HeaderProps) {
 
   return (
     <View style={styles.header}>
-      <Pressable onPress={() => router.push("/(tabs)")}>
-        <ThemedText variant="brand" color={colors.grey[90]} style={styles.logo}>
-          ZAHAN
-        </ThemedText>
-      </Pressable>
-
       {showSearch ? (
         <Pressable
           style={styles.searchField}
@@ -26,16 +20,14 @@ export function Header({ showSearch = true }: HeaderProps) {
           accessibilityRole="search"
           accessibilityLabel="Search products"
         >
-          <ThemedText
-            variant="body"
-            color={colors.grey[40]}
+          <Text
             style={styles.placeholder}
             numberOfLines={1}
           >
             Search products...
-          </ThemedText>
+          </Text>
           <View style={styles.searchBtn}>
-            <Search size={18} color={colors.grey[50]} />
+            <Search size={12} color="white" />
           </View>
         </Pressable>
       ) : null}
@@ -47,32 +39,38 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.base,
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.grey[0],
+    paddingHorizontal: 16, // px-4
+    paddingTop: 40, // pt-10
+    paddingBottom: 12, // pb-3
+    backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: colors.grey[20],
-  },
-  logo: {
-    letterSpacing: 2,
+    borderBottomColor: "#E5E7EB", // border-gray-200
   },
   searchField: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.grey[0],
-    borderRadius: borderRadius.rounded,
+    backgroundColor: "white",
+    borderRadius: 9999, // rounded-full
     borderWidth: 2,
-    borderColor: colors.grey[20],
-    paddingLeft: spacing.base,
-    paddingRight: spacing.xs,
-    minHeight: 40,
+    borderColor: "#E5E7EB", // border-gray-200 / border-black/1
+    paddingLeft: 12, // px-3
+    paddingRight: 6, // roughly py-1.5 equivalent
+    paddingVertical: 6, // py-1.5
+    gap: 8, // gap-2
   },
   placeholder: {
     flex: 1,
+    fontFamily: fontFamily.interRegular,
+    fontSize: fontSize.xs, // text-xs
+    color: "#6B7280", // text-gray-500
   },
   searchBtn: {
-    padding: spacing.sm,
+    width: 24, // w-6
+    height: 24, // h-6
+    borderRadius: 12, // rounded-full
+    backgroundColor: "#56AEBF", // bg-[#56AEBF]
+    justifyContent: "center",
+    alignItems: "center",
   },
 })

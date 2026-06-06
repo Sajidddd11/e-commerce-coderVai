@@ -47,7 +47,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
   if (remoteSlides.length === 0) return null
 
   const slide = remoteSlides[index]
-  const height = Math.min(width * 0.55, 260)
+  const height = 176 // Match HeroBanner
 
   const toLink = () => {
     if (!slide.link) return
@@ -57,7 +57,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
   return (
     <View style={[styles.wrap, { paddingHorizontal: spacing.base }]}>
       <Pressable onPress={toLink}>
-        <Animated.View style={{ opacity }}>
+        <Animated.View style={{ opacity, height, borderRadius: borderRadius.large, overflow: "hidden" }}>
           <Image
             source={slide.image}
             style={[styles.image, { height }]}
@@ -66,14 +66,14 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
           />
           {slide.title || slide.subtitle ? (
             <View style={styles.overlay}>
-              {slide.title ? (
-                <ThemedText variant="hero" color={colors.grey[0]}>
-                  {slide.title}
+              {slide.subtitle ? (
+                <ThemedText variant="bodySmall" color={colors.brand.teal} style={styles.subtitle}>
+                  {slide.subtitle}
                 </ThemedText>
               ) : null}
-              {slide.subtitle ? (
-                <ThemedText variant="subheading" color={colors.grey[10]}>
-                  {slide.subtitle}
+              {slide.title ? (
+                <ThemedText variant="sectionHeading" color={colors.grey[0]} style={styles.title}>
+                  {slide.title}
                 </ThemedText>
               ) : null}
             </View>
@@ -90,8 +90,8 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
                 styles.dot,
                 {
                   backgroundColor:
-                    i === index ? colors.brand.teal : colors.grey[30],
-                  width: i === index ? 18 : 6,
+                    i === index ? colors.brand.teal : "rgba(255,255,255,0.4)",
+                  width: i === index ? 16 : 6,
                 },
               ]}
             />
@@ -103,25 +103,43 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { paddingTop: spacing.base, gap: spacing.sm },
+  wrap: { paddingTop: spacing.base, position: "relative" },
   image: {
     width: "100%",
-    borderRadius: borderRadius.large,
-    backgroundColor: colors.grey[10],
+    backgroundColor: colors.slate[900],
   },
   overlay: {
-    position: "absolute",
-    left: spacing.xl,
-    bottom: spacing.xl,
-    gap: spacing.xs,
+    ...StyleSheet.absoluteFillObject,
+    paddingHorizontal: 24, // px-6
+    paddingVertical: 20, // py-5
+    justifyContent: "center",
+    alignItems: "flex-start",
+    backgroundColor: "rgba(15, 23, 42, 0.5)", // slight darkening for text
+  },
+  subtitle: {
+    letterSpacing: 3.2,
+    fontWeight: "500",
+    textTransform: "uppercase",
+    fontSize: 10,
+    marginBottom: 4,
+  },
+  title: {
+    fontWeight: "700",
+    lineHeight: 32,
+    fontSize: 24,
+    marginBottom: 4,
   },
   dots: {
+    position: "absolute",
+    bottom: 12,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     justifyContent: "center",
-    gap: spacing.xs,
+    gap: 6,
   },
   dot: {
     height: 6,
-    borderRadius: borderRadius.circle,
+    borderRadius: 3,
   },
 })

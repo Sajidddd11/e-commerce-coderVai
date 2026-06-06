@@ -1,7 +1,6 @@
-import { View, Pressable, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet, Text } from "react-native"
 import { ChevronRight } from "lucide-react-native"
-import { colors, spacing } from "@design/theme"
-import { ThemedText } from "../ui/ThemedText"
+import { colors } from "@design/theme"
 
 interface SectionHeaderProps {
   title: string
@@ -11,15 +10,15 @@ interface SectionHeaderProps {
 export function SectionHeader({ title, onSeeAll }: SectionHeaderProps) {
   return (
     <View style={styles.row}>
-      <ThemedText variant="sectionHeading" color={colors.grey[90]}>
+      <Text style={styles.title}>
         {title}
-      </ThemedText>
+      </Text>
       {onSeeAll ? (
         <Pressable style={styles.seeAll} onPress={onSeeAll}>
-          <ThemedText variant="nav" color={colors.brand.teal}>
+          <Text style={styles.seeAllText}>
             See all
-          </ThemedText>
-          <ChevronRight size={16} color={colors.brand.teal} />
+          </Text>
+          <ChevronRight size={12} color={colors.brand.teal} />
         </Pressable>
       ) : null}
     </View>
@@ -31,11 +30,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
+    paddingHorizontal: 16,
+    marginBottom: 12, // mb-3
+    marginTop: 20, // mt-5 applied to the wrapper in the demo
+  },
+  title: {
+    color: colors.slate[900],
+    fontSize: 20, // text-xl
+    fontWeight: "700", // font-bold
+    lineHeight: 28, // leading-7
+    letterSpacing: -0.5, // tracking-tight
   },
   seeAll: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 2, // gap-0.5
+  },
+  seeAllText: {
+    color: colors.brand.teal,
+    fontSize: 12, // text-xs
+    fontWeight: "600", // font-semibold
+    lineHeight: 16, // leading-4
   },
 })

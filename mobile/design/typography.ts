@@ -9,6 +9,10 @@
  */
 
 export const fontFamily = {
+  interRegular: "Inter_400Regular",
+  interMedium: "Inter_500Medium",
+  interSemiBold: "Inter_600SemiBold",
+  interBold: "Inter_700Bold",
   brand: "Montserrat_700Bold",
   heading: "Montserrat_600SemiBold",
   subheading: "Montserrat_500Medium",
@@ -19,8 +23,14 @@ export const fontFamily = {
 } as const
 
 export const fontSize = {
-  xs: 10,
-  sm: 12,
+  8: 8,
+  9: 9,
+  10: 10,
+  11: 11,
+  12: 12,
+  13: 13,
+  xs: 12,
+  sm: 14,
   base: 14,
   md: 16,
   lg: 18,

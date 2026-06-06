@@ -1,9 +1,9 @@
-import { ScrollView, Pressable, View, StyleSheet } from "react-native"
+import { ScrollView, Pressable, View, StyleSheet, Text } from "react-native"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
-import { colors, spacing, borderRadius } from "@design/theme"
-import { ThemedText } from "../ui/ThemedText"
+import { colors } from "@design/theme"
+import { fontFamily, fontSize } from "@design/typography"
 
 interface CategoryTilesProps {
   categories: HttpTypes.StoreProductCategory[]
@@ -33,14 +33,12 @@ export function CategoryTiles({ categories }: CategoryTilesProps) {
                 <View style={[styles.image, styles.placeholder]} />
               )}
             </View>
-            <ThemedText
-              variant="bodySmall"
-              color={colors.grey[80]}
+            <Text
               numberOfLines={1}
               style={styles.label}
             >
               {category.name}
-            </ThemedText>
+            </Text>
           </Pressable>
         )
       })}
@@ -50,21 +48,22 @@ export function CategoryTiles({ categories }: CategoryTilesProps) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.base,
-    paddingHorizontal: spacing.base,
-    paddingBottom: spacing.sm,
+    gap: 16, // gap-4 in tailwind
+    paddingHorizontal: 16, // px-4
+    paddingBottom: 4, // pb-1
   },
   tile: {
-    width: 80,
     alignItems: "center",
-    gap: spacing.xs,
+    gap: 6, // gap-1.5
   },
   imageWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: borderRadius.circle,
+    width: 64, // w-16
+    height: 64, // h-16
+    borderRadius: 32, // rounded-full
+    borderWidth: 2,
+    borderColor: "#E5E7EB", // border-gray-200
     overflow: "hidden",
-    backgroundColor: colors.grey[10],
+    backgroundColor: colors.grey[10], // bg-gray-100
   },
   image: {
     width: "100%",
@@ -75,5 +74,8 @@ const styles = StyleSheet.create({
   },
   label: {
     textAlign: "center",
+    fontFamily: fontFamily.interMedium,
+    color: "#111827", // text-gray-900 (matches oklch)
+    fontSize: fontSize[11], // text-[11px]
   },
 })

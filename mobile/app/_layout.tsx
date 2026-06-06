@@ -11,6 +11,7 @@ import {
   Inter_400Regular,
   Inter_500Medium,
   Inter_600SemiBold,
+  Inter_700Bold,
 } from "@expo-google-fonts/inter"
 import {
   Montserrat_500Medium,
@@ -26,6 +27,7 @@ export default function RootLayout() {
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
+    Inter_700Bold,
     Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,

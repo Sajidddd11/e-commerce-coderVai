@@ -1,7 +1,7 @@
-import { ScrollView, Pressable, StyleSheet } from "react-native"
+import { ScrollView, Pressable, StyleSheet, Text } from "react-native"
 import { HttpTypes } from "@medusajs/types"
-import { colors, spacing, borderRadius } from "@design/theme"
-import { ThemedText } from "../ui/ThemedText"
+import { colors } from "@design/theme"
+import { fontFamily, fontSize } from "@design/typography"
 
 interface CategoryChipsProps {
   categories: HttpTypes.StoreProductCategory[]
@@ -22,17 +22,17 @@ export function CategoryChips({
         onPress={() => onSelect(id)}
         style={[
           styles.chip,
-          {
-            backgroundColor: active ? colors.slate[900] : colors.grey[10],
-          },
+          active ? styles.chipActive : styles.chipInactive,
         ]}
       >
-        <ThemedText
-          variant="bodySmall"
-          color={active ? colors.grey[0] : colors.grey[70]}
+        <Text
+          style={[
+            styles.chipText,
+            active ? styles.chipTextActive : styles.chipTextInactive,
+          ]}
         >
           {label}
-        </ThemedText>
+        </Text>
       </Pressable>
     )
   }
@@ -57,13 +57,39 @@ const styles = StyleSheet.create({
   },
   container: {
     alignItems: "center",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.base,
+    gap: 8, // gap-2
+    paddingHorizontal: 16, // px-4
+    paddingBottom: 4, // pb-1
   },
   chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.circle,
-    alignSelf: "center",
+    paddingHorizontal: 16, // px-4
+    height: 32, // h-8
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 9999, // rounded-full
+    borderStyle: "solid",
+  },
+  chipActive: {
+    backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
+    borderColor: "#56AEBF", // border-[#56AEBF]
+    borderWidth: 2,
+  },
+  chipInactive: {
+    backgroundColor: "white",
+    borderColor: "#E5E7EB", // border-gray-200
+    borderWidth: 1,
+  },
+  chipText: {
+    fontFamily: fontFamily.interMedium,
+    fontSize: fontSize.xs, // text-xs
+    lineHeight: 16, // leading-4
+  },
+  chipTextActive: {
+    fontFamily: fontFamily.interSemiBold,
+    color: "#56AEBF", // text-[#56AEBF]
+  },
+  chipTextInactive: {
+    fontFamily: fontFamily.interMedium,
+    color: "#6B7280", // text-gray-500
   },
 })

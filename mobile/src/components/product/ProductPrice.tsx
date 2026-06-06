@@ -1,15 +1,13 @@
-import { View, StyleSheet } from "react-native"
+import { View, StyleSheet, Text } from "react-native"
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@utils/get-product-price"
-import { ThemedText } from "../ui/ThemedText"
-import { colors, spacing } from "@design/theme"
+import { colors } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
 interface ProductPriceProps {
   product: HttpTypes.StoreProduct
   variantId?: string
   size?: "sm" | "lg"
-  /** Tighter card layout — no duplicate % label (badge on image). */
   compact?: boolean
 }
 
@@ -24,9 +22,9 @@ export function ProductPrice({
 
   if (!price) {
     return (
-      <ThemedText variant="bodySmall" color={colors.grey[50]}>
+      <Text style={styles.unavailable}>
         Price unavailable
-      </ThemedText>
+      </Text>
     )
   }
 
@@ -37,21 +35,18 @@ export function ProductPrice({
   if (compact) {
     return (
       <View style={styles.compactRow}>
-        <ThemedText
-          variant="bodyMedium"
-          color={onSale ? colors.sale : colors.grey[90]}
-          style={styles.compactPrice}
+        <Text
+          style={[
+            styles.compactPrice,
+            { color: onSale ? "#EF4444" : "#111827" }
+          ]}
         >
           {price.calculated_price}
-        </ThemedText>
+        </Text>
         {onSale ? (
-          <ThemedText
-            variant="bodySmall"
-            color={colors.grey[50]}
-            style={styles.strike}
-          >
+          <Text style={styles.compactStrike}>
             {price.original_price}
-          </ThemedText>
+          </Text>
         ) : null}
       </View>
     )
@@ -59,26 +54,32 @@ export function ProductPrice({
 
   return (
     <View style={styles.row}>
-      <ThemedText
-        variant="productPrice"
-        color={onSale ? colors.sale : colors.grey[90]}
-        style={size === "lg" ? styles.lg : undefined}
+      <Text
+        style={[
+          styles.price,
+          size === "lg" ? styles.lg : undefined,
+          { color: onSale ? "#EF4444" : "#111827" }
+        ]}
       >
         {price.calculated_price}
-      </ThemedText>
+      </Text>
 
       {onSale ? (
         <>
-          <ThemedText
-            variant="bodySmall"
-            color={colors.grey[50]}
-            style={styles.strike}
-          >
+          <Text style={[styles.strike, size === "lg" ? styles.strikeLg : undefined]}>
             {price.original_price}
-          </ThemedText>
-          <ThemedText variant="bodySmall" color={colors.sale}>
-            -{price.percentage_diff}%
-          </ThemedText>
+          </Text>
+          {size === "lg" ? (
+            <View style={styles.saleBadgeLg}>
+              <Text style={styles.saleBadgeTextLg}>
+                {price.percentage_diff}% off
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.salePct}>
+              -{price.percentage_diff}%
+            </Text>
+          )}
         </>
       ) : null}
     </View>
@@ -86,27 +87,62 @@ export function ProductPrice({
 }
 
 const styles = StyleSheet.create({
+  unavailable: {
+    color: "#6B7280", // text-gray-500
+    fontSize: fontSize[13],
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: 8, // gap-2
   },
   compactRow: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     flexWrap: "wrap",
-    gap: spacing.xs,
+    gap: 6, // gap-1.5
   },
   compactPrice: {
-    fontFamily: fontFamily.button,
-    fontSize: fontSize.base,
-    fontWeight: "700",
+    fontFamily: fontFamily.interBold,
+    fontSize: fontSize[13], // text-[13px]
+  },
+  compactStrike: {
+    fontFamily: fontFamily.interRegular,
+    fontSize: fontSize[11], // text-[11px]
+    color: "#9CA3AF", // text-gray-400 ish
+    textDecorationLine: "line-through",
+  },
+  price: {
+    fontFamily: fontFamily.interBold,
+    fontSize: fontSize.md, // 16px
   },
   lg: {
-    fontSize: 24,
+    fontSize: fontSize.xl, // text-xl (20px)
   },
   strike: {
+    fontFamily: fontFamily.interRegular,
+    fontSize: fontSize.sm, // 14px
+    color: "#9CA3AF",
     textDecorationLine: "line-through",
+  },
+  strikeLg: {
+    color: "#6B7280", // text-gray-500
+  },
+  salePct: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.sm,
+    color: "#EF4444",
+  },
+  saleBadgeLg: {
+    backgroundColor: "#EF4444", // bg-red-500
+    borderRadius: 9999, // rounded-full
+    paddingHorizontal: 8, // px-2
+    paddingVertical: 2, // py-0.5
+  },
+  saleBadgeTextLg: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize[11], // text-[11px]
+    color: "white",
   },
 })

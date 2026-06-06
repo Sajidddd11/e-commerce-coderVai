@@ -1,22 +1,19 @@
-import { Pressable, View, StyleSheet } from "react-native"
+import { Pressable, View, StyleSheet, Text } from "react-native"
 import { Image } from "expo-image"
 import { Link } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@utils/get-product-price"
 import { masonryAspectForIndex } from "@utils/masonry-columns"
-import { colors, borderRadius, shadows, spacing } from "@design/theme"
-import { ThemedText } from "../ui/ThemedText"
-import { Badge } from "../ui/Badge"
+import { colors, shadows } from "@design/theme"
+import { fontFamily, fontSize } from "@design/typography"
 import { ProductPrice } from "./ProductPrice"
 
 interface ProductCardProps {
   product: HttpTypes.StoreProduct
-  /** Fixed width for horizontal rails; omit for full-width masonry/grid cells. */
   width?: number
-  /** Pinterest-style variable image height (shop grid). */
   masonryIndex?: number
-  /** Force square images (rails). */
   squareImage?: boolean
+  variant?: "home" | "shop"
 }
 
 const BLUR_HASH = "L6PZfSi_.AyE_3t7t7R**0o#DgR4"
@@ -41,6 +38,7 @@ export function ProductCard({
   width,
   masonryIndex,
   squareImage = false,
+  variant = "shop",
 }: ProductCardProps) {
   if (!product?.id) return null
 
@@ -59,76 +57,71 @@ export function ProductCard({
       ? 1
       : masonryAspectForIndex(masonryIndex)
 
+  const isHome = variant === "home"
+
   return (
     <Link href={`/product/${product.handle}`} asChild>
       <Pressable
         style={({ pressed }) => [
           styles.card,
+          isHome ? styles.cardHome : styles.cardShop,
           width != null ? { width } : styles.fill,
           shadows.sm,
           { transform: [{ scale: pressed ? 0.98 : 1 }] },
         ]}
       >
-        <View style={[styles.imageWrap, { aspectRatio }]}>
-          <Image
-            source={thumbnail}
-            placeholder={BLUR_HASH}
-            contentFit="cover"
-            transition={200}
-            style={styles.image}
-          />
+        <View style={[styles.inner, isHome ? styles.innerHome : styles.innerShop]}>
+          <View style={[styles.imageWrap, { aspectRatio }]}>
+            <Image
+              source={thumbnail}
+              placeholder={BLUR_HASH}
+              contentFit="cover"
+              transition={200}
+              style={styles.image}
+            />
 
-          <View style={styles.badgeRow}>
-            {onSale && discountPct ? (
-              <Badge label={`${discountPct}% off`} variant="sale" />
-            ) : isNew ? (
-              <Badge label="New" variant="new" />
+            <View style={styles.topLeftBadge}>
+              {onSale && discountPct ? (
+                <View style={[styles.badge, isHome ? styles.badgeHome : styles.badgeShop, { backgroundColor: "#EF4444" }]}>
+                  <Text style={[styles.badgeText, isHome ? styles.badgeTextHome : styles.badgeTextShop]}>{discountPct}% off</Text>
+                </View>
+              ) : isNew ? (
+                <View style={[styles.badge, isHome ? styles.badgeHome : styles.badgeShop, { backgroundColor: "#56AEBF" }]}>
+                  <Text style={[styles.badgeText, isHome ? styles.badgeTextHome : styles.badgeTextShop]}>New</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {onSale && cheapestPrice ? (
+              <View style={[styles.originalBadge, isHome ? styles.originalBadgeHome : styles.originalBadgeShop]}>
+                <Text style={[styles.originalStrike, isHome ? styles.originalStrikeHome : styles.originalStrikeShop]}>
+                  {cheapestPrice.original_price}
+                </Text>
+              </View>
+            ) : null}
+
+            {!inStock ? (
+              <View style={styles.soldOut}>
+                <Text style={styles.soldOutText}>Out of stock</Text>
+              </View>
             ) : null}
           </View>
 
-          {onSale && cheapestPrice ? (
-            <View style={styles.originalBadge}>
-              <ThemedText
-                variant="bodySmall"
-                color={colors.grey[0]}
-                style={styles.originalStrike}
-              >
-                {cheapestPrice.original_price}
-              </ThemedText>
+          <View style={[styles.footer, isHome ? styles.footerHome : styles.footerShop]}>
+            {productType && !isHome ? (
+              <Text numberOfLines={1} style={styles.type}>
+                {productType.toUpperCase()}
+              </Text>
+            ) : null}
+
+            <Text numberOfLines={2} style={[styles.title, isHome ? styles.titleHome : styles.titleShop]}>
+              {product.title}
+            </Text>
+
+            <View style={styles.priceRow}>
+              <ProductPrice product={product} compact />
             </View>
-          ) : null}
-
-          {!inStock ? (
-            <View style={styles.soldOut}>
-              <ThemedText variant="bodySmall" color={colors.grey[0]} style={styles.soldOutText}>
-                Out of stock
-              </ThemedText>
-            </View>
-          ) : null}
-        </View>
-
-        <View style={styles.footer}>
-          {productType ? (
-            <ThemedText
-              variant="bodySmall"
-              color={colors.grey[50]}
-              numberOfLines={1}
-              style={styles.type}
-            >
-              {productType.toUpperCase()}
-            </ThemedText>
-          ) : null}
-
-          <ThemedText
-            variant="body"
-            color={colors.grey[90]}
-            numberOfLines={2}
-            style={styles.title}
-          >
-            {product.title}
-          </ThemedText>
-
-          <ProductPrice product={product} compact />
+          </View>
         </View>
       </Pressable>
     </Link>
@@ -137,65 +130,140 @@ export function ProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.grey[0],
-    borderRadius: borderRadius.rounded,
+    backgroundColor: "white", // bg-white
+    borderWidth: 1, // border-1
+  },
+  cardHome: {
+    borderRadius: 12, // rounded-xl
+    borderColor: "#E5E7EB", // border-gray-200 / border-black/1
+  },
+  cardShop: {
+    borderRadius: 8, // rounded-lg
+    borderColor: "#F3F4F6", // border-gray-100
+  },
+  inner: {
     overflow: "hidden",
+    flex: 1,
+  },
+  innerHome: {
+    borderRadius: 11, // Slightly less than outer to prevent bleeding
+  },
+  innerShop: {
+    borderRadius: 7,
   },
   fill: {
     width: "100%",
   },
   imageWrap: {
     width: "100%",
-    backgroundColor: colors.grey[10],
+    backgroundColor: colors.grey[10], // bg-gray-100
     position: "relative",
   },
   image: {
     width: "100%",
     height: "100%",
   },
-  badgeRow: {
+  topLeftBadge: {
     position: "absolute",
-    top: spacing.sm,
-    left: spacing.sm,
+    top: 8, // top-2
+    left: 8, // left-2
     zIndex: 2,
+  },
+  badge: {
+    paddingHorizontal: 8, // px-2
+    paddingVertical: 2, // py-0.5
+  },
+  badgeHome: {
+    borderRadius: 9999, // rounded-full
+  },
+  badgeShop: {
+    borderRadius: 2, // rounded-sm
+  },
+  badgeText: {
+    color: "white",
+    fontFamily: fontFamily.interBold,
+  },
+  badgeTextHome: {
+    fontSize: fontSize[9], // text-[9px]
+  },
+  badgeTextShop: {
+    fontSize: fontSize[10], // text-[10px]
   },
   originalBadge: {
     position: "absolute",
-    bottom: spacing.xs,
-    right: 0,
-    backgroundColor: colors.slate[900],
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    bottom: 8, // bottom-2
+    right: 8, // right-2
+    borderRadius: 2, // rounded-sm
     zIndex: 2,
   },
+  originalBadgeHome: {
+    backgroundColor: "rgba(15, 23, 42, 0.8)", // bg-slate-900/80
+    paddingHorizontal: 6, // px-1.5
+    paddingVertical: 2, // py-0.5
+  },
+  originalBadgeShop: {
+    backgroundColor: "#0F172A", // bg-slate-900
+    paddingHorizontal: 8, // px-2
+    paddingVertical: 2, // py-0.5
+  },
   originalStrike: {
-    textDecorationLine: "line-through",
-    fontWeight: "600",
+    fontFamily: fontFamily.interRegular,
+    color: "white",
+    textDecorationLine: "line-through", // line-through
+  },
+  originalStrikeHome: {
+    fontSize: fontSize[9], // text-[9px]
+  },
+  originalStrikeShop: {
+    fontSize: fontSize[10], // text-[10px]
   },
   soldOut: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(15, 23, 42, 0.55)", // bg-slate-900/55
     alignItems: "center",
     justifyContent: "center",
     zIndex: 3,
   },
   soldOutText: {
-    fontWeight: "700",
+    fontFamily: fontFamily.interSemiBold,
+    color: "white",
+    fontSize: fontSize[13],
   },
   footer: {
-    paddingHorizontal: spacing.sm,
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.sm,
-    gap: 2,
-    backgroundColor: colors.grey[10],
     alignItems: "flex-start",
   },
+  footerHome: {
+    padding: 10, // p-2.5
+    backgroundColor: colors.grey[10], // bg-gray-100 (grey shade)
+  },
+  footerShop: {
+    paddingHorizontal: 8, // px-2
+    paddingTop: 6, // pt-1.5
+    paddingBottom: 8, // pb-2
+    backgroundColor: colors.grey[10], // bg-gray-100
+  },
   type: {
-    letterSpacing: 0.6,
-    fontWeight: "600",
+    fontFamily: fontFamily.interRegular,
+    color: "#9CA3AF", // text-gray-400
+    textTransform: "uppercase",
+    fontSize: fontSize[10], // text-[10px]
+    letterSpacing: 0.5, // tracking-wide approx
+    marginBottom: 2, // mb-0.5
   },
   title: {
-    width: "100%",
-    lineHeight: 20,
+    fontFamily: fontFamily.interMedium,
+    color: "#111827", // text-gray-900
+    lineHeight: 16, // leading-tight approx
+    marginBottom: 4, // mb-1
+  },
+  titleHome: {
+    fontSize: fontSize[13], // text-[13px]
+  },
+  titleShop: {
+    fontSize: fontSize[13], // text-[13px]
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 })

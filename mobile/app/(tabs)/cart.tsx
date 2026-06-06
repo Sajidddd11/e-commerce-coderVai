@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react"
-import { View, ScrollView, Pressable, StyleSheet } from "react-native"
+import { View, ScrollView, Pressable, StyleSheet, Text, TextInput } from "react-native"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
-import { Minus, Plus, Trash2, Tag, X } from "lucide-react-native"
+import { Minus, Plus, Trash2, ShoppingBag, X } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
-import { ThemedText } from "@components/ui/ThemedText"
-import { Button } from "@components/ui/Button"
-import { Input } from "@components/ui/Input"
 import { useCartStore } from "@stores/cart-store"
 import { getFreeShippingThreshold, FreeShippingInfo } from "@api/enhancements"
 import { convertToLocale } from "@utils/money"
-import { colors, spacing, borderRadius } from "@design/theme"
+import { colors } from "@design/theme"
 
 function currencyOf(cart: HttpTypes.StoreCart | null) {
   return cart?.currency_code || cart?.region?.currency_code || "bdt"
@@ -85,17 +82,16 @@ export default function CartScreen() {
     return (
       <Screen>
         <View style={styles.empty}>
-          <ThemedText variant="sectionHeading" color={colors.grey[80]}>
-            Your cart is empty
-          </ThemedText>
-          <ThemedText variant="body" color={colors.grey[50]}>
+          <Text style={styles.headerText}>Your cart is empty</Text>
+          <Text style={{ color: colors.grey[50], marginTop: 8 }}>
             Browse products and add your favourites.
-          </ThemedText>
-          <Button
-            title="Browse Products"
+          </Text>
+          <Pressable
+            style={[styles.checkoutBtn, { marginTop: 24 }]}
             onPress={() => router.push("/(tabs)/shop")}
-            style={styles.browseBtn}
-          />
+          >
+            <Text style={styles.checkoutBtnText}>Browse Products</Text>
+          </Pressable>
         </View>
       </Screen>
     )
@@ -104,51 +100,48 @@ export default function CartScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText variant="sectionHeading" color={colors.grey[90]}>
-          Shopping Cart
-        </ThemedText>
+        <Text style={styles.headerText}>Shopping Cart</Text>
       </View>
 
       {freeShippingActive ? (
         <View style={styles.freeShip}>
-          <ThemedText variant="bodySmall" color={colors.brand.teal}>
+          <ShoppingBag size={20} color={colors.brand.teal} />
+          <Text style={styles.freeShipText}>
             {remainingForFree > 0
               ? `Add ${convertToLocale({
                   amount: remainingForFree,
                   currency_code,
                 })} more for free shipping!`
               : "You've unlocked free shipping!"}
-          </ThemedText>
+          </Text>
         </View>
       ) : null}
 
       <ScrollView contentContainerStyle={styles.list}>
-        {items
-          .sort((a, b) =>
-            (a.created_at ?? "") > (b.created_at ?? "") ? 1 : -1
-          )
-          .map((item) => (
-            <View key={item.id} style={styles.item}>
-              <Image
-                source={item.thumbnail}
-                style={styles.thumb}
-                contentFit="cover"
-              />
-              <View style={styles.itemBody}>
-                <ThemedText
-                  variant="productTitle"
-                  color={colors.grey[90]}
-                  numberOfLines={2}
-                >
-                  {item.product_title || item.title}
-                </ThemedText>
-                {item.variant_title ? (
-                  <ThemedText variant="bodySmall" color={colors.grey[50]}>
-                    {item.variant_title}
-                  </ThemedText>
-                ) : null}
+        <View style={styles.itemsContainer}>
+          {items
+            .sort((a, b) =>
+              (a.created_at ?? "") > (b.created_at ?? "") ? 1 : -1
+            )
+            .map((item, index) => (
+              <View key={item.id} style={[styles.item, index === items.length - 1 && { borderBottomWidth: 0 }]}>
+                <View style={styles.thumbWrap}>
+                  <Image
+                    source={item.thumbnail}
+                    style={styles.thumb}
+                    contentFit="cover"
+                  />
+                </View>
+                <View style={styles.itemBody}>
+                  <Text style={styles.itemTitle} numberOfLines={2}>
+                    {item.product_title || item.title}
+                  </Text>
+                  {item.variant_title ? (
+                    <Text style={styles.itemVariant}>
+                      {item.variant_title}
+                    </Text>
+                  ) : null}
 
-                <View style={styles.itemFooter}>
                   <View style={styles.stepper}>
                     <Pressable
                       disabled={isMutating}
@@ -159,73 +152,70 @@ export default function CartScreen() {
                       }
                       style={styles.stepBtn}
                     >
-                      <Minus size={16} color={colors.grey[80]} />
+                      <Minus size={12} color={colors.brand.teal} />
                     </Pressable>
-                    <ThemedText variant="bodyMedium" color={colors.grey[90]}>
+                    <Text style={styles.stepCount}>
                       {item.quantity}
-                    </ThemedText>
+                    </Text>
                     <Pressable
                       disabled={isMutating}
                       onPress={() => update(item.id, item.quantity + 1)}
                       style={styles.stepBtn}
                     >
-                      <Plus size={16} color={colors.grey[80]} />
+                      <Plus size={12} color={colors.brand.teal} />
                     </Pressable>
                   </View>
-
-                  <ThemedText variant="productTitle" color={colors.grey[90]}>
-                    {convertToLocale({
-                      amount: item.total ?? 0,
-                      currency_code,
-                    })}
-                  </ThemedText>
+                  
+                  <View style={styles.itemFooter}>
+                    <Text style={styles.itemPrice}>
+                      {convertToLocale({
+                        amount: item.total ?? 0,
+                        currency_code,
+                      })}
+                    </Text>
+                    <Pressable
+                      onPress={() => remove(item.id)}
+                      style={styles.removeBtn}
+                    >
+                      <Trash2 size={16} color={colors.error} />
+                    </Pressable>
+                  </View>
                 </View>
               </View>
+            ))}
+        </View>
 
-              <Pressable
-                onPress={() => remove(item.id)}
-                style={styles.removeBtn}
-                accessibilityLabel="Remove item"
-              >
-                <Trash2 size={18} color={colors.grey[40]} />
-              </Pressable>
-            </View>
-          ))}
-      </ScrollView>
-
-      <View style={styles.summary}>
         <View style={styles.promoBlock}>
+          <Text style={styles.promoTitle}>Promo Code</Text>
           <View style={styles.promoRow}>
-            <Input
-              containerStyle={styles.promoInput}
-              placeholder="Promo code"
+            <TextInput
+              style={styles.promoInput}
+              placeholder="Enter code"
               autoCapitalize="characters"
               value={promoInput}
               onChangeText={setPromoInput}
-              error={promoError ?? undefined}
             />
-            <Button
-              title="Apply"
-              variant="secondary"
-              size="small"
-              loading={promoLoading}
-              onPress={onApplyPromo}
+            <Pressable
               style={styles.promoBtn}
-            />
+              onPress={onApplyPromo}
+              disabled={promoLoading}
+            >
+              <Text style={styles.promoBtnText}>Apply</Text>
+            </Pressable>
           </View>
+          {promoError && <Text style={styles.promoError}>{promoError}</Text>}
           {appliedPromos.length > 0 ? (
             <View style={styles.promoChips}>
               {appliedPromos.map((p) => (
                 <View key={p.id} style={styles.promoChip}>
-                  <Tag size={12} color={colors.brand.teal} />
-                  <ThemedText variant="bodySmall" color={colors.brand.teal}>
+                  <Text style={styles.promoChipText}>
                     {p.code}
-                  </ThemedText>
+                  </Text>
                   <Pressable
                     onPress={() => onRemovePromo(p.code as string)}
                     hitSlop={6}
                   >
-                    <X size={14} color={colors.grey[50]} />
+                    <X size={12} color={colors.brand.teal} />
                   </Pressable>
                 </View>
               ))}
@@ -233,47 +223,55 @@ export default function CartScreen() {
           ) : null}
         </View>
 
-        <View style={styles.summaryRow}>
-          <ThemedText variant="body" color={colors.grey[60]}>
-            Subtotal
-          </ThemedText>
-          <ThemedText variant="bodyMedium" color={colors.grey[90]}>
-            {convertToLocale({
-              amount: cart?.item_subtotal ?? cart?.subtotal ?? 0,
-              currency_code,
-            })}
-          </ThemedText>
-        </View>
-        {cart?.discount_total ? (
+        <View style={styles.summary}>
           <View style={styles.summaryRow}>
-            <ThemedText variant="body" color={colors.grey[60]}>
-              Discount
-            </ThemedText>
-            <ThemedText variant="bodyMedium" color={colors.sale}>
-              -
+            <Text style={styles.summaryLabel}>Subtotal</Text>
+            <Text style={styles.summaryValue}>
               {convertToLocale({
-                amount: cart.discount_total,
+                amount: cart?.item_subtotal ?? cart?.subtotal ?? 0,
                 currency_code,
               })}
-            </ThemedText>
+            </Text>
           </View>
-        ) : null}
-        <View style={styles.summaryRow}>
-          <ThemedText variant="subheading" color={colors.grey[90]}>
-            Total
-          </ThemedText>
-          <ThemedText variant="subheading" color={colors.grey[90]}>
-            {convertToLocale({ amount: cart?.total ?? 0, currency_code })}
-          </ThemedText>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Shipping</Text>
+            <Text style={styles.summaryValue}>
+              {convertToLocale({
+                amount: cart?.shipping_total ?? 0,
+                currency_code,
+              })}
+            </Text>
+          </View>
+          {cart?.discount_total ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Discount</Text>
+              <Text style={[styles.summaryValue, { color: colors.error }]}>
+                -{convertToLocale({
+                  amount: cart.discount_total,
+                  currency_code,
+                })}
+              </Text>
+            </View>
+          ) : null}
+          <View style={styles.divider} />
+          <View style={styles.summaryRow}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>
+              {convertToLocale({ amount: cart?.total ?? 0, currency_code })}
+            </Text>
+          </View>
         </View>
+        <View style={{ height: 16 }} />
+      </ScrollView>
 
-        <Button
-          title="Proceed to Checkout"
-          fullWidth
-          loading={isMutating}
-          onPress={() => router.push("/checkout")}
+      <View style={styles.checkoutContainer}>
+        <Pressable
           style={styles.checkoutBtn}
-        />
+          disabled={isMutating}
+          onPress={() => router.push("/checkout")}
+        >
+          <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
+        </Pressable>
       </View>
     </Screen>
   )
@@ -281,119 +279,253 @@ export default function CartScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey[20],
+  },
+  headerText: {
+    fontSize: 24, // text-2xl
+    fontWeight: "600", // font-semibold
+    color: colors.slate[900], // text-gray-900
+    letterSpacing: -0.5, // tracking-tight
   },
   freeShip: {
-    marginHorizontal: spacing.base,
-    marginBottom: spacing.sm,
-    backgroundColor: colors.brand.tealMuted,
-    borderRadius: borderRadius.rounded,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.base,
+    backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
+    paddingHorizontal: 16,
+    paddingVertical: 12, // py-3
+    flexDirection: "row",
     alignItems: "center",
+    gap: 12, // gap-3
+  },
+  freeShipText: {
+    fontFamily: "Inter-Regular",
+    fontSize: 14, // text-sm
+    lineHeight: 20, // leading-5
+    color: colors.brand.teal,
   },
   list: {
-    paddingHorizontal: spacing.base,
-    gap: spacing.base,
-    paddingBottom: spacing.base,
+    flexGrow: 1,
+  },
+  itemsContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16, // pt-4
+    gap: 8, // gap-2
   },
   item: {
     flexDirection: "row",
-    gap: spacing.md,
-    backgroundColor: colors.grey[0],
-    borderRadius: borderRadius.rounded,
-    padding: spacing.sm,
+    paddingBottom: 16, // pb-4
+    gap: 12, // gap-3
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey[20],
+  },
+  thumbWrap: {
+    width: 80, // w-20
+    height: 80, // h-20
+    borderRadius: 8, // rounded-lg
+    backgroundColor: colors.grey[10], // bg-gray-100
+    overflow: "hidden",
   },
   thumb: {
-    width: 80,
-    height: 80,
-    borderRadius: borderRadius.base,
-    backgroundColor: colors.grey[10],
+    width: "100%",
+    height: "100%",
   },
   itemBody: {
     flex: 1,
-    gap: spacing.xs,
+    position: "relative",
+    gap: 4, // gap-1
   },
-  itemFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.xs,
+  itemTitle: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600", // font-semibold
+    fontSize: 14, // text-sm
+    lineHeight: 20, // leading-5
+    color: colors.slate[900], // text-gray-900
+  },
+  itemVariant: {
+    fontFamily: "Inter-Regular",
+    fontSize: 12, // text-xs
+    lineHeight: 16, // leading-4
+    color: colors.grey[50], // text-gray-500
   },
   stepper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.grey[20],
-    borderRadius: borderRadius.circle,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    marginTop: 4, // mt-1
+    gap: 8, // gap-2
   },
   stepBtn: {
-    padding: spacing.xs,
+    width: 32, // w-8
+    height: 32, // h-8
+    borderRadius: 16, // rounded-full
+    borderWidth: 2,
+    borderColor: colors.brand.teal,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  stepCount: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 14, // text-sm
+    lineHeight: 20, // leading-5
+    color: colors.slate[900],
+    textAlign: "center",
+    width: 20, // w-5
+  },
+  itemFooter: {
+    flexDirection: "row",
+    marginTop: 4, // mt-1
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  itemPrice: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 14, // text-sm
+    lineHeight: 20, // leading-5
+    color: colors.slate[900],
   },
   removeBtn: {
-    padding: spacing.xs,
-  },
-  summary: {
-    borderTopWidth: 1,
-    borderTopColor: colors.grey[20],
-    padding: spacing.base,
-    gap: spacing.sm,
-    backgroundColor: colors.grey[0],
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    position: "absolute",
+    right: 0,
+    bottom: 0,
   },
   promoBlock: {
-    gap: spacing.sm,
-    paddingBottom: spacing.sm,
-    marginBottom: spacing.xs,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey[10],
+    paddingHorizontal: 16,
+    paddingTop: 8, // pt-2
+    paddingBottom: 16, // pb-4
+    gap: 12, // gap-3
+  },
+  promoTitle: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.slate[900],
   },
   promoRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: spacing.sm,
+    gap: 8, // gap-2
   },
   promoInput: {
     flex: 1,
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 8, // rounded-lg
+    paddingHorizontal: 12, // px-3
+    paddingVertical: 8, // py-2
+    fontSize: 14,
+    color: colors.slate[900],
+    fontFamily: "Inter-Regular",
   },
   promoBtn: {
-    marginTop: 0,
-    minWidth: 80,
-    alignSelf: "stretch",
+    backgroundColor: colors.brand.teal,
+    borderRadius: 9999, // rounded-full
+    paddingHorizontal: 16, // px-4
+    paddingVertical: 8, // py-2
     justifyContent: "center",
+    alignItems: "center",
+  },
+  promoBtnText: {
+    color: "white",
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  promoError: {
+    color: colors.error,
+    fontSize: 12,
   },
   promoChips: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
+    alignItems: "center",
+    gap: 4, // gap-1
   },
   promoChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: colors.brand.tealMuted,
-    borderRadius: borderRadius.circle,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    gap: 4, // gap-1
+    backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
+    borderRadius: 9999,
+    paddingHorizontal: 12, // px-3
+    paddingVertical: 4, // py-1
+  },
+  promoChipText: {
+    color: colors.brand.teal,
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  summary: {
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 8, // rounded-lg
+    marginHorizontal: 16, // mx-4
+    marginBottom: 16, // mb-4
+    padding: 16, // p-4
+    gap: 8, // gap-2
+    backgroundColor: "white",
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  summaryLabel: {
+    fontFamily: "Inter-Regular",
+    color: colors.grey[50], // text-gray-500
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  summaryValue: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    color: colors.slate[900], // text-gray-900
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  divider: {
+    borderTopWidth: 1,
+    borderTopColor: colors.grey[20],
+    marginVertical: 4, // my-1
+  },
+  totalLabel: {
+    fontSize: 16, // text-base
+    fontWeight: "600",
+    color: colors.slate[900],
+  },
+  totalValue: {
+    fontSize: 18, // text-lg
+    fontWeight: "600",
+    color: colors.slate[900],
+  },
+  checkoutContainer: {
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: colors.grey[20],
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   checkoutBtn: {
-    marginTop: spacing.sm,
+    backgroundColor: colors.slate[900],
+    borderRadius: 8, // rounded-lg
+    paddingVertical: 16, // py-4
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  checkoutBtnText: {
+    color: "white",
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 14,
+    lineHeight: 20,
   },
   empty: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: spacing.sm,
-    padding: spacing.xl,
-  },
-  browseBtn: {
-    marginTop: spacing.base,
+    padding: 32,
   },
 })
