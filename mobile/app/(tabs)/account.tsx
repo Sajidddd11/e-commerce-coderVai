@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { View, ScrollView, Pressable, StyleSheet } from "react-native"
 import { useRouter } from "expo-router"
-import { LogOut, Package, MapPin, UserCog, ChevronRight } from "lucide-react-native"
+import { LogOut, ShoppingBag, MapPin, User, ChevronRight } from "lucide-react-native"
 import { Screen } from "@components/layout/Screen"
 import { AccountSupportSection } from "@components/layout/AccountSupportSection"
 import { ThemedText } from "@components/ui/ThemedText"
@@ -58,42 +58,47 @@ export default function AccountScreen() {
   if (isAuthenticated && customer) {
     return (
       <Screen>
-        <ScrollView>
-          <View style={styles.container}>
-            <View style={styles.profileHeader}>
-              <ThemedText variant="sectionHeading" color={colors.grey[90]}>
-                Hello, {customer.first_name || "there"}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.profileHeader}>
+            <View style={styles.avatarContainer}>
+              <User size={28} color={colors.grey[40]} />
+            </View>
+            <View style={styles.profileInfo}>
+              <ThemedText variant="sectionHeading" color={colors.grey[90]} style={styles.profileName}>
+                Hello, {customer.first_name || "there"}!
               </ThemedText>
-              <ThemedText variant="body" color={colors.grey[50]}>
+              <ThemedText variant="bodySmall" color={colors.grey[50]}>
                 {customer.email}
               </ThemedText>
             </View>
+          </View>
 
-            <View style={styles.menu}>
-              <MenuRow
-                icon={<Package size={20} color={colors.grey[70]} />}
-                label="Orders"
-                onPress={() => router.push("/account/orders")}
-              />
-              <MenuRow
-                icon={<MapPin size={20} color={colors.grey[70]} />}
-                label="Addresses"
-                onPress={() => router.push("/account/addresses")}
-              />
-              <MenuRow
-                icon={<UserCog size={20} color={colors.grey[70]} />}
-                label="Profile"
-                onPress={() => router.push("/account/profile")}
-              />
-            </View>
-
-            <Button
-              title="Log out"
-              variant="secondary"
-              leftIcon={<LogOut size={18} color={colors.slate[900]} />}
-              onPress={logout}
-              style={styles.logout}
+          <View style={styles.menu}>
+            <MenuRow
+              icon={<ShoppingBag size={20} color={colors.brand.teal} />}
+              label="My Orders"
+              onPress={() => router.push("/account/orders")}
             />
+            <MenuRow
+              icon={<MapPin size={20} color={colors.brand.teal} />}
+              label="Addresses"
+              onPress={() => router.push("/account/addresses")}
+            />
+            <MenuRow
+              icon={<User size={20} color={colors.brand.teal} />}
+              label="Profile"
+              onPress={() => router.push("/account/profile")}
+              isLast
+            />
+          </View>
+
+          <View style={styles.logoutContainer}>
+            <Pressable style={styles.logoutButton} onPress={logout}>
+              <LogOut size={16} color={colors.error} />
+              <ThemedText variant="bodyMedium" color={colors.error} style={{ fontWeight: '600' }}>
+                Log Out
+              </ThemedText>
+            </Pressable>
           </View>
 
           <AccountSupportSection />
@@ -209,23 +214,28 @@ function MenuRow({
   icon,
   label,
   onPress,
+  isLast,
 }: {
   icon: React.ReactNode
   label: string
   onPress?: () => void
+  isLast?: boolean
 }) {
   return (
-    <Pressable style={styles.menuRow} onPress={onPress}>
-      {icon}
-      <ThemedText variant="body" color={colors.grey[90]} style={styles.menuLabel}>
+    <Pressable style={[styles.menuRow, !isLast && styles.menuRowBorder]} onPress={onPress}>
+      <View style={styles.menuIconContainer}>{icon}</View>
+      <ThemedText variant="bodyMedium" color={colors.grey[90]} style={styles.menuLabel}>
         {label}
       </ThemedText>
-      <ChevronRight size={18} color={colors.grey[40]} />
+      <ChevronRight size={20} color={colors.grey[40]} />
     </Pressable>
   )
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: spacing["2xl"],
+  },
   container: {
     padding: spacing.base,
     gap: spacing.sm,
@@ -244,14 +254,36 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   profileHeader: {
-    gap: spacing.xs,
-    marginBottom: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.base,
+    paddingTop: spacing["2xl"],
+    paddingBottom: spacing.base,
+    gap: spacing.base,
+  },
+  avatarContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.grey[20],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  profileName: {
+    fontSize: 20,
+    letterSpacing: -0.5,
   },
   menu: {
     backgroundColor: colors.grey[0],
-    borderRadius: borderRadius.rounded,
+    borderRadius: borderRadius.large,
     borderWidth: 1,
     borderColor: colors.grey[20],
+    marginHorizontal: spacing.base,
+    marginBottom: spacing.base,
     overflow: "hidden",
   },
   menuRow: {
@@ -259,13 +291,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
     paddingHorizontal: spacing.base,
-    paddingVertical: spacing.base,
+    paddingVertical: 14,
+  },
+  menuRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.grey[10],
+    borderBottomColor: colors.grey[20],
   },
-  menuLabel: { flex: 1 },
+  menuIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.rounded,
+    backgroundColor: "rgba(86, 174, 191, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuLabel: { flex: 1, fontWeight: '600' },
+  logoutContainer: {
+    paddingHorizontal: spacing.base,
+    marginBottom: spacing["2xl"],
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    height: 48,
+    borderRadius: borderRadius.large,
+    backgroundColor: colors.grey[0],
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+  },
   forgot: { alignSelf: "flex-end" },
-  logout: {
-    marginTop: spacing.lg,
-  },
 })

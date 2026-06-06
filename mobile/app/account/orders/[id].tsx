@@ -2,26 +2,115 @@ import { useEffect, useState } from "react"
 import { View, ScrollView, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import { Image } from "expo-image"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { ChevronLeft, Send } from "lucide-react-native"
+import {
+  ChevronLeft,
+  Clock,
+  Package,
+  Truck,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Check,
+} from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import { ThemedText } from "@components/ui/ThemedText"
-import { Button } from "@components/ui/Button"
-import { retrieveOrder, createTransferRequest } from "@api/orders"
+import { retrieveOrder } from "@api/orders"
 import { paymentTitle } from "@utils/shipping"
 import { convertToLocale } from "@utils/money"
 import { colors, spacing, borderRadius } from "@design/theme"
+
+// ─── Tracking config ──────────────────────────────────────────────────────────
+
+type TrackingStep = {
+  key: string
+  label: string
+  description: string
+  Icon: any
+}
+
+const TRACKING_STEPS: TrackingStep[] = [
+  {
+    key: "pending",
+    label: "Order Placed",
+    description: "Your order has been received",
+    Icon: Clock,
+  },
+  {
+    key: "processing",
+    label: "Processing",
+    description: "We are preparing your items",
+    Icon: Package,
+  },
+  {
+    key: "shipped",
+    label: "Shipped",
+    description: "Your order is on the way",
+    Icon: Truck,
+  },
+  {
+    key: "delivered",
+    label: "Delivered",
+    description: "Order successfully delivered",
+    Icon: CheckCircle,
+  },
+]
+
+const CANCELLED_STEPS: TrackingStep[] = [
+  {
+    key: "pending",
+    label: "Order Placed",
+    description: "Your order was received",
+    Icon: Clock,
+  },
+  {
+    key: "canceled",
+    label: "Cancelled",
+    description: "This order has been cancelled",
+    Icon: XCircle,
+  },
+]
+
+const REFUNDED_STEPS: TrackingStep[] = [
+  {
+    key: "pending",
+    label: "Order Placed",
+    description: "Your order was received",
+    Icon: Clock,
+  },
+  {
+    key: "refunded",
+    label: "Refunded",
+    description: "Refund has been processed",
+    Icon: RefreshCw,
+  },
+]
+
+function getStepsForStatus(status: string) {
+  if (status === "canceled") return CANCELLED_STEPS
+  if (status === "refunded") return REFUNDED_STEPS
+  return TRACKING_STEPS
+}
+
+function getActiveStepIndex(status: string, steps: TrackingStep[]) {
+  const idx = steps.findIndex((s) => s.key === status)
+  return idx === -1 ? 0 : idx
+}
+
+function getStepColors(status: string) {
+  if (status === "canceled") return { active: "#EF4444", muted: "#FEE2E2" }
+  if (status === "refunded") return { active: "#F59E0B", muted: "#FEF3C7" }
+  if (status === "delivered") return { active: "#10B981", muted: "#D1FAE5" }
+  return { active: colors.brand.teal, muted: "rgba(86,174,191,0.12)" }
+}
+
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const [order, setOrder] = useState<HttpTypes.StoreOrder | null>(null)
   const [loading, setLoading] = useState(true)
-  const [transferState, setTransferState] = useState<{
-    loading: boolean
-    message: string | null
-    error: boolean
-  }>({ loading: false, message: null, error: false })
 
   useEffect(() => {
     if (!id) return
@@ -34,18 +123,10 @@ export default function OrderDetailScreen() {
   const provider =
     order?.payment_collections?.[0]?.payments?.[0]?.provider_id ?? ""
 
-  const requestTransfer = async () => {
-    if (!order) return
-    setTransferState({ loading: true, message: null, error: false })
-    const res = await createTransferRequest(order.id)
-    setTransferState({
-      loading: false,
-      error: !res.success,
-      message: res.success
-        ? `Transfer request sent to ${res.order?.email ?? "the account email"}.`
-        : res.error ?? "Could not request transfer.",
-    })
-  }
+  const customStatus = (order?.metadata as any)?.custom_status || order?.status || "pending"
+  const steps = getStepsForStatus(customStatus)
+  const activeIndex = getActiveStepIndex(customStatus, steps)
+  const stepColors = getStepColors(customStatus)
 
   return (
     <Screen edges={["top"]}>
@@ -70,6 +151,68 @@ export default function OrderDetailScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
+
+          {/* ── Tracking card ── */}
+          <View style={styles.trackingCard}>
+            <ThemedText variant="subheading" color={colors.grey[90]} style={styles.trackingTitle}>
+              Order Status
+            </ThemedText>
+
+            <View style={styles.stepsContainer}>
+              {steps.map((step, index) => {
+                const isCompleted = index < activeIndex
+                const isActive = index === activeIndex
+                const isLast = index === steps.length - 1
+                const { Icon } = step
+
+                const dotColor = isCompleted || isActive ? stepColors.active : colors.grey[20]
+                const iconColor = isCompleted || isActive ? "#fff" : colors.grey[40]
+                const lineColor = isCompleted ? stepColors.active : colors.grey[20]
+
+                return (
+                  <View key={step.key} style={styles.stepRow}>
+                    {/* Left: dot + line */}
+                    <View style={styles.stepLeft}>
+                      <View style={[styles.stepDot, { backgroundColor: dotColor }]}>
+                        {isCompleted ? (
+                          <Check size={12} color="#fff" strokeWidth={3} />
+                        ) : (
+                          <Icon size={13} color={iconColor} strokeWidth={2.2} />
+                        )}
+                      </View>
+                      {!isLast && (
+                        <View style={[styles.stepLine, { backgroundColor: lineColor }]} />
+                      )}
+                    </View>
+
+                    {/* Right: text */}
+                    <View style={[styles.stepContent, !isLast && { paddingBottom: 24 }]}>
+                      <ThemedText
+                        variant={isActive ? "bodyMedium" : "body"}
+                        color={isActive ? stepColors.active : isCompleted ? colors.grey[70] : colors.grey[40]}
+                        style={isActive ? styles.activeLabel : undefined}
+                      >
+                        {step.label}
+                      </ThemedText>
+                      <ThemedText variant="bodySmall" color={isActive ? colors.grey[60] : colors.grey[40]}>
+                        {step.description}
+                      </ThemedText>
+                    </View>
+                  </View>
+                )
+              })}
+            </View>
+
+            {/* Status badge */}
+            <View style={[styles.statusBadge, { backgroundColor: stepColors.muted }]}>
+              <View style={[styles.statusDot, { backgroundColor: stepColors.active }]} />
+              <ThemedText variant="bodySmall" color={stepColors.active} style={styles.statusBadgeText}>
+                {customStatus.charAt(0).toUpperCase() + customStatus.slice(1)}
+              </ThemedText>
+            </View>
+          </View>
+
+          {/* ── Items card ── */}
           <View style={styles.card}>
             <ThemedText variant="subheading" color={colors.grey[90]}>
               Items
@@ -94,6 +237,7 @@ export default function OrderDetailScreen() {
             ))}
           </View>
 
+          {/* ── Summary card ── */}
           <View style={styles.card}>
             <ThemedText variant="subheading" color={colors.grey[90]}>
               Summary
@@ -126,6 +270,7 @@ export default function OrderDetailScreen() {
             ) : null}
           </View>
 
+          {/* ── Delivery card ── */}
           {order.shipping_address ? (
             <View style={styles.card}>
               <ThemedText variant="subheading" color={colors.grey[90]}>
@@ -143,35 +288,13 @@ export default function OrderDetailScreen() {
             </View>
           ) : null}
 
-          <View style={styles.card}>
-            <ThemedText variant="subheading" color={colors.grey[90]}>
-              Transfer order
-            </ThemedText>
-            <ThemedText variant="bodySmall" color={colors.grey[50]}>
-              Request to transfer this order to the account that owns its email
-              address.
-            </ThemedText>
-            {transferState.message ? (
-              <ThemedText
-                variant="bodySmall"
-                color={transferState.error ? colors.error : colors.success}
-              >
-                {transferState.message}
-              </ThemedText>
-            ) : null}
-            <Button
-              title="Request transfer"
-              variant="secondary"
-              loading={transferState.loading}
-              leftIcon={<Send size={16} color={colors.slate[900]} />}
-              onPress={requestTransfer}
-            />
-          </View>
         </ScrollView>
       )}
     </Screen>
   )
 }
+
+// ─── Row helper ───────────────────────────────────────────────────────────────
 
 function Row({
   label,
@@ -199,6 +322,8 @@ function Row({
   )
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   flex: { flex: 1, gap: 2 },
   header: {
@@ -213,6 +338,73 @@ const styles = StyleSheet.create({
   back: { padding: spacing.xs },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.base },
   scroll: { padding: spacing.base, gap: spacing.base, paddingBottom: spacing.xl },
+
+  // Tracking card
+  trackingCard: {
+    backgroundColor: colors.grey[0],
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: borderRadius.rounded,
+    padding: spacing.base,
+    gap: spacing.md,
+  },
+  trackingTitle: {
+    marginBottom: spacing.xs,
+  },
+  stepsContainer: {
+    gap: 0,
+  },
+  stepRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  stepLeft: {
+    alignItems: "center",
+    width: 32,
+  },
+  stepDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepLine: {
+    width: 2,
+    flex: 1,
+    marginTop: 2,
+    minHeight: 20,
+    borderRadius: 1,
+  },
+  stepContent: {
+    flex: 1,
+    paddingTop: 6,
+    gap: 2,
+  },
+  activeLabel: {
+    fontWeight: "700",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginTop: spacing.xs,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  statusBadgeText: {
+    fontWeight: "600",
+    fontSize: 12,
+  },
+
+  // General cards
   card: {
     backgroundColor: colors.grey[0],
     borderWidth: 1,

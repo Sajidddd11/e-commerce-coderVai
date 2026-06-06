@@ -1,21 +1,28 @@
+import React from "react"
 import { View, Pressable, StyleSheet, Linking } from "react-native"
 import { useRouter, Href } from "expo-router"
 import { FontAwesome5 } from "@expo/vector-icons"
 import {
   ChevronRight,
-  HelpCircle,
-  FileText,
+  Mail,
   Truck,
   RotateCcw,
+  Info,
   Tag,
-  Shield,
+  Lock,
+  FileText,
+  MessageCircle,
+  Zap,
+  ShieldCheck,
+  RefreshCcw,
+  Headphones,
+  Star,
+  PackageCheck,
   Facebook,
   Instagram,
   Youtube,
 } from "lucide-react-native"
 import { ThemedText } from "../ui/ThemedText"
-import { TrustSection } from "../home/TrustSection"
-import { CTASection } from "../home/CTASection"
 import {
   socialMediaLinks,
   WHATSAPP_NUMBER,
@@ -27,19 +34,19 @@ type LinkRow = { label: string; href: Href; icon: React.ReactNode }
 
 const HELP_LINKS: LinkRow[] = [
   {
-    label: "Contact us",
+    label: "Contact Us",
     href: "/static/contact",
-    icon: <HelpCircle size={20} color={colors.grey[60]} />,
+    icon: <Mail size={16} color={colors.brand.teal} />,
   },
   {
-    label: "Shipping information",
+    label: "Shipping Info",
     href: "/static/shipping-info",
-    icon: <Truck size={20} color={colors.grey[60]} />,
+    icon: <Truck size={16} color={colors.brand.teal} />,
   },
   {
-    label: "Returns & refunds",
+    label: "Returns Policy",
     href: "/static/returns",
-    icon: <RotateCcw size={20} color={colors.grey[60]} />,
+    icon: <RotateCcw size={16} color={colors.brand.teal} />,
   },
 ]
 
@@ -47,26 +54,35 @@ const ABOUT_LINKS: LinkRow[] = [
   {
     label: "About ZAHAN",
     href: "/static/about",
-    icon: <FileText size={20} color={colors.grey[60]} />,
+    icon: <Info size={16} color={colors.brand.teal} />,
   },
   {
-    label: "Offers & promotions",
+    label: "Offers & Promotions",
     href: "/static/offers",
-    icon: <Tag size={20} color={colors.grey[60]} />,
+    icon: <Tag size={16} color={colors.brand.teal} />,
   },
 ]
 
 const LEGAL_LINKS: LinkRow[] = [
   {
-    label: "Privacy policy",
+    label: "Privacy Policy",
     href: "/static/privacy-policy",
-    icon: <Shield size={20} color={colors.grey[60]} />,
+    icon: <Lock size={16} color={colors.brand.teal} />,
   },
   {
-    label: "Terms of service",
+    label: "Terms of Service",
     href: "/static/terms-of-service",
-    icon: <FileText size={20} color={colors.grey[60]} />,
+    icon: <FileText size={16} color={colors.brand.teal} />,
   },
+]
+
+const WHY_SHOP_FEATURES = [
+  { Icon: Zap, title: "Fast Delivery" },
+  { Icon: ShieldCheck, title: "Secure Payment" },
+  { Icon: RefreshCcw, title: "Easy Returns" },
+  { Icon: Headphones, title: "24/7 Support" },
+  { Icon: Star, title: "Quality First" },
+  { Icon: PackageCheck, title: "Quick Dispatch" },
 ]
 
 function openWhatsApp() {
@@ -79,40 +95,41 @@ function openWhatsApp() {
     .catch(() => Linking.openURL(webUrl))
 }
 
-/** Native-style help, policies, and social links — belongs on Account, not a web footer. */
 export function AccountSupportSection() {
   const router = useRouter()
 
   return (
     <View style={styles.wrap}>
-      <ThemedText variant="subheading" color={colors.grey[80]} style={styles.sectionHeading}>
-        Why shop with us
+      <ThemedText style={styles.sectionHeading}>
+        WHY SHOP WITH US
       </ThemedText>
-      <TrustSection embedded />
+      
+      <View style={styles.grid}>
+        {WHY_SHOP_FEATURES.map(({ Icon, title }) => (
+          <View key={title} style={styles.featureCard}>
+            <View style={styles.featureIconPill}>
+              <Icon size={16} color={colors.brand.teal} />
+            </View>
+            <ThemedText style={styles.featureTitle}>
+              {title}
+            </ThemedText>
+          </View>
+        ))}
+      </View>
 
-      <ThemedText variant="subheading" color={colors.grey[80]} style={styles.sectionHeading}>
-        Join the community
-      </ThemedText>
-      <CTASection embedded />
-
-      <ThemedText variant="subheading" color={colors.grey[80]} style={styles.sectionHeading}>
-        Help & support
+      <ThemedText style={styles.sectionHeading}>
+        HELP & SUPPORT
       </ThemedText>
 
       <View style={styles.card}>
-        <Pressable style={styles.whatsappRow} onPress={openWhatsApp}>
-          <View style={styles.whatsappIcon}>
-            <FontAwesome5 name="whatsapp" size={22} color={colors.grey[0]} />
+        <Pressable style={[styles.row, styles.rowBorder]} onPress={openWhatsApp}>
+          <View style={[styles.iconBox, { backgroundColor: "rgba(37, 211, 102, 0.12)" }]}>
+            <FontAwesome5 name="whatsapp" size={18} color="#25D366" />
           </View>
-          <View style={styles.rowBody}>
-            <ThemedText variant="bodyMedium" color={colors.grey[90]}>
-              Chat on WhatsApp
-            </ThemedText>
-            <ThemedText variant="bodySmall" color={colors.grey[50]}>
-              Fast help with orders & delivery
-            </ThemedText>
-          </View>
-          <ChevronRight size={18} color={colors.grey[40]} />
+          <ThemedText variant="bodyMedium" color={colors.grey[90]} style={styles.rowLabel}>
+            Chat on WhatsApp
+          </ThemedText>
+          <ChevronRight size={16} color={colors.grey[40]} />
         </Pressable>
 
         {HELP_LINKS.map((link, i) => (
@@ -125,8 +142,8 @@ export function AccountSupportSection() {
         ))}
       </View>
 
-      <ThemedText variant="subheading" color={colors.grey[80]} style={styles.heading}>
-        About
+      <ThemedText style={styles.sectionHeading}>
+        ABOUT
       </ThemedText>
       <View style={styles.card}>
         {ABOUT_LINKS.map((link, i) => (
@@ -139,8 +156,8 @@ export function AccountSupportSection() {
         ))}
       </View>
 
-      <ThemedText variant="subheading" color={colors.grey[80]} style={styles.heading}>
-        Legal
+      <ThemedText style={styles.sectionHeading}>
+        LEGAL
       </ThemedText>
       <View style={styles.card}>
         {LEGAL_LINKS.map((link, i) => (
@@ -154,20 +171,20 @@ export function AccountSupportSection() {
       </View>
 
       <View style={styles.socialCard}>
-        <ThemedText variant="bodySmall" color={colors.grey[50]} style={styles.follow}>
-          Follow us
-        </ThemedText>
         <View style={styles.social}>
           <SocialButton
-            icon={<Facebook size={20} color={colors.grey[70]} />}
+            icon={<Facebook size={20} />}
+            color="#1877F2"
             onPress={() => Linking.openURL(socialMediaLinks.facebook).catch(() => {})}
           />
           <SocialButton
-            icon={<Instagram size={20} color={colors.grey[70]} />}
+            icon={<Instagram size={20} />}
+            color="#E1306C"
             onPress={() => Linking.openURL(socialMediaLinks.instagram).catch(() => {})}
           />
           <SocialButton
-            icon={<Youtube size={20} color={colors.grey[70]} />}
+            icon={<Youtube size={20} />}
+            color="#FF0000"
             onPress={() => Linking.openURL(socialMediaLinks.youtube).catch(() => {})}
           />
         </View>
@@ -194,103 +211,124 @@ function SupportRow({
       style={[styles.row, !isLast && styles.rowBorder]}
       onPress={onPress}
     >
-      {link.icon}
-      <ThemedText variant="body" color={colors.grey[90]} style={styles.rowLabel}>
+      <View style={styles.iconBox}>{link.icon}</View>
+      <ThemedText variant="bodyMedium" color={colors.grey[90]} style={styles.rowLabel}>
         {link.label}
       </ThemedText>
-      <ChevronRight size={18} color={colors.grey[40]} />
+      <ChevronRight size={16} color={colors.grey[40]} />
     </Pressable>
   )
 }
 
 function SocialButton({
   icon,
+  color,
   onPress,
 }: {
   icon: React.ReactNode
+  color: string
   onPress: () => void
 }) {
   return (
     <Pressable style={styles.socialBtn} onPress={onPress}>
-      {icon}
+      {React.cloneElement(icon as React.ReactElement, { color })}
     </Pressable>
   )
 }
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: spacing.base,
-    paddingTop: spacing.lg,
     paddingBottom: spacing["2xl"],
-    gap: spacing.sm,
   },
   sectionHeading: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  heading: {
-    marginTop: spacing.sm,
+    marginHorizontal: spacing.base,
     marginBottom: spacing.xs,
+    marginTop: spacing.md,
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.grey[40],
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
   },
-  card: {
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.base,
+    marginBottom: spacing.md,
+  },
+  featureCard: {
+    width: "31.5%",
     backgroundColor: colors.grey[0],
-    borderRadius: borderRadius.rounded,
+    borderRadius: borderRadius.large,
     borderWidth: 1,
     borderColor: colors.grey[20],
-    overflow: "hidden",
-  },
-  whatsappRow: {
-    flexDirection: "row",
+    padding: 12,
     alignItems: "center",
-    gap: spacing.md,
-    padding: spacing.base,
-    backgroundColor: colors.brand.tealMuted,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey[20],
+    gap: 8,
   },
-  whatsappIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.circle,
-    backgroundColor: "#25D366",
+  featureIconPill: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(86, 174, 191, 0.12)",
     alignItems: "center",
     justifyContent: "center",
   },
-  rowBody: { flex: 1, gap: 2 },
+  featureTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center",
+    color: colors.grey[90],
+    lineHeight: 14,
+  },
+  card: {
+    backgroundColor: colors.grey[0],
+    borderRadius: borderRadius.large,
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    marginHorizontal: spacing.base,
+    marginBottom: spacing.lg,
+    overflow: "hidden",
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md,
+    gap: spacing.sm,
     paddingHorizontal: spacing.base,
-    paddingVertical: spacing.base,
+    paddingVertical: 13,
   },
   rowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.grey[10],
+    borderBottomColor: colors.grey[20],
   },
-  rowLabel: { flex: 1 },
+  iconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(86, 174, 191, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowLabel: { flex: 1, fontWeight: "500", fontSize: 14 },
   socialCard: {
     alignItems: "center",
-    gap: spacing.sm,
-    paddingVertical: spacing.base,
+    marginVertical: spacing.sm,
   },
-  follow: { textAlign: "center" },
   social: {
     flexDirection: "row",
     gap: spacing.md,
   },
   socialBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.circle,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.grey[10],
-    borderWidth: 1,
-    borderColor: colors.grey[20],
     alignItems: "center",
     justifyContent: "center",
   },
   copy: {
     textAlign: "center",
-    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
 })

@@ -11,6 +11,30 @@ import { listOrders } from "@api/orders"
 import { convertToLocale } from "@utils/money"
 import { colors, spacing, borderRadius } from "@design/theme"
 
+// ─── Status badge config (mirrors order detail screen) ────────────────────────
+
+type StatusConfig = {
+  label: string
+  color: string
+  bg: string
+}
+
+const STATUS_MAP: Record<string, StatusConfig> = {
+  pending:    { label: "Pending",    color: "#6B7280", bg: "rgba(107,114,128,0.1)" },
+  processing: { label: "Processing", color: colors.brand.teal, bg: "rgba(86,174,191,0.12)" },
+  shipped:    { label: "Shipped",    color: "#3B82F6", bg: "rgba(59,130,246,0.1)" },
+  delivered:  { label: "Delivered",  color: "#10B981", bg: "rgba(16,185,129,0.1)" },
+  canceled:   { label: "Cancelled",  color: "#EF4444", bg: "rgba(239,68,68,0.1)" },
+  refunded:   { label: "Refunded",   color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
+}
+
+function getStatusConfig(order: HttpTypes.StoreOrder): StatusConfig {
+  const raw = (order.metadata as any)?.custom_status || order.status || "pending"
+  return STATUS_MAP[raw] ?? { label: raw, color: colors.grey[60], bg: colors.grey[10] }
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function OrdersScreen() {
   const router = useRouter()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -58,30 +82,50 @@ export default function OrdersScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
-          {orders.map((order) => (
-            <Pressable
-              key={order.id}
-              style={styles.orderCard}
-              onPress={() => router.push(`/account/orders/${order.id}`)}
-            >
-              <View style={styles.flex}>
-                <ThemedText variant="bodyMedium" color={colors.grey[90]}>
-                  Order #{order.display_id}
-                </ThemedText>
-                <ThemedText variant="bodySmall" color={colors.grey[50]}>
-                  {new Date(order.created_at as string).toLocaleDateString()} ·{" "}
-                  {order.items?.length ?? 0} item(s)
-                </ThemedText>
-                <ThemedText variant="bodyMedium" color={colors.grey[80]}>
-                  {convertToLocale({
-                    amount: order.total ?? 0,
-                    currency_code: order.currency_code || "bdt",
-                  })}
-                </ThemedText>
-              </View>
-              <ChevronRight size={20} color={colors.grey[40]} />
-            </Pressable>
-          ))}
+          {orders.map((order) => {
+            const status = getStatusConfig(order)
+            return (
+              <Pressable
+                key={order.id}
+                style={styles.orderCard}
+                onPress={() => router.push(`/account/orders/${order.id}`)}
+              >
+                <View style={styles.flex}>
+                  {/* Top row: order # + status badge */}
+                  <View style={styles.topRow}>
+                    <ThemedText variant="bodyMedium" color={colors.grey[90]}>
+                      Order #{order.display_id}
+                    </ThemedText>
+                    <View style={[styles.badge, { backgroundColor: status.bg }]}>
+                      <View style={[styles.badgeDot, { backgroundColor: status.color }]} />
+                      <ThemedText style={[styles.badgeText, { color: status.color }]}>
+                        {status.label}
+                      </ThemedText>
+                    </View>
+                  </View>
+
+                  {/* Date + item count */}
+                  <ThemedText variant="bodySmall" color={colors.grey[50]}>
+                    {new Date(order.created_at as string).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}{" "}
+                    · {order.items?.length ?? 0} item{(order.items?.length ?? 0) !== 1 ? "s" : ""}
+                  </ThemedText>
+
+                  {/* Total */}
+                  <ThemedText variant="bodyMedium" color={colors.grey[80]}>
+                    {convertToLocale({
+                      amount: order.total ?? 0,
+                      currency_code: order.currency_code || "bdt",
+                    })}
+                  </ThemedText>
+                </View>
+                <ChevronRight size={20} color={colors.grey[40]} />
+              </Pressable>
+            )
+          })}
         </ScrollView>
       )}
     </Screen>
@@ -89,7 +133,7 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, gap: 2 },
+  flex: { flex: 1, gap: 4 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -117,5 +161,28 @@ const styles = StyleSheet.create({
     borderColor: colors.grey[20],
     borderRadius: borderRadius.rounded,
     padding: spacing.base,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  badgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "600",
   },
 })

@@ -14,7 +14,7 @@ export async function retrieveOrder(
       method: "GET",
       query: {
         fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product",
+          "+metadata,*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product",
       },
       headers,
     })
@@ -37,7 +37,7 @@ export async function listOrders(
         offset,
         order: "-created_at",
         fields:
-          "*items,+items.metadata,*items.variant,*items.product",
+          "+metadata,*items,+items.metadata,*items.variant,*items.product",
         ...filters,
       },
       headers,
