@@ -42,18 +42,22 @@ export default function ProductActions({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  const [options, setOptions] = useState<Record<string, string | undefined>>(() => {
+    const vId = searchParams.get("v_id")
+    if (vId && product.variants) {
+      const variant = product.variants.find((v) => v.id === vId)
+      if (variant) {
+        return optionsAsKeymap(variant.options) ?? {}
+      }
+    }
+    if (product.variants?.length === 1) {
+      return optionsAsKeymap(product.variants[0].options) ?? {}
+    }
+    return {}
+  })
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
-
-  // If there is only 1 variant, preselect the options
-  useEffect(() => {
-    if (product.variants?.length === 1) {
-      const variantOptions = optionsAsKeymap(product.variants[0].options)
-      setOptions(variantOptions ?? {})
-    }
-  }, [product.variants])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {

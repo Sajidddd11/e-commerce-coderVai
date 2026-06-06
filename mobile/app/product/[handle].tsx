@@ -7,10 +7,12 @@ import {
   Alert,
   useWindowDimensions,
   Text,
+  Linking,
+  Share,
 } from "react-native"
 import { Image } from "expo-image"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { ChevronLeft, ShoppingCart, ChevronRight } from "lucide-react-native"
+import { ChevronLeft, ShoppingCart, ChevronRight, MessageCircle, Star, Share as ShareIcon } from "lucide-react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { HttpTypes } from "@medusajs/types"
 import Markdown from "react-native-markdown-display"
@@ -22,6 +24,7 @@ import { ProductRail } from "@components/product/ProductRail"
 import { useRegionStore } from "@stores/region-store"
 import { useCartStore } from "@stores/cart-store"
 import { getProductByHandle, listProducts } from "@api/products"
+import { getProductReviews } from "@api/enhancements"
 import { getProductPrice } from "@utils/get-product-price"
 import { trackViewContent, trackAddToCart } from "@utils/facebook-analytics"
 import { colors } from "@design/theme"
@@ -61,6 +64,8 @@ export default function ProductScreen() {
   const [loading, setLoading] = useState(true)
   const [variantId, setVariantId] = useState<string | null>(null)
   const [options, setOptions] = useState<Record<string, string>>({})
+  const [rating, setRating] = useState<number | null>(null)
+  const [reviewCount, setReviewCount] = useState<number>(0)
 
   useEffect(() => {
     if (!region?.id || !handle) return
@@ -81,6 +86,10 @@ export default function ProductScreen() {
             currency: cheapestPrice?.currency_code,
           })
           loadRelated(p)
+          getProductReviews(p.id).then((res) => {
+            setRating(res.average)
+            setReviewCount(res.count)
+          }).catch(() => {})
         }
       })
       .finally(() => setLoading(false))
@@ -178,6 +187,37 @@ export default function ProductScreen() {
     }
   }
 
+  const onChat = () => {
+    if (!product) return
+    const chosen = resolveVariant()
+    const variant = product.variants?.find((v) => v.id === chosen)
+    const variantText = variant?.title && variant.title !== "Default Title" ? ` - Variant: ${variant.title}` : ""
+    const storeUrl = process.env.EXPO_PUBLIC_STOREFRONT_URL || "https://codervai.com"
+    const productUrl = chosen ? `${storeUrl}/products/${product.handle}?v_id=${chosen}` : `${storeUrl}/products/${product.handle}`
+    const message = `Hi, I'm interested in this product: ${product.title}${variantText}.\n${productUrl}`
+    const phone = process.env.EXPO_PUBLIC_WHATSAPP_NUMBER || ""
+    const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`
+    Linking.openURL(url).catch(() => {
+      Alert.alert("Error", "Make sure WhatsApp is installed on your device")
+    })
+  }
+
+  const onShare = async () => {
+    if (!product) return
+    try {
+      const chosen = resolveVariant()
+      const storeUrl = process.env.EXPO_PUBLIC_STOREFRONT_URL || "https://codervai.com"
+      const url = chosen ? `${storeUrl}/products/${product.handle}?v_id=${chosen}` : `${storeUrl}/products/${product.handle}`
+      await Share.share({
+        message: `Check out ${product.title}!\n${url}`,
+        url: url,
+        title: product.title,
+      })
+    } catch (error) {
+      console.log("Error sharing:", error)
+    }
+  }
+
   const images = product?.images?.length
     ? product.images
     : product?.thumbnail
@@ -188,6 +228,10 @@ export default function ProductScreen() {
   const imageHeight = 322
 
   const renderOptions = () => {
+    if (product?.variants?.length === 1) {
+      return null
+    }
+
     if (!product?.options?.length) {
       if ((product?.variants?.length ?? 0) > 1) {
         return (
@@ -311,6 +355,12 @@ export default function ProductScreen() {
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
             <ChevronLeft size={20} color={colors.slate[900]} />
           </Pressable>
+
+          {product && !loading && (
+            <Pressable style={styles.shareBtn} onPress={onShare}>
+              <ShareIcon size={20} color={colors.slate[900]} />
+            </Pressable>
+          )}
         </View>
 
         <View style={styles.body}>
@@ -325,6 +375,22 @@ export default function ProductScreen() {
                 <Text style={styles.titleText}>
                   {product.title}
                 </Text>
+
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                  <View style={{ flexDirection: "row", gap: 2 }}>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star
+                        key={i}
+                        size={14}
+                        color="#EAB308"
+                        fill={i <= Math.round(rating || 0) ? "#EAB308" : "transparent"}
+                      />
+                    ))}
+                  </View>
+                  <Text style={{ fontFamily: fontFamily.interMedium, fontSize: fontSize.sm, color: "#6B7280" }}>
+                    ({reviewCount})
+                  </Text>
+                </View>
                 
                 <View style={styles.priceRow}>
                   <ProductPrice
@@ -378,6 +444,16 @@ export default function ProductScreen() {
       {product && !loading ? (
         <View style={[styles.addBar, { paddingBottom: Math.max(12, insets.bottom + 8) }]}>
           <Pressable
+            style={styles.chatBtn}
+            onPress={onChat}
+          >
+            <MessageCircle size={20} color={colors.brand.teal} />
+            <Text style={{ fontFamily: fontFamily.interSemiBold, fontSize: fontSize.sm, color: colors.brand.teal }}>
+              Ask
+            </Text>
+          </Pressable>
+
+          <Pressable
             style={[styles.addBtn, isMutating && { opacity: 0.7 }]}
             disabled={isMutating}
             onPress={onAdd}
@@ -419,6 +495,22 @@ const styles = StyleSheet.create({
     height: 44, // h-11
     borderRadius: 22, // rounded-full
     backgroundColor: "rgba(255, 255, 255, 0.8)", // bg-white/80
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  shareBtn: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -552,9 +644,21 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB", // border-gray-200
     paddingHorizontal: 16, // px-4
-    paddingVertical: 12, // py-3
+    paddingVertical: 8, // py-2
     flexDirection: "row",
-    gap: 12,
+    gap: 8,
+  },
+  chatBtn: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#56AEBF",
+    borderRadius: 8, // rounded-lg
+    height: 48, // h-12
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
   },
   addBtn: {
     flex: 1,
@@ -562,7 +666,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#56AEBF",
     borderRadius: 8, // rounded-lg
-    height: 56, // h-14
+    height: 48, // h-12
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -577,7 +681,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#56AEBF",
     borderRadius: 8,
-    height: 56,
+    height: 48,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
