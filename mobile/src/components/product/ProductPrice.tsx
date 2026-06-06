@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   compactPrice: {
     fontFamily: fontFamily.interBold,
-    fontSize: fontSize[13], // text-[13px]
+    fontSize: fontSize.sm, // increased from 13 to 14
   },
   compactStrike: {
     fontFamily: fontFamily.interRegular,

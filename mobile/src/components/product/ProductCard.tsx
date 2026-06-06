@@ -274,9 +274,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   footerHome: {
-    padding: 10, // p-2.5
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 6,
     backgroundColor: colors.grey[10], // bg-gray-100 (grey shade)
-    height: 90, // Fixes card height, pushes empty space to bottom instead of between title and price
+    height: 68, // Tightened further to minimize bottom gap, adjusted for larger font
   },
   footerShop: {
     paddingHorizontal: 8, // px-2
@@ -301,6 +303,7 @@ const styles = StyleSheet.create({
   },
   titleHome: {
     fontSize: fontSize[13], // text-[13px]
+    marginBottom: 2, // Tighter spacing for home cards
   },
   titleShop: {
     fontSize: fontSize[13], // text-[13px]
