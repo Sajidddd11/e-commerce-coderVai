@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { sdk } from "./sdk"
+import { sdk, MEDUSA_BACKEND, PUBLISHABLE_KEY } from "./sdk"
 import { getRegion } from "./regions"
 import { getAuthHeaders, storage, STORAGE_KEYS } from "@utils/storage"
 
@@ -206,8 +206,32 @@ export async function placeOrder(
   const id = cartId || (await getCartId())
   if (!id) throw new Error("No existing cart found when placing an order")
 
-  const headers = await getAuthHeaders()
-  const cartRes = await sdk.store.cart.complete(id, {}, headers)
+  const authHeaders = await getAuthHeaders()
+
+  // Use native fetch with an explicit body to avoid React Native sending a
+  // null-byte when the SDK makes a bodyless POST with Content-Type: application/json.
+  // Sending `{}` (2 valid bytes) passes the backend's body-parser.
+  const res = await fetch(`${MEDUSA_BACKEND}/store/carts/${id}/complete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(PUBLISHABLE_KEY ? { "x-publishable-api-key": PUBLISHABLE_KEY } : {}),
+      ...authHeaders,
+    },
+    body: JSON.stringify({}),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "")
+    throw new Error(`Cart complete failed (${res.status}): ${text}`)
+  }
+
+  const cartRes: {
+    type: "order" | "cart"
+    order: HttpTypes.StoreOrder
+    cart: HttpTypes.StoreCart
+  } = await res.json()
 
   if (cartRes?.type === "order") {
     return { type: "order", order: cartRes.order }

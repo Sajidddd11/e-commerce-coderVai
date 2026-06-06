@@ -54,10 +54,26 @@ export async function completeOrderAfterSSLCommerz(
       return { success: true, alreadyCompleted: true, guestCheckout: true }
     }
 
-    // Not yet completed — give the payment a moment to propagate, then complete
+    // Not yet completed — give the payment a moment to propagate, then complete.
+    // Use native fetch with an explicit {} body: React Native sends a null byte
+    // for bodyless POSTs with Content-Type: application/json, causing a 500.
     await sleep(1500)
     try {
-      const res = await sdk.store.cart.complete(cartId, {}, headers)
+      const rawRes = await fetch(`${MEDUSA_BACKEND}/store/carts/${cartId}/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(PUBLISHABLE_KEY ? { "x-publishable-api-key": PUBLISHABLE_KEY } : {}),
+          ...headers,
+        },
+        body: JSON.stringify({}),
+      })
+      const res: {
+        type: "order" | "cart"
+        order: HttpTypes.StoreOrder
+        cart: HttpTypes.StoreCart
+      } = await rawRes.json()
       if (res?.type === "order") {
         return { success: true, order: res.order }
       }
