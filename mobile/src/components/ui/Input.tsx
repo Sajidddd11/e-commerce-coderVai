@@ -47,6 +47,8 @@ export function Input({
               : focused
               ? colors.brand.teal
               : colors.grey[20],
+            backgroundColor: rest.editable === false ? colors.grey[20] : colors.grey[10],
+            color: rest.editable === false ? colors.grey[50] : colors.grey[90],
           },
           style,
         ]}

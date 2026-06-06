@@ -94,10 +94,10 @@ export default function CheckoutScreen() {
     if (!form.fullName && (customer.first_name || customer.last_name)) {
       patch.fullName = `${customer.first_name ?? ""} ${customer.last_name ?? ""}`.trim()
     }
-    if (!form.email && customer.email) patch.email = customer.email
+    if (customer.email && form.email !== customer.email) patch.email = customer.email
     if (!form.phone && customer.phone) patch.phone = customer.phone
     if (Object.keys(patch).length) setForm(patch)
-  }, [customer])
+  }, [customer, form.email])
 
   useEffect(() => {
     if (!cart?.id || !region?.id) return
@@ -138,18 +138,20 @@ export default function CheckoutScreen() {
       const lastName = nameParts.slice(1).join(" ") || firstName
 
       try {
-        await updateCart({
-          shipping_address: {
-            first_name: firstName,
-            last_name: lastName,
-            address_1: form.address1,
-            city: form.district,
-            country_code: countryCode,
-            phone: form.phone,
-            company: form.company,
-          },
-          email: form.email,
-        })
+        const shipping_address: any = {
+          city: form.district,
+          country_code: countryCode,
+        }
+        if (firstName) shipping_address.first_name = firstName
+        if (lastName) shipping_address.last_name = lastName
+        if (form.address1) shipping_address.address_1 = form.address1
+        if (form.phone) shipping_address.phone = form.phone
+        if (form.company) shipping_address.company = form.company
+
+        const updateData: any = { shipping_address }
+        if (form.email) updateData.email = form.email
+
+        await updateCart(updateData)
         
         // Refresh shipping methods since the address changed
         const methods = await listCartShippingMethods(cart.id)
@@ -336,7 +338,7 @@ export default function CheckoutScreen() {
               <Text style={styles.inputLabel}>Phone Number</Text>
               <View style={styles.phoneInputBox}>
                 <View style={styles.phonePrefix}>
-                  <Text style={styles.phonePrefixText}>+880</Text>
+                  <Text style={styles.phonePrefixText}>+88</Text>
                 </View>
                 <TextInput
                   style={styles.phoneInput}
@@ -355,6 +357,7 @@ export default function CheckoutScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               placeholder="your@email.com"
+              editable={!customer}
             />
 
             <DistrictPicker

@@ -31,12 +31,16 @@ export function AddressSelect({
   const [open, setOpen] = useState(false)
 
   const selectedAddress = useMemo(() => {
-    return addresses.find(
-      (a) =>
-        a.address_1 === addressInput.address1 &&
-        a.city === addressInput.district &&
-        a.phone === addressInput.phone
-    )
+    return addresses.find((a) => {
+      const addressFullName = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim()
+      return (
+        addressFullName === addressInput.fullName &&
+        (a.address_1 ?? "") === addressInput.address1 &&
+        (a.city ?? "") === addressInput.district &&
+        (a.phone ?? "") === addressInput.phone &&
+        (a.company ?? "") === addressInput.company
+      )
+    })
   }, [addresses, addressInput])
 
   return (
