@@ -333,8 +333,8 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 4, // reduced
+    paddingBottom: 8, // reduced
     borderBottomWidth: 1,
     borderBottomColor: colors.grey[20],
   },

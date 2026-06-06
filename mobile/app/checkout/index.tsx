@@ -14,6 +14,7 @@ import { useRouter } from "expo-router"
 import { ChevronLeft, ChevronDown } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Input } from "@components/ui/Input"
 import { DistrictPicker } from "@components/checkout/DistrictPicker"
 import { AddressLabelSelector } from "@components/checkout/AddressLabelSelector"
@@ -41,6 +42,7 @@ import { paymentInfoMap } from "@design/constants"
 
 export default function CheckoutScreen() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const cart = useCartStore((s) => s.cart)
   const customer = useAuthStore((s) => s.customer)
   const region = useRegionStore((s) => s.region)
@@ -438,7 +440,7 @@ export default function CheckoutScreen() {
           ) : null}
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
             <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900], fontSize: 14 }}>
               Shipping {getShippingLabel() ? `(${getShippingLabel()})` : ""}
@@ -518,8 +520,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16, // px-4
-    paddingTop: 12, // pt-3
-    paddingBottom: 12, // pb-3
+    paddingTop: 4, // reduced from 12
+    paddingBottom: 8, // reduced from 12
     borderBottomWidth: 1,
     borderBottomColor: colors.grey[20],
     backgroundColor: "white",
@@ -540,7 +542,9 @@ const styles = StyleSheet.create({
   stepIndicator: {
     backgroundColor: "white",
     flexDirection: "row",
-    padding: 16, // p-4
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingHorizontal: 16,
     justifyContent: "center",
     alignItems: "center",
   },

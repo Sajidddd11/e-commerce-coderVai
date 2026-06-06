@@ -4,6 +4,7 @@ import { useRouter } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ThemedText } from "@components/ui/ThemedText"
 import { Button } from "@components/ui/Button"
 import { PaymentIcon } from "@components/checkout/PaymentIcon"
@@ -19,6 +20,7 @@ import { colors, spacing, borderRadius } from "@design/theme"
 
 export default function CheckoutReviewScreen() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const cart = useCartStore((s) => s.cart)
   const setCart = useCartStore((s) => s.setCart)
   const clearCart = useCartStore((s) => s.clear)
@@ -39,7 +41,12 @@ export default function CheckoutReviewScreen() {
   const session = cart?.payment_collection?.payment_sessions?.find(
     (s) => s.status === "pending"
   )
-  const providerId = session?.provider_id ?? ""
+  const rawProviderId = session?.provider_id ?? ""
+  const selectedGateway = (session?.data as any)?.selected_gateway
+  const providerId =
+    rawProviderId === "pp_sslcommerz_default" && selectedGateway
+      ? `${rawProviderId}_${selectedGateway}`
+      : rawProviderId
 
   const placeCodOrder = async () => {
     const result = await placeOrder(cart!.id)
@@ -245,7 +252,7 @@ export default function CheckoutReviewScreen() {
         ) : null}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.base) }]}>
         <Button
           title={isSslCommerz(providerId) ? "Pay Now" : "Place Order"}
           fullWidth
@@ -322,7 +329,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
+    paddingTop: 4, // reduced
+    paddingBottom: 8, // reduced
     borderBottomWidth: 1,
     borderBottomColor: colors.grey[20],
   },
