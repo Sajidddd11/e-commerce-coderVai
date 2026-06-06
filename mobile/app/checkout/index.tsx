@@ -374,6 +374,7 @@ export default function CheckoutScreen() {
                       <View style={[styles.radio, selected && styles.radioActive]}>
                         {selected && <View style={styles.radioInner} />}
                       </View>
+                      <PaymentIcon providerId={p.id} size={24} />
                       <View style={{ flex: 1, gap: 2 }}>
                         <Text style={styles.paymentTitle}>
                           {info.title}
