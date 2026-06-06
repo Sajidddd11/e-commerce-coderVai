@@ -4,15 +4,11 @@ import { useRouter } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import { Header } from "@components/layout/Header"
-import { Footer } from "@components/layout/Footer"
 import { AnnouncementBar } from "@components/layout/AnnouncementBar"
-import { WhatsAppFAB } from "@components/layout/WhatsAppFAB"
 import { HeroBanner } from "@components/home/HeroBanner"
 import { HeroCarousel } from "@components/home/HeroCarousel"
 import { SectionHeader } from "@components/home/SectionHeader"
 import { CategoryTiles } from "@components/home/CategoryTiles"
-import { TrustSection } from "@components/home/TrustSection"
-import { CTASection } from "@components/home/CTASection"
 import { ProductRail } from "@components/product/ProductRail"
 import { useRegionStore } from "@stores/region-store"
 import { listProducts } from "@api/products"
@@ -132,31 +128,13 @@ export default function HomeScreen() {
             <ProductRail products={collection.products} />
           </View>
         ))}
-
-        <View style={styles.trust}>
-          <SectionHeader title="Why shop with us" />
-          <TrustSection />
-        </View>
-
-        <View style={styles.cta}>
-          <CTASection />
-        </View>
-
-        <Footer />
       </ScrollView>
-      <WhatsAppFAB bottomOffset={90} />
     </Screen>
   )
 }
 
 const styles = StyleSheet.create({
   scroll: {
-    paddingBottom: spacing.lg,
-  },
-  trust: {
-    marginTop: spacing.sm,
-  },
-  cta: {
-    marginTop: spacing.lg,
+    paddingBottom: spacing["3xl"],
   },
 })

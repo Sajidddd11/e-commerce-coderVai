@@ -28,7 +28,7 @@ export function CategoryChips({
         ]}
       >
         <ThemedText
-          variant="nav"
+          variant="bodySmall"
           color={active ? colors.grey[0] : colors.grey[70]}
         >
           {label}
@@ -41,6 +41,7 @@ export function CategoryChips({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.scroll}
       contentContainerStyle={styles.container}
     >
       {renderChip(null, "All")}
@@ -50,14 +51,19 @@ export function CategoryChips({
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   container: {
+    alignItems: "center",
     gap: spacing.sm,
     paddingHorizontal: spacing.base,
-    paddingVertical: spacing.sm,
   },
   chip: {
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: borderRadius.circle,
+    alignSelf: "center",
   },
 })

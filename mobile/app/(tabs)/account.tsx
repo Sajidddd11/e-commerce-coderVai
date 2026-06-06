@@ -3,7 +3,7 @@ import { View, ScrollView, Pressable, StyleSheet } from "react-native"
 import { useRouter } from "expo-router"
 import { LogOut, Package, MapPin, UserCog, ChevronRight } from "lucide-react-native"
 import { Screen } from "@components/layout/Screen"
-import { Footer } from "@components/layout/Footer"
+import { AccountSupportSection } from "@components/layout/AccountSupportSection"
 import { ThemedText } from "@components/ui/ThemedText"
 import { Button } from "@components/ui/Button"
 import { Input } from "@components/ui/Input"
@@ -96,7 +96,7 @@ export default function AccountScreen() {
             />
           </View>
 
-          <Footer />
+          <AccountSupportSection />
         </ScrollView>
       </Screen>
     )
@@ -105,9 +105,9 @@ export default function AccountScreen() {
   return (
     <Screen>
       <ScrollView
-        contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
+      <View style={styles.container}>
         <ThemedText variant="sectionHeading" color={colors.grey[90]}>
           {mode === "login" ? "Welcome back" : "Create account"}
         </ThemedText>
@@ -198,6 +198,8 @@ export default function AccountScreen() {
             </ThemedText>
           </Pressable>
         </View>
+      </View>
+      <AccountSupportSection />
       </ScrollView>
     </Screen>
   )

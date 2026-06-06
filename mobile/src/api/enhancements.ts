@@ -36,24 +36,61 @@ export async function getBestSelling(
     .catch(() => [])
 }
 
-export interface SearchSuggestion {
-  id?: string
+export interface ProductSuggestion {
+  id: string
   title: string
-  handle?: string
-  thumbnail?: string | null
+  handle: string
+  thumbnail: string | null
+  category?: string
+  collection?: string
+}
+
+export interface CategorySuggestion {
+  id: string
+  name: string
+  handle: string
+  type: "category"
+}
+
+export interface CollectionSuggestion {
+  id: string
+  title: string
+  handle: string
+  type: "collection"
+}
+
+export interface SearchSuggestionsResult {
+  products: ProductSuggestion[]
+  categories: CategorySuggestion[]
+  collections: CollectionSuggestion[]
+  popular: string[]
+}
+
+const EMPTY_SUGGESTIONS: SearchSuggestionsResult = {
+  products: [],
+  categories: [],
+  collections: [],
+  popular: [],
 }
 
 export async function getSearchSuggestions(
   q: string
-): Promise<SearchSuggestion[]> {
-  if (!q.trim()) return []
+): Promise<SearchSuggestionsResult> {
+  const term = q.trim()
+  if (term.length < 2) return EMPTY_SUGGESTIONS
+
   return sdk.client
-    .fetch<{ suggestions: SearchSuggestion[] }>("/store/search-suggestions", {
+    .fetch<SearchSuggestionsResult>("/store/search-suggestions", {
       method: "GET",
-      query: { q },
+      query: { q: term },
     })
-    .then(({ suggestions }) => suggestions ?? [])
-    .catch(() => [])
+    .then((data) => ({
+      products: data.products ?? [],
+      categories: data.categories ?? [],
+      collections: data.collections ?? [],
+      popular: data.popular ?? [],
+    }))
+    .catch(() => EMPTY_SUGGESTIONS)
 }
 
 export interface FreeShippingInfo {

@@ -21,15 +21,22 @@ export function Header({ showSearch = true }: HeaderProps) {
 
       {showSearch ? (
         <Pressable
-          style={styles.searchPill}
-          onPress={() => router.push("/(tabs)/shop")}
+          style={styles.searchField}
+          onPress={() => router.push("/search")}
           accessibilityRole="search"
           accessibilityLabel="Search products"
         >
-          <Search size={18} color={colors.grey[50]} />
-          <ThemedText variant="bodySmall" color={colors.grey[50]}>
-            Search products
+          <ThemedText
+            variant="body"
+            color={colors.grey[40]}
+            style={styles.placeholder}
+            numberOfLines={1}
+          >
+            Search products...
           </ThemedText>
+          <View style={styles.searchBtn}>
+            <Search size={18} color={colors.grey[50]} />
+          </View>
         </Pressable>
       ) : null}
     </View>
@@ -50,14 +57,22 @@ const styles = StyleSheet.create({
   logo: {
     letterSpacing: 2,
   },
-  searchPill: {
+  searchField: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.grey[10],
+    backgroundColor: colors.grey[0],
     borderRadius: borderRadius.rounded,
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.sm,
+    borderWidth: 2,
+    borderColor: colors.grey[20],
+    paddingLeft: spacing.base,
+    paddingRight: spacing.xs,
+    minHeight: 40,
+  },
+  placeholder: {
+    flex: 1,
+  },
+  searchBtn: {
+    padding: spacing.sm,
   },
 })

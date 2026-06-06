@@ -30,11 +30,12 @@ export function Badge({ label, variant = "sale", style }: BadgeProps) {
 const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.soft,
+    paddingVertical: 3,
+    borderRadius: borderRadius.base,
     alignSelf: "flex-start",
   },
   text: {
     fontWeight: "700",
+    fontSize: 11,
   },
 })

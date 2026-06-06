@@ -43,7 +43,7 @@ export function ProductRail({
     >
       {valid.map((product) => (
         <View key={product.id} style={{ width: cardWidth }}>
-          <ProductCard product={product} />
+          <ProductCard product={product} width={cardWidth} squareImage />
         </View>
       ))}
     </ScrollView>
@@ -52,7 +52,7 @@ export function ProductRail({
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.md,
+    gap: spacing.sm,
     paddingHorizontal: spacing.base,
     paddingBottom: spacing.sm,
   },

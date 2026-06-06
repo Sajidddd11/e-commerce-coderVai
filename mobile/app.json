@@ -9,13 +9,16 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "userInterfaceStyle": "light",
       "bundleIdentifier": "com.zahan.store",
       "associatedDomains": ["applinks:zahan.com.bd"],
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["whatsapp"]
       }
     },
     "android": {
+      "userInterfaceStyle": "light",
       "package": "com.zahan.store",
       "intentFilters": [
         {

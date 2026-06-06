@@ -19,9 +19,14 @@ const FEATURES = [
   { Icon: Clock, title: "Quick Dispatch", subtitle: "Same-day handling" },
 ] as const
 
-export function TrustSection() {
+interface TrustSectionProps {
+  /** Omit outer padding when nested inside Account support section. */
+  embedded?: boolean
+}
+
+export function TrustSection({ embedded }: TrustSectionProps = {}) {
   return (
-    <View style={styles.grid}>
+    <View style={[styles.grid, embedded && styles.gridEmbedded]}>
       {FEATURES.map(({ Icon, title, subtitle }) => (
         <View key={title} style={styles.card}>
           <View style={styles.iconPill}>
@@ -45,6 +50,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.sm,
     paddingHorizontal: spacing.base,
+  },
+  gridEmbedded: {
+    paddingHorizontal: 0,
   },
   card: {
     width: "31.5%",

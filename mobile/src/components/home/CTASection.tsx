@@ -5,9 +5,14 @@ import { Button } from "../ui/Button"
 import { socialMediaLinks } from "@design/constants"
 import { colors, spacing, borderRadius } from "@design/theme"
 
-export function CTASection() {
+interface CTASectionProps {
+  /** Omit outer padding when nested inside Account support section. */
+  embedded?: boolean
+}
+
+export function CTASection({ embedded }: CTASectionProps = {}) {
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, embedded && styles.wrapEmbedded]}>
       <View style={styles.card}>
         <ThemedText variant="sectionHeading" color={colors.grey[0]}>
           Join the ZAHAN community
@@ -29,6 +34,7 @@ export function CTASection() {
 
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: spacing.base },
+  wrapEmbedded: { paddingHorizontal: 0 },
   card: {
     backgroundColor: colors.dark.bg,
     borderRadius: borderRadius.large,
