@@ -50,7 +50,7 @@ export default function SearchScreen() {
           router.push(`/product/${handle}`)
         }}
         onSelectCategory={(handle) => {
-          router.push(`/category/${handle}`)
+          router.replace({ pathname: "/(tabs)/shop", params: { category: handle } })
         }}
         onSelectCollection={(title) => goToShop(title)}
         onSelectPopular={goToShop}

@@ -27,7 +27,11 @@ const PAGE_SIZE = 12
 
 export default function ShopScreen() {
   const router = useRouter()
-  const { q: qParam, sortBy: sortParam } = useLocalSearchParams<{ q?: string; sortBy?: string }>()
+  const { q: qParam, sortBy: sortParam, category: categoryParam } = useLocalSearchParams<{
+    q?: string
+    sortBy?: string
+    category?: string
+  }>()
   const countryCode = useRegionStore((s) => s.countryCode)
   const isReady = useRegionStore((s) => s.isReady)
 
@@ -95,6 +99,17 @@ export default function ShopScreen() {
       .then((cats) => setCategories(filterCategoriesWithProducts(cats)))
       .catch(() => {})
   }, [isReady])
+
+  useEffect(() => {
+    if (categoryParam && categories.length > 0) {
+      const match = categories.find(
+        (c) => c.handle === categoryParam || c.id === categoryParam
+      )
+      if (match) {
+        setActiveCategory(match.id)
+      }
+    }
+  }, [categoryParam, categories])
 
   const fetchPage = useCallback(
     async (pageToLoad: number, replace: boolean) => {
@@ -173,7 +188,10 @@ export default function ShopScreen() {
                 }}
                 onSelectCategory={(handle) => {
                   setShowSuggestions(false)
-                  router.push(`/category/${handle}`)
+                  const match = categories.find((c) => c.handle === handle)
+                  if (match) {
+                    setActiveCategory(match.id)
+                  }
                 }}
                 onSelectCollection={(title) => runSearch(title)}
                 onSelectPopular={runSearch}

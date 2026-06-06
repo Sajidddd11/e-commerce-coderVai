@@ -36,7 +36,12 @@ export function CategoryTiles({ categories }: CategoryTilesProps) {
           <Pressable
             key={category.id}
             style={styles.tile}
-            onPress={() => router.push(`/category/${category.handle}`)}
+            onPress={() =>
+              router.push({
+                pathname: "/(tabs)/shop",
+                params: { category: category.handle },
+              })
+            }
           >
             <View style={styles.imageWrap}>
               {thumb ? (
