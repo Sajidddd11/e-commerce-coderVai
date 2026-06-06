@@ -13,7 +13,8 @@ import { HttpTypes } from "@medusajs/types"
 import { ProductCard } from "./ProductCard"
 import { Skeleton } from "../ui/Skeleton"
 import { splitIntoMasonryColumns } from "@utils/masonry-columns"
-import { colors, spacing } from "@design/theme"
+import { spacing } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 interface ProductGridProps {
   products: HttpTypes.StoreProduct[]
@@ -39,6 +40,8 @@ export function ProductGrid({
   ListEmptyComponent,
   loadingMore = false,
 }: ProductGridProps) {
+  const { colors } = useAppTheme();
+
   const { width: screenWidth } = useWindowDimensions()
   const columnWidth = (screenWidth - H_PAD * 2 - GAP) / 2
 
@@ -111,7 +114,7 @@ export function ProductGrid({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.brand.teal}
+            tintColor={colors.primary}
           />
         ) : undefined
       }
@@ -123,7 +126,7 @@ export function ProductGrid({
       </View>
       {loadingMore ? (
         <View style={styles.loadingMore}>
-          <ActivityIndicator size="small" color={colors.brand.teal} />
+          <ActivityIndicator size="small" color={colors.primary} />
         </View>
       ) : null}
     </ScrollView>

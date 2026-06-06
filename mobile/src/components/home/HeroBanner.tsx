@@ -13,7 +13,7 @@ export function HeroBanner() {
       <View style={styles.banner}>
         <Image 
           source="https://images.unsplash.com/photo-1603189343302-e603f7add05a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODc2NDd8MHwxfHNlYXJjaHwxfHxuZXclMjBzZWFzb24lMjBmYXNoaW9uJTIwY29sbGVjdGlvbiUyMGVkaXRvcmlhbHxlbnwxfDB8fHwxNzgwNzMyNDc3fDA&ixlib=rb-4.1.0&q=80&w=600"
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           contentFit="cover"
         />
         <View style={styles.overlay} />
@@ -60,11 +60,11 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(15, 23, 42, 0.7)",
   },
   content: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     paddingHorizontal: 24, // px-6
     paddingVertical: 20, // py-5
     justifyContent: "center",

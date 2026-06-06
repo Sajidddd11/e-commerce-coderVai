@@ -7,7 +7,7 @@ import {
   type TextInputProps,
 } from "react-native"
 import { Search, X } from "lucide-react-native"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 import { fontFamily, fontSize } from "@design/typography"
 import { useAnimatedPlaceholder } from "@hooks/useAnimatedPlaceholder"
 
@@ -31,6 +31,8 @@ export function ProductSearchBar({
   placeholder,
   autoFocus,
 }: ProductSearchBarProps) {
+  const { colors } = useAppTheme();
+
   const [focused, setFocused] = useState(false)
   const animatedPlaceholder = useAnimatedPlaceholder()
   const displayPlaceholder = placeholder || animatedPlaceholder
@@ -72,7 +74,7 @@ export function ProductSearchBar({
           }}
           style={styles.iconBtn}
         >
-          <X size={16} color={colors.grey[50]} />
+          <X size={16} color={colors.textMuted} />
         </Pressable>
       ) : null}
 

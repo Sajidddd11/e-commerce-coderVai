@@ -1,7 +1,7 @@
 import { View, StyleSheet, Text } from "react-native"
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@utils/get-product-price"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 import { fontFamily, fontSize } from "@design/typography"
 
 interface ProductPriceProps {
@@ -19,6 +19,8 @@ export function ProductPrice({
   compact = false,
   color,
 }: ProductPriceProps) {
+  const { colors } = useAppTheme();
+
   const { cheapestPrice, variantPrice } = getProductPrice({ product, variantId })
   const price = variantId ? variantPrice : cheapestPrice
 

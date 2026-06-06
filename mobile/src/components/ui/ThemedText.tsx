@@ -1,6 +1,6 @@
 import { Text as RNText, TextProps } from "react-native"
 import { textStyles } from "@design/typography"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 type Variant = keyof typeof textStyles
 
@@ -11,9 +11,12 @@ interface ThemedTextProps extends TextProps {
 
 export function ThemedText({
   variant = "body",
-  color = colors.grey[90],
+  color,
   style,
   ...rest
 }: ThemedTextProps) {
-  return <RNText style={[textStyles[variant], { color }, style]} {...rest} />
+  const { colors } = useAppTheme()
+  const finalColor = color ?? colors.text
+
+  return <RNText style={[textStyles[variant], { color: finalColor }, style]} {...rest} />
 }

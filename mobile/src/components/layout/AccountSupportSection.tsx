@@ -231,7 +231,7 @@ function SocialButton({
 }) {
   return (
     <Pressable style={styles.socialBtn} onPress={onPress}>
-      {React.cloneElement(icon as React.ReactElement, { color })}
+      {React.cloneElement(icon as React.ReactElement<any>, { color })}
     </Pressable>
   )
 }

@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.slate[900],
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     paddingHorizontal: 24, // px-6
     paddingVertical: 20, // py-5
     justifyContent: "center",

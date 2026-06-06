@@ -5,6 +5,20 @@
  */
 
 export const colors = {
+  // Fallbacks for un-refactored components
+  background: "#FFFFFF",
+  card: "#FFFFFF",
+  text: "#111827",
+  textMuted: "#6B7280",
+  border: "#E5E7EB",
+  primary: "#56AEBF",
+  primaryHover: "#458F9E",
+  primaryMuted: "rgba(86, 174, 191, 0.1)",
+  cardBorder: "#F3F4F6",
+  overlay: "rgba(0, 0, 0, 0.4)",
+  skeleton: "#E5E7EB",
+  surface: "#F9FAFB",
+
   // Brand
   brand: {
     teal: "#56AEBF",
@@ -155,5 +169,57 @@ export const theme = {
   layout,
   animation,
 } as const
+
+export const lightColors = {
+  background: colors.grey[0],
+  card: colors.grey[0],
+  text: colors.grey[90],
+  textMuted: colors.grey[50],
+  border: colors.grey[20],
+  primary: colors.brand.teal,
+  primaryHover: colors.brand.tealHover,
+  primaryMuted: colors.brand.tealMuted,
+  success: colors.success,
+  error: colors.error,
+  warning: colors.warning,
+  sale: colors.sale,
+  tint: colors.brand.teal,
+  tabIconDefault: colors.grey[40],
+  tabIconSelected: colors.brand.teal,
+  inputBackground: colors.grey[5],
+  inputBorder: colors.grey[20],
+  cardBorder: colors.grey[10],
+  overlay: "rgba(0, 0, 0, 0.4)",
+  whatsapp: colors.whatsapp,
+  skeleton: colors.grey[20],
+  surface: colors.grey[5], // slightly off-white for headers/footers
+} as const;
+
+export const darkColors = {
+  background: "#000000",
+  card: "#121212", // dark grey for cards
+  text: colors.grey[0],
+  textMuted: colors.grey[40],
+  border: colors.grey[80],
+  primary: colors.brand.teal,
+  primaryHover: colors.brand.tealHover,
+  primaryMuted: "rgba(86, 174, 191, 0.2)",
+  success: colors.success,
+  error: colors.error,
+  warning: colors.warning,
+  sale: colors.sale,
+  tint: colors.brand.teal,
+  tabIconDefault: colors.grey[50],
+  tabIconSelected: colors.brand.teal,
+  inputBackground: colors.grey[90],
+  inputBorder: colors.grey[80],
+  cardBorder: colors.grey[80],
+  overlay: "rgba(0, 0, 0, 0.6)",
+  whatsapp: colors.whatsapp,
+  skeleton: colors.grey[80],
+  surface: "#0A0A0A",
+} as const;
+
+export type ThemeColors = typeof lightColors;
 
 export type Theme = typeof theme

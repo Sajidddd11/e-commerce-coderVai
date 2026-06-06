@@ -1,7 +1,7 @@
 import { View, Pressable, StyleSheet, Text } from "react-native"
 import { useRouter } from "expo-router"
 import { Search } from "lucide-react-native"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 import { fontFamily, fontSize } from "@design/typography"
 import { useAnimatedPlaceholder } from "@hooks/useAnimatedPlaceholder"
 
@@ -10,6 +10,8 @@ interface HeaderProps {
 }
 
 export function Header({ showSearch = true }: HeaderProps) {
+  const { colors } = useAppTheme();
+
   const router = useRouter()
   const animatedPlaceholder = useAnimatedPlaceholder()
 

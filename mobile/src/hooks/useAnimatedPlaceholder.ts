@@ -14,7 +14,7 @@ export function useAnimatedPlaceholder(phrases: string[] = DEFAULT_PHRASES) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout
+    let timeout: ReturnType<typeof setTimeout>
     const currentPhrase = phrases[phraseIndex]
 
     if (isDeleting) {

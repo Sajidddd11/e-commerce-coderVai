@@ -360,7 +360,7 @@ export default function ProductScreen() {
   }
 
   return (
-    <Screen edges={["top"]} style={{ backgroundColor: "white" }}>
+    <Screen edges={["top"]} >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140, // pb-35
   },
   imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0,0,0,0.01)", // bg-black/1 from demo
   },
   backBtn: {

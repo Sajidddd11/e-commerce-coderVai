@@ -8,7 +8,8 @@ import {
   StyleProp,
   TextStyle,
 } from "react-native"
-import { colors, borderRadius, spacing } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme";
+import { borderRadius, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { ThemedText } from "./ThemedText"
 
@@ -28,27 +29,29 @@ export function Input({
   onBlur,
   ...rest
 }: InputProps) {
+  const { colors } = useAppTheme();
+
   const [focused, setFocused] = useState(false)
 
   return (
     <View style={[styles.container, containerStyle]}>
       {label ? (
-        <ThemedText variant="bodySmall" color={colors.grey[70]} style={styles.label}>
+        <ThemedText variant="bodySmall" color={colors.textMuted} style={styles.label}>
           {label}
         </ThemedText>
       ) : null}
       <TextInput
-        placeholderTextColor={colors.grey[40]}
+        placeholderTextColor={colors.textMuted}
         style={[
           styles.input,
           {
             borderColor: error
               ? colors.error
               : focused
-              ? colors.brand.teal
-              : colors.grey[20],
-            backgroundColor: rest.editable === false ? colors.grey[20] : colors.grey[10],
-            color: rest.editable === false ? colors.grey[50] : colors.grey[90],
+              ? colors.primary
+              : colors.border,
+            backgroundColor: colors.inputBackground,
+            color: rest.editable === false ? colors.textMuted : colors.text,
           },
           style,
         ]}
@@ -80,14 +83,12 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   input: {
-    backgroundColor: colors.grey[10],
     borderWidth: 1,
     borderRadius: borderRadius.base,
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
     fontFamily: fontFamily.body,
     fontSize: fontSize.md,
-    color: colors.grey[90],
     minHeight: 48,
   },
   error: {

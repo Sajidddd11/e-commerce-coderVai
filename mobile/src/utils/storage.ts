@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
   cartIdSsl: "medusa_cart_id_ssl",
   checkoutForm: "checkout_form_state",
   region: "medusa_region",
+  theme: "app_theme",
 } as const
 
 async function secureGet(key: string): Promise<string | null> {

@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView, Edge } from "react-native-safe-area-context"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 interface ScreenProps {
   children: React.ReactNode
@@ -11,12 +11,14 @@ interface ScreenProps {
 export function Screen({
   children,
   edges = ["top"],
-  background = colors.grey[0],
+  background,
 }: ScreenProps) {
+  const { colors } = useAppTheme();
+
   return (
     <SafeAreaView
       edges={edges}
-      style={[styles.safe, { backgroundColor: background }]}
+      style={[styles.safe, { backgroundColor: background ?? colors.background }]}
     >
       <View style={styles.inner}>{children}</View>
     </SafeAreaView>

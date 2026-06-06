@@ -1,6 +1,6 @@
 import { Banknote, CreditCard } from "lucide-react-native"
 import { Image } from "expo-image"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 /** Maps a payment provider id (incl. virtual bKash/Nagad) to a Lucide icon or SVG asset. */
 export function PaymentIcon({
@@ -10,6 +10,8 @@ export function PaymentIcon({
   providerId: string
   size?: number
 }) {
+  const { colors } = useAppTheme();
+
   if (providerId === "pp_system_default") {
     return <Banknote size={size} color={colors.success} />
   }
@@ -31,6 +33,6 @@ export function PaymentIcon({
       />
     )
   }
-  return <CreditCard size={size} color={colors.brand.teal} />
+  return <CreditCard size={size} color={colors.primary} />
 }
 

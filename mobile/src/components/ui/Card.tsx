@@ -1,5 +1,6 @@
 import { View, ViewProps, StyleSheet } from "react-native"
-import { colors, borderRadius, shadows } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme";
+import { borderRadius, shadows } from "@design/theme"
 
 interface CardProps extends ViewProps {
   elevated?: boolean
@@ -13,10 +14,13 @@ export function Card({
   children,
   ...rest
 }: CardProps) {
+  const { colors } = useAppTheme();
+
   return (
     <View
       style={[
         styles.card,
+        { backgroundColor: colors.background },
         elevated ? shadows.md : null,
         padded ? styles.padded : null,
         style,
@@ -30,7 +34,6 @@ export function Card({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.grey[0],
     borderRadius: borderRadius.rounded,
     overflow: "hidden",
   },

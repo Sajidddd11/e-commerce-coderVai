@@ -10,9 +10,11 @@ import {
   ProductReview,
 } from "@api/enhancements"
 import { useAuthStore } from "@stores/auth-store"
-import { colors, spacing, borderRadius } from "@design/theme"
+import { spacing, borderRadius } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 function Stars({ value, size = 14 }: { value: number; size?: number }) {
+  const { colors } = useAppTheme();
   return (
     <View style={styles.starsRow}>
       {[1, 2, 3, 4, 5].map((i) => (
@@ -28,6 +30,8 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
 }
 
 export function ProductReviews({ productId }: { productId: string }) {
+  const { colors } = useAppTheme();
+
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const customer = useAuthStore((s) => s.customer)
   const [reviews, setReviews] = useState<ProductReview[]>([])
@@ -94,18 +98,18 @@ export function ProductReviews({ productId }: { productId: string }) {
     <View style={styles.wrap}>
       <View style={styles.header}>
         <View>
-          <ThemedText variant="subheading" color={colors.grey[80]}>
+          <ThemedText variant="subheading" color={colors.text}>
             Reviews
           </ThemedText>
           {count > 0 ? (
             <View style={styles.summary}>
               <Stars value={average} />
-              <ThemedText variant="bodySmall" color={colors.grey[50]}>
+              <ThemedText variant="bodySmall" color={colors.textMuted}>
                 {average.toFixed(1)} · {count} review{count === 1 ? "" : "s"}
               </ThemedText>
             </View>
           ) : (
-            <ThemedText variant="bodySmall" color={colors.grey[50]}>
+            <ThemedText variant="bodySmall" color={colors.textMuted}>
               No reviews yet
             </ThemedText>
           )}
@@ -121,20 +125,20 @@ export function ProductReviews({ productId }: { productId: string }) {
       </View>
 
       {reviews.slice(0, 5).map((r) => (
-        <View key={r.id} style={styles.review}>
+        <View key={r.id} style={[styles.review, { borderTopColor: colors.border }]}>
           <View style={styles.reviewHeader}>
-            <ThemedText variant="bodyMedium" color={colors.grey[90]}>
+            <ThemedText variant="bodyMedium" color={colors.text}>
               {r.customer_name || "Customer"}
             </ThemedText>
             <Stars value={r.rating} />
           </View>
           {r.title ? (
-            <ThemedText variant="bodyMedium" color={colors.grey[80]}>
+            <ThemedText variant="bodyMedium" color={colors.text}>
               {r.title}
             </ThemedText>
           ) : null}
           {r.content ? (
-            <ThemedText variant="body" color={colors.grey[60]}>
+            <ThemedText variant="body" color={colors.textMuted}>
               {r.content}
             </ThemedText>
           ) : null}
@@ -148,13 +152,13 @@ export function ProductReviews({ productId }: { productId: string }) {
         onRequestClose={() => setModalOpen(false)}
       >
         <View style={styles.backdrop}>
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { backgroundColor: colors.background }]}>
             <View style={styles.sheetHeader}>
-              <ThemedText variant="subheading" color={colors.grey[90]}>
+              <ThemedText variant="subheading" color={colors.text}>
                 Write a review
               </ThemedText>
               <Pressable onPress={() => setModalOpen(false)} hitSlop={8}>
-                <X size={22} color={colors.grey[60]} />
+                <X size={22} color={colors.textMuted} />
               </Pressable>
             </View>
             <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
@@ -205,7 +209,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.grey[10],
   },
   reviewHeader: {
     flexDirection: "row",
@@ -214,7 +217,6 @@ const styles = StyleSheet.create({
   },
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" },
   sheet: {
-    backgroundColor: colors.grey[0],
     borderTopLeftRadius: borderRadius.large,
     borderTopRightRadius: borderRadius.large,
     paddingTop: spacing.base,

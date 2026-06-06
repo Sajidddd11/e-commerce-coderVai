@@ -3,7 +3,8 @@ import { useRouter } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
 import { Screen } from "./Screen"
 import { ThemedText } from "../ui/ThemedText"
-import { colors, spacing } from "@design/theme"
+import { spacing, colors as rawColors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 interface Block {
   heading?: string
@@ -23,16 +24,18 @@ export function StaticScreen({
   blocks,
   variant = "light",
 }: StaticScreenProps) {
+  const { colors } = useAppTheme();
+
   const router = useRouter()
   const dark = variant === "dark"
-  const bg = dark ? colors.dark.bg : colors.grey[0]
-  const titleColor = dark ? colors.grey[0] : colors.grey[90]
-  const headingColor = dark ? colors.brand.teal : colors.grey[90]
-  const bodyColor = dark ? colors.grey[20] : colors.grey[60]
+  const bg = dark ? rawColors.dark.bg : colors.background
+  const titleColor = dark ? rawColors.grey[0] : colors.text
+  const headingColor = dark ? colors.primary : colors.text
+  const bodyColor = dark ? rawColors.dark.border : colors.textMuted
 
   return (
     <Screen edges={["top"]} background={bg}>
-      <View style={[styles.header, dark && styles.headerDark]}>
+      <View style={[styles.header, { borderBottomColor: dark ? rawColors.dark.border : colors.border }]}>
         <Pressable onPress={() => router.back()} style={styles.back} hitSlop={8}>
           <ChevronLeft size={24} color={titleColor} />
         </Pressable>
@@ -75,10 +78,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.grey[20],
-  },
-  headerDark: {
-    borderBottomColor: colors.dark.border,
   },
   back: { padding: spacing.xs },
   scroll: { padding: spacing.base, gap: spacing.lg, paddingBottom: spacing["2xl"] },

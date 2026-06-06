@@ -1,6 +1,7 @@
 import { View, StyleSheet, ViewStyle } from "react-native"
-import { colors, borderRadius, spacing } from "@design/theme"
+import { borderRadius, spacing } from "@design/theme"
 import { ThemedText } from "./ThemedText"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 type BadgeVariant = "sale" | "discount" | "new" | "neutral"
 
@@ -10,17 +11,19 @@ interface BadgeProps {
   style?: ViewStyle
 }
 
-const BG: Record<BadgeVariant, string> = {
-  sale: colors.sale,
-  discount: colors.slate[900],
-  new: colors.brand.teal,
-  neutral: colors.grey[80],
-}
-
 export function Badge({ label, variant = "sale", style }: BadgeProps) {
+  const { colors } = useAppTheme()
+
+  const BG: Record<BadgeVariant, string> = {
+    sale: colors.sale,
+    discount: colors.text,
+    new: colors.primary,
+    neutral: colors.textMuted,
+  }
+
   return (
     <View style={[styles.badge, { backgroundColor: BG[variant] }, style]}>
-      <ThemedText variant="bodySmall" color={colors.grey[0]} style={styles.text}>
+      <ThemedText variant="bodySmall" color={colors.background} style={styles.text}>
         {label}
       </ThemedText>
     </View>

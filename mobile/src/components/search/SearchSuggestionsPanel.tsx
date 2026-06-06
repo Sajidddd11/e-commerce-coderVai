@@ -9,7 +9,8 @@ import {
 } from "lucide-react-native"
 import { ThemedText } from "@components/ui/ThemedText"
 import type { SearchSuggestionsResult } from "@api/enhancements"
-import { colors, spacing, borderRadius, shadows } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme";
+import { spacing, borderRadius, shadows } from "@design/theme"
 
 interface SearchSuggestionsPanelProps {
   query: string
@@ -35,13 +36,15 @@ export function SearchSuggestionsPanel({
   onViewAll,
   variant = "dropdown",
 }: SearchSuggestionsPanelProps) {
+  const { colors } = useAppTheme();
+
   const term = query.trim()
   const showPanel = term.length >= 2
 
   if (!showPanel) {
     return (
       <View style={[styles.hint, variant === "full" && styles.hintFull]}>
-        <ThemedText variant="bodySmall" color={colors.grey[50]} style={styles.hintText}>
+        <ThemedText variant="bodySmall" color={colors.textMuted} style={styles.hintText}>
           Try searching for product names, categories, or collections
         </ThemedText>
       </View>
@@ -51,7 +54,7 @@ export function SearchSuggestionsPanel({
   if (loading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={colors.brand.teal} />
+        <ActivityIndicator color={colors.primary} />
       </View>
     )
   }
@@ -65,11 +68,11 @@ export function SearchSuggestionsPanel({
   if (!hasResults) {
     return (
       <View style={styles.empty}>
-        <Search size={28} color={colors.grey[30]} />
-        <ThemedText variant="bodyMedium" color={colors.grey[70]}>
+        <Search size={28} color={colors.border} />
+        <ThemedText variant="bodyMedium" color={colors.textMuted}>
           No results for "{term}"
         </ThemedText>
-        <ThemedText variant="bodySmall" color={colors.grey[50]}>
+        <ThemedText variant="bodySmall" color={colors.textMuted}>
           Try a different spelling or browse categories
         </ThemedText>
       </View>
@@ -82,7 +85,7 @@ export function SearchSuggestionsPanel({
       style={variant === "full" ? styles.fullList : undefined}
       contentContainerStyle={[
         styles.list,
-        variant === "dropdown" && styles.dropdownList,
+        variant === "dropdown" && [styles.dropdownList, { backgroundColor: colors.background, borderColor: colors.border }],
       ]}
     >
       {suggestions.products.length > 0 ? (
@@ -90,31 +93,31 @@ export function SearchSuggestionsPanel({
           {suggestions.products.map((p) => (
             <Pressable
               key={p.id}
-              style={styles.row}
+              style={[styles.row, { borderBottomColor: colors.border }]}
               onPress={() => onSelectProduct(p.handle)}
             >
               {p.thumbnail ? (
                 <Image
                   source={p.thumbnail}
-                  style={styles.thumb}
+                  style={[styles.thumb, { backgroundColor: colors.border }]}
                   contentFit="cover"
                 />
               ) : (
-                <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                  <Search size={14} color={colors.grey[40]} />
+                <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.border }]}>
+                  <Search size={14} color={colors.textMuted} />
                 </View>
               )}
               <View style={styles.rowBody}>
-                <ThemedText variant="bodyMedium" color={colors.grey[90]} numberOfLines={1}>
+                <ThemedText variant="bodyMedium" color={colors.text} numberOfLines={1}>
                   {p.title}
                 </ThemedText>
                 {p.category ? (
-                  <ThemedText variant="bodySmall" color={colors.grey[50]} numberOfLines={1}>
+                  <ThemedText variant="bodySmall" color={colors.textMuted} numberOfLines={1}>
                     {p.category}
                   </ThemedText>
                 ) : null}
               </View>
-              <ChevronRight size={16} color={colors.grey[40]} />
+              <ChevronRight size={16} color={colors.textMuted} />
             </Pressable>
           ))}
         </Section>
@@ -125,16 +128,16 @@ export function SearchSuggestionsPanel({
           {suggestions.categories.map((c) => (
             <Pressable
               key={c.id}
-              style={styles.row}
+              style={[styles.row, { borderBottomColor: colors.border }]}
               onPress={() => onSelectCategory(c.handle)}
             >
-              <View style={[styles.thumb, styles.iconThumb]}>
-                <FolderOpen size={16} color={colors.brand.teal} />
+              <View style={[styles.thumb, styles.iconThumb, { backgroundColor: colors.primaryMuted }]}>
+                <FolderOpen size={16} color={colors.primary} />
               </View>
-              <ThemedText variant="body" color={colors.grey[90]} style={styles.flex}>
+              <ThemedText variant="body" color={colors.text} style={styles.flex}>
                 {c.name}
               </ThemedText>
-              <ChevronRight size={16} color={colors.grey[40]} />
+              <ChevronRight size={16} color={colors.textMuted} />
             </Pressable>
           ))}
         </Section>
@@ -145,16 +148,16 @@ export function SearchSuggestionsPanel({
           {suggestions.collections.map((c) => (
             <Pressable
               key={c.id}
-              style={styles.row}
+              style={[styles.row, { borderBottomColor: colors.border }]}
               onPress={() => onSelectCollection(c.title)}
             >
-              <View style={[styles.thumb, styles.iconThumb]}>
-                <Layers size={16} color={colors.brand.teal} />
+              <View style={[styles.thumb, styles.iconThumb, { backgroundColor: colors.primaryMuted }]}>
+                <Layers size={16} color={colors.primary} />
               </View>
-              <ThemedText variant="body" color={colors.grey[90]} style={styles.flex}>
+              <ThemedText variant="body" color={colors.text} style={styles.flex}>
                 {c.title}
               </ThemedText>
-              <ChevronRight size={16} color={colors.grey[40]} />
+              <ChevronRight size={16} color={colors.textMuted} />
             </Pressable>
           ))}
         </Section>
@@ -165,13 +168,13 @@ export function SearchSuggestionsPanel({
           {suggestions.popular.map((p) => (
             <Pressable
               key={p}
-              style={styles.row}
+              style={[styles.row, { borderBottomColor: colors.border }]}
               onPress={() => onSelectPopular(p)}
             >
-              <View style={[styles.thumb, styles.iconThumb]}>
-                <TrendingUp size={16} color={colors.grey[50]} />
+              <View style={[styles.thumb, styles.iconThumb, { backgroundColor: colors.primaryMuted }]}>
+                <TrendingUp size={16} color={colors.textMuted} />
               </View>
-              <ThemedText variant="body" color={colors.grey[90]} style={styles.flex}>
+              <ThemedText variant="body" color={colors.text} style={styles.flex}>
                 {p}
               </ThemedText>
             </Pressable>
@@ -179,9 +182,9 @@ export function SearchSuggestionsPanel({
         </Section>
       ) : null}
 
-      <Pressable style={styles.viewAll} onPress={() => onViewAll(term)}>
-        <Search size={16} color={colors.brand.teal} />
-        <ThemedText variant="bodyMedium" color={colors.brand.teal}>
+      <Pressable style={[styles.viewAll, { backgroundColor: colors.primaryMuted }]} onPress={() => onViewAll(term)}>
+        <Search size={16} color={colors.primary} />
+        <ThemedText variant="bodyMedium" color={colors.primary}>
           See all results for "{term}"
         </ThemedText>
       </Pressable>
@@ -196,12 +199,14 @@ function Section({
   title: string
   children: React.ReactNode
 }) {
+  const { colors } = useAppTheme();
+
   return (
     <View style={styles.section}>
-      <ThemedText variant="bodySmall" color={colors.grey[50]} style={styles.sectionTitle}>
+      <ThemedText variant="bodySmall" color={colors.textMuted} style={styles.sectionTitle}>
         {title}
       </ThemedText>
-      <View style={styles.sectionCard}>{children}</View>
+      <View style={[styles.sectionCard, { backgroundColor: colors.background }]}>{children}</View>
     </View>
   )
 }
@@ -234,10 +239,8 @@ const styles = StyleSheet.create({
   },
   dropdownList: {
     maxHeight: 360,
-    backgroundColor: colors.grey[0],
     borderRadius: borderRadius.rounded,
     borderWidth: 1,
-    borderColor: colors.grey[20],
     ...shadows.lg,
   },
   section: {
@@ -251,7 +254,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   sectionCard: {
-    backgroundColor: colors.grey[0],
     borderRadius: borderRadius.rounded,
     overflow: "hidden",
   },
@@ -262,7 +264,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.grey[10],
   },
   rowBody: {
     flex: 1,
@@ -272,7 +273,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: borderRadius.base,
-    backgroundColor: colors.grey[10],
   },
   thumbPlaceholder: {
     alignItems: "center",
@@ -281,7 +281,6 @@ const styles = StyleSheet.create({
   iconThumb: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.brand.tealMuted,
   },
   viewAll: {
     flexDirection: "row",
@@ -291,6 +290,5 @@ const styles = StyleSheet.create({
     margin: spacing.sm,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.rounded,
-    backgroundColor: colors.brand.tealMuted,
   },
 })

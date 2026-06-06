@@ -7,7 +7,8 @@ import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@utils/get-product-price"
 import { masonryAspectForIndex } from "@utils/masonry-columns"
 import { getProductReviews } from "@api/enhancements"
-import { colors, shadows } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
+import { shadows } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { ProductPrice } from "./ProductPrice"
 
@@ -43,6 +44,8 @@ export function ProductCard({
   squareImage = false,
   variant = "shop",
 }: ProductCardProps) {
+  const { colors } = useAppTheme();
+
   const [rating, setRating] = useState<number | null>(null)
 
   useEffect(() => {
@@ -80,6 +83,7 @@ export function ProductCard({
       <Pressable
         style={({ pressed }) => [
           styles.card,
+          { backgroundColor: colors.background, borderColor: colors.border },
           isHome ? styles.cardHome : styles.cardShop,
           width != null ? { width } : styles.fill,
           shadows.sm,
@@ -87,7 +91,7 @@ export function ProductCard({
         ]}
       >
         <View style={[styles.inner, isHome ? styles.innerHome : styles.innerShop]}>
-          <View style={[styles.imageWrap, { aspectRatio }]}>
+          <View style={[styles.imageWrap, { backgroundColor: colors.border, aspectRatio }]}>
             <Image
               source={thumbnail}
               placeholder={BLUR_HASH}
@@ -109,9 +113,9 @@ export function ProductCard({
             </View>
 
             {rating ? (
-              <View style={styles.bottomLeftBadge}>
+              <View style={[styles.bottomLeftBadge, { backgroundColor: colors.background }]}>
                 <Star size={10} color="#EAB308" fill="#EAB308" />
-                <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+                <Text style={[styles.ratingText, { color: colors.text }]}>{rating.toFixed(1)}</Text>
               </View>
             ) : null}
 
@@ -130,14 +134,14 @@ export function ProductCard({
             ) : null}
           </View>
 
-          <View style={[styles.footer, isHome ? styles.footerHome : styles.footerShop]}>
+          <View style={[styles.footer, isHome ? styles.footerHome : styles.footerShop, { backgroundColor: colors.background }]}>
             {!isHome ? (
               <Text numberOfLines={1} style={styles.type}>
                 {productType ? productType.toUpperCase() : " "}
               </Text>
             ) : null}
 
-            <Text numberOfLines={2} style={[styles.title, isHome ? styles.titleHome : styles.titleShop]}>
+            <Text numberOfLines={2} style={[styles.title, { color: colors.text }, isHome ? styles.titleHome : styles.titleShop]}>
               {product.title}
             </Text>
 
@@ -153,16 +157,13 @@ export function ProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white", // bg-white
     borderWidth: 1, // border-1
   },
   cardHome: {
     borderRadius: 12, // rounded-xl
-    borderColor: "#E5E7EB", // border-gray-200 / border-black/1
   },
   cardShop: {
     borderRadius: 8, // rounded-lg
-    borderColor: "#F3F4F6", // border-gray-100
   },
   inner: {
     overflow: "hidden",
@@ -179,7 +180,6 @@ const styles = StyleSheet.create({
   },
   imageWrap: {
     width: "100%",
-    backgroundColor: colors.grey[10], // bg-gray-100
     position: "relative",
   },
   image: {
@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
     bottom: 8,
     left: 8,
     zIndex: 2,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 6,
@@ -256,10 +255,9 @@ const styles = StyleSheet.create({
   ratingText: {
     fontFamily: fontFamily.interSemiBold,
     fontSize: fontSize[10],
-    color: "#111827",
   },
   soldOut: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(15, 23, 42, 0.55)", // bg-slate-900/55
     alignItems: "center",
     justifyContent: "center",
@@ -277,14 +275,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 8,
     paddingBottom: 6,
-    backgroundColor: colors.grey[10], // bg-gray-100 (grey shade)
     height: 68, // Tightened further to minimize bottom gap, adjusted for larger font
   },
   footerShop: {
     paddingHorizontal: 8, // px-2
     paddingTop: 6, // pt-1.5
     paddingBottom: 8, // pb-2
-    backgroundColor: colors.grey[10], // bg-gray-100
     height: 84, // Fixes card height
   },
   type: {
@@ -297,7 +293,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fontFamily.interMedium,
-    color: "#111827", // text-gray-900
     lineHeight: 16, // leading-tight approx
     marginBottom: 4, // mb-1
   },

@@ -1,6 +1,6 @@
 import { ScrollView, Pressable, StyleSheet, Text } from "react-native"
 import { HttpTypes } from "@medusajs/types"
-import { colors } from "@design/theme"
+import { useAppTheme } from "@hooks/useAppTheme"
 import { fontFamily, fontSize } from "@design/typography"
 
 interface CategoryChipsProps {
@@ -14,6 +14,8 @@ export function CategoryChips({
   activeId,
   onSelect,
 }: CategoryChipsProps) {
+  const { colors } = useAppTheme();
+
   const renderChip = (id: string | null, label: string) => {
     const active = activeId === id || (id === null && !activeId)
     return (

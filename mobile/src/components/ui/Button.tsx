@@ -6,8 +6,9 @@ import {
   ViewStyle,
   PressableProps,
 } from "react-native"
-import { colors, borderRadius, spacing, shadows } from "@design/theme"
+import { borderRadius, spacing, shadows } from "@design/theme"
 import { ThemedText } from "./ThemedText"
+import { useAppTheme } from "@hooks/useAppTheme"
 
 type Variant = "primary" | "secondary" | "brand" | "danger" | "ghost"
 type Size = "small" | "base" | "large"
@@ -21,22 +22,6 @@ interface ButtonProps extends Omit<PressableProps, "style"> {
   fullWidth?: boolean
   style?: ViewStyle
   leftIcon?: React.ReactNode
-}
-
-const VARIANT_BG: Record<Variant, string> = {
-  primary: colors.slate[900],
-  secondary: colors.grey[0],
-  brand: colors.brand.teal,
-  danger: colors.error,
-  ghost: "transparent",
-}
-
-const VARIANT_TEXT: Record<Variant, string> = {
-  primary: colors.grey[0],
-  secondary: colors.slate[900],
-  brand: colors.grey[0],
-  danger: colors.grey[0],
-  ghost: colors.slate[900],
 }
 
 const SIZE_PADDING: Record<Size, { v: number; h: number }> = {
@@ -56,6 +41,24 @@ export function Button({
   leftIcon,
   ...rest
 }: ButtonProps) {
+  const { colors } = useAppTheme();
+
+  const VARIANT_BG: Record<Variant, string> = {
+    primary: colors.text,
+    secondary: colors.background,
+    brand: colors.primary,
+    danger: colors.error,
+    ghost: "transparent",
+  }
+
+  const VARIANT_TEXT: Record<Variant, string> = {
+    primary: colors.background,
+    secondary: colors.text,
+    brand: colors.background,
+    danger: colors.background,
+    ghost: colors.text,
+  }
+
   const isDisabled = disabled || loading
   const pad = SIZE_PADDING[size]
 
@@ -68,7 +71,7 @@ export function Button({
         styles.base,
         {
           backgroundColor: isDisabled
-            ? colors.grey[20]
+            ? colors.border
             : VARIANT_BG[variant],
           paddingVertical: pad.v,
           paddingHorizontal: pad.h,
@@ -76,7 +79,7 @@ export function Button({
           transform: [{ scale: pressed ? 0.98 : 1 }],
           width: fullWidth ? "100%" : undefined,
           borderWidth: variant === "secondary" ? 1 : 0,
-          borderColor: colors.grey[30],
+          borderColor: colors.border,
         },
         variant === "primary" && !isDisabled ? shadows.sm : null,
         style,
@@ -85,14 +88,14 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={isDisabled ? colors.grey[50] : VARIANT_TEXT[variant]}
+          color={isDisabled ? colors.textMuted : VARIANT_TEXT[variant]}
         />
       ) : (
         <View style={styles.content}>
           {leftIcon}
           <ThemedText
             variant="button"
-            color={isDisabled ? colors.grey[50] : VARIANT_TEXT[variant]}
+            color={isDisabled ? colors.textMuted : VARIANT_TEXT[variant]}
           >
             {title}
           </ThemedText>
