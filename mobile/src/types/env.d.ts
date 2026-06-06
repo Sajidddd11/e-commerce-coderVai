@@ -1,0 +1,13 @@
+declare namespace NodeJS {
+  interface ProcessEnv {
+    EXPO_PUBLIC_MEDUSA_BACKEND_URL?: string
+    EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY?: string
+    EXPO_PUBLIC_DEFAULT_REGION?: string
+    EXPO_PUBLIC_FACEBOOK_PIXEL_ID?: string
+    EXPO_PUBLIC_FACEBOOK_APP_ID?: string
+    EXPO_PUBLIC_APP_SCHEME?: string
+    EXPO_PUBLIC_APP_BUNDLE_ID?: string
+    EXPO_PUBLIC_STOREFRONT_URL?: string
+    EXPO_PUBLIC_WHATSAPP_NUMBER?: string
+  }
+}
