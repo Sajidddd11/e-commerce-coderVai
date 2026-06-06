@@ -60,7 +60,7 @@ export default function ProductScreen() {
   const isMutating = useCartStore((s) => s.isMutating)
 
   const [product, setProduct] = useState<HttpTypes.StoreProduct | null>(null)
-  const [related, setRelated] = useState<HttpTypes.StoreProduct[]>([])
+  const [relatedRows, setRelatedRows] = useState<{ id: string, name: string, handle: string, products: HttpTypes.StoreProduct[] }[]>([])
   const [loading, setLoading] = useState(true)
   const [variantId, setVariantId] = useState<string | null>(null)
   const [options, setOptions] = useState<Record<string, string>>({})
@@ -70,7 +70,7 @@ export default function ProductScreen() {
   useEffect(() => {
     if (!region?.id || !handle) return
     setLoading(true)
-    setRelated([])
+    setRelatedRows([])
     getProductByHandle(handle, region.id)
       .then((p) => {
         setProduct(p)
@@ -117,19 +117,55 @@ export default function ProductScreen() {
   }, [options, product])
 
   const loadRelated = async (p: HttpTypes.StoreProduct) => {
-    const categoryId = p.categories?.[0]?.id
-    const collectionId = p.collection_id
-    const queryParams: any = { limit: 10 }
-    if (categoryId) queryParams.category_id = [categoryId]
-    else if (collectionId) queryParams.collection_id = [collectionId]
-    else return
+    const categories = p.categories || []
+    const rows: any[] = []
 
-    try {
-      const res = await listProducts({ countryCode, queryParams })
-      setRelated(res.response.products.filter((rp) => rp.id !== p.id).slice(0, 8))
-    } catch {
-      // ignore
+    if (categories.length > 0) {
+      const results = await Promise.all(
+        categories.map(async (cat) => {
+          try {
+            const res = await listProducts({
+              countryCode,
+              queryParams: { limit: 10, category_id: [cat.id] },
+            })
+            const products = res.response.products
+              .filter((rp) => rp.id !== p.id)
+              .slice(0, 8)
+            if (products.length > 0) {
+              return {
+                id: cat.id,
+                name: cat.name,
+                handle: cat.handle,
+                products,
+              }
+            }
+          } catch {
+            return null
+          }
+        })
+      )
+      rows.push(...results.filter(Boolean))
+    } else if (p.collection_id) {
+      try {
+        const res = await listProducts({
+          countryCode,
+          queryParams: { limit: 10, collection_id: [p.collection_id] },
+        })
+        const products = res.response.products
+          .filter((rp) => rp.id !== p.id)
+          .slice(0, 8)
+        if (products.length > 0) {
+          rows.push({
+            id: p.collection_id,
+            name: "Similar Products",
+            handle: "",
+            products,
+          })
+        }
+      } catch {}
     }
+
+    setRelatedRows(rows)
   }
 
   const addChosen = async (chosen: string) => {
@@ -426,18 +462,25 @@ export default function ProductScreen() {
             </Text>
           )}
 
-          {related.length > 0 ? (
-            <View style={styles.related}>
+          {relatedRows.map((row) => (
+            <View key={row.id} style={styles.related}>
               <View style={styles.relatedHeader}>
-                <Text style={styles.relatedTitle}>You may also like</Text>
-                <Pressable style={styles.seeAllBtn}>
-                  <Text style={styles.seeAllText}>See all</Text>
-                  <ChevronRight size={16} color={colors.brand.teal} />
-                </Pressable>
+                <Text style={styles.relatedTitle}>
+                  {row.handle ? `More from ${row.name}` : row.name}
+                </Text>
+                {row.handle ? (
+                  <Pressable
+                    style={styles.seeAllBtn}
+                    onPress={() => router.push({ pathname: "/(tabs)/shop", params: { category: row.handle } })}
+                  >
+                    <Text style={styles.seeAllText}>See all</Text>
+                    <ChevronRight size={16} color={colors.brand.teal} />
+                  </Pressable>
+                ) : null}
               </View>
-              <ProductRail products={related} />
+              <ProductRail products={row.products} />
             </View>
-          ) : null}
+          ))}
         </View>
       </ScrollView>
 
