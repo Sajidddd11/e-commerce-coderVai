@@ -17,6 +17,14 @@ export const metadata: Metadata = {
     title: "ZAHAN Fashion and Lifestyle",
     description: "Discover our curated collection of premium clothing and accessories.",
     siteName: "ZAHAN",
+    images: [
+      {
+        url: `${getBaseURL()}/Final Logo BW.png`,
+        width: 1200,
+        height: 630,
+        alt: "ZAHAN Logo",
+      },
+    ],
   },
   other: {
     // facebook-domain-verification is added directly in <head> below as a name tag

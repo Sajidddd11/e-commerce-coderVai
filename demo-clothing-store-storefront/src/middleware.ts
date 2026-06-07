@@ -132,6 +132,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Social bots (Facebook, WhatsApp, Twitter, etc.) have no cookies.
+  // Skip the cookie-setting redirect so they read the page directly and get OG tags.
+  if (urlHasCountryCode && isSocialBot) {
+    return NextResponse.next()
+  }
+
   // if one of the country codes is in the url and the cache id is not set, set the cache id and redirect
   if (urlHasCountryCode && !cacheIdCookie) {
     response.cookies.set("_medusa_cache_id", cacheId, {
