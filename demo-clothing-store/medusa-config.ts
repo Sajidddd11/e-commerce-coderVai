@@ -67,6 +67,10 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/hero",
     },
+    // Bulk Order Module - Custom module for managing bulk-available products
+    {
+      resolve: "./src/modules/bulk",
+    },
     // Perfume Asset Module - Custom module for managing perfume volumes & bottles
     {
       resolve: "./src/modules/perfume-asset",

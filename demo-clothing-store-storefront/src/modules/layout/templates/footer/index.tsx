@@ -116,9 +116,9 @@ export default async function Footer() {
                 </LocalizedClientLink>
               </li>
               <li>
-                <WholesaleLink className="text-left text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
+                <LocalizedClientLink href="/bulk-order" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Wholesale & Collaboration
-                </WholesaleLink>
+                </LocalizedClientLink>
               </li>
               <li>
                 <LocalizedClientLink href="/contact" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
