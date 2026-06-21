@@ -79,7 +79,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
               >
                 <Image
                   source={item.image}
-                  style={{ width: cardWidth, height: cardHeight }}
+                  style={{ width: cardWidth, height: cardHeight, borderRadius: borderRadius.xl }}
                   contentFit="cover"
                   transition={200}
                 />

@@ -85,58 +85,55 @@ export function ProductCard({
           { transform: [{ scale: pressed ? 0.97 : 1 }] },
         ]}
       >
-        {/* Image container */}
-        <View style={[styles.imageWrap, { aspectRatio }]}>
-          <Image
-            source={thumbnail}
-            placeholder={BLUR_HASH}
-            contentFit="cover"
-            transition={200}
-            style={styles.image}
-          />
-
-          {/* Heart / wishlist button */}
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation?.()
-              setWishlisted((w) => !w)
-            }}
-            style={styles.heartBtn}
-            hitSlop={8}
-          >
-            <Heart
-              size={15}
-              color={wishlisted ? "#EF4444" : "#9CA3AF"}
-              fill={wishlisted ? "#EF4444" : "transparent"}
+        <View style={styles.innerCard}>
+          {/* Image container */}
+          <View style={[styles.imageWrap, { aspectRatio }]}>
+            <Image
+              source={thumbnail}
+              placeholder={BLUR_HASH}
+              contentFit="cover"
+              transition={200}
+              style={styles.image}
             />
-          </Pressable>
 
-          {/* Sale badge top-left */}
-          {onSale && discountPct ? (
-            <View style={[styles.topLeftBadge, { backgroundColor: "#EF4444" }]}>
-              <Text style={styles.badgeText}>{discountPct}% off</Text>
-            </View>
-          ) : isNew ? (
-            <View style={[styles.topLeftBadge, { backgroundColor: colors.brand.teal }]}>
-              <Text style={styles.badgeText}>New</Text>
-            </View>
-          ) : null}
 
-          {/* Out of stock overlay */}
-          {!inStock ? (
-            <View style={styles.soldOut}>
-              <Text style={styles.soldOutText}>Out of stock</Text>
-            </View>
-          ) : null}
-        </View>
 
-        {/* Footer: name + price */}
-        <View style={styles.footer}>
-          <Text numberOfLines={2} style={styles.name}>
-            {product.title}
-          </Text>
-          <View style={styles.priceRow}>
-            <ProductPrice product={product} compact />
+            {/* Sale badge top-left */}
+            {onSale && discountPct ? (
+              <View style={[styles.topLeftBadge, { backgroundColor: "#EF4444" }]}>
+                <Text style={styles.badgeText}>{discountPct}% off</Text>
+              </View>
+            ) : isNew ? (
+              <View style={[styles.topLeftBadge, { backgroundColor: colors.brand.teal }]}>
+                <Text style={styles.badgeText}>New</Text>
+              </View>
+            ) : null}
+
+            {/* Original price badge bottom-left */}
+            {onSale && cheapestPrice?.original_price ? (
+              <View style={styles.bottomLeftBadge}>
+                <Text style={styles.strikeBadgeText}>
+                  {cheapestPrice.original_price}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Out of stock overlay */}
+            {!inStock ? (
+              <View style={styles.soldOut}>
+                <Text style={styles.soldOutText}>Out of stock</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Footer: name + price */}
+          <View style={styles.footer}>
+            <Text numberOfLines={2} style={styles.name}>
+              {product.title}
+            </Text>
+            <View style={styles.priceRow}>
+              <ProductPrice product={product} compact />
+            </View>
           </View>
         </View>
       </Pressable>
@@ -148,8 +145,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: borderRadius.large,
+  },
+  innerCard: {
+    borderRadius: borderRadius.large,
     overflow: "hidden",
-    borderWidth: 0,
   },
   fill: {
     width: "100%",
@@ -163,23 +162,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  heartBtn: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    zIndex: 3,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.88)",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
+
   topLeftBadge: {
     position: "absolute",
     top: 8,
@@ -194,6 +177,22 @@ const styles = StyleSheet.create({
     fontSize: fontSize[10],
     fontFamily: fontFamily.interSemiBold,
     letterSpacing: 0.2,
+  },
+  bottomLeftBadge: {
+    position: "absolute",
+    bottom: 8,
+    left: 8,
+    zIndex: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+  },
+  strikeBadgeText: {
+    color: "#6B7280",
+    fontSize: fontSize[10],
+    fontFamily: fontFamily.interMedium,
+    textDecorationLine: "line-through",
   },
   soldOut: {
     ...StyleSheet.absoluteFillObject,
@@ -211,7 +210,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 9,
     paddingBottom: 10,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.grey[10],
     gap: 3,
   },
   name: {

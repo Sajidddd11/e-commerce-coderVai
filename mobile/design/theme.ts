@@ -74,11 +74,11 @@ export const spacing = {
 
 export const borderRadius = {
   none: 0,
-  soft: 2,
-  base: 4,
-  rounded: 8,
+  soft: 4,
+  base: 8,
+  rounded: 12,
   large: 16,
-  xl: 20, // rounded-2xl
+  xl: 24,
   circle: 9999,
   full: 9999,
 } as const
