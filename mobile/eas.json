@@ -13,7 +13,19 @@
         "buildType": "apk"
       }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_MEDUSA_BACKEND_URL": "https://api.zahan.net",
+        "EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY": "pk_288226dc72b3c78d027464853d6d2ce06e4814ef0d32636cfdaed5b0c7b982b4",
+        "EXPO_PUBLIC_DEFAULT_REGION": "bd",
+        "EXPO_PUBLIC_FACEBOOK_PIXEL_ID": "868788322534380",
+        "EXPO_PUBLIC_FACEBOOK_APP_ID": "868788322534380",
+        "EXPO_PUBLIC_APP_SCHEME": "zahan",
+        "EXPO_PUBLIC_APP_BUNDLE_ID": "com.zahan.store",
+        "EXPO_PUBLIC_STOREFRONT_URL": "https://zahan.com.bd",
+        "EXPO_PUBLIC_WHATSAPP_NUMBER": "8801304117711"
+      }
+    }
   },
   "submit": {
     "production": {}

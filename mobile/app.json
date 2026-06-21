@@ -22,6 +22,7 @@
       }
     },
     "android": {
+      "versionCode": 2,
       "userInterfaceStyle": "light",
       "package": "com.zahan.store",
       "intentFilters": [

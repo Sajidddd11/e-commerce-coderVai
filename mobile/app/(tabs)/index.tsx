@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { RefreshControl, View, StyleSheet } from "react-native"
 import Animated, { useSharedValue, useAnimatedScrollHandler } from "react-native-reanimated"
 import { useRouter } from "expo-router"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import { Header } from "@components/layout/Header"
@@ -27,6 +28,7 @@ interface FeaturedCollection {
 
 export default function HomeScreen() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const region = useRegionStore((s) => s.region)
   const countryCode = useRegionStore((s) => s.countryCode)
   const isReady = useRegionStore((s) => s.isReady)
@@ -137,17 +139,10 @@ export default function HomeScreen() {
 
   return (
     <Screen edges={["bottom", "left", "right"]} background={colors.grey[0]}>
-      <Header
-        scrollY={scrollY}
-        searchValue={searchValue}
-        onChangeSearch={setSearchValue}
-        onSubmitSearch={handleSearchSubmit}
-        onPressFilter={() => setFilterVisible(true)}
-      />
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
-        style={{ backgroundColor: colors.grey[0], marginTop: -24 }}
+        contentContainerStyle={[styles.scroll, { paddingTop: 140 + insets.top }]}
+        style={{ backgroundColor: colors.grey[0] }}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         refreshControl={
@@ -199,6 +194,14 @@ export default function HomeScreen() {
           </View>
         ))}
       </Animated.ScrollView>
+
+      <Header
+        scrollY={scrollY}
+        searchValue={searchValue}
+        onChangeSearch={setSearchValue}
+        onSubmitSearch={handleSearchSubmit}
+        onPressFilter={() => setFilterVisible(true)}
+      />
 
       <FilterBottomSheet
         visible={filterVisible}
