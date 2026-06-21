@@ -8,14 +8,26 @@ const CourierShipmentWidget = ({ data }: { data: any }) => {
     const [loading, setLoading] = useState(true)
     const [creating, setCreating] = useState(false)
     const [tracking, setTracking] = useState(false)
+    const [activeProvider, setActiveProvider] = useState<string | null>(null)
 
     const orderId = data?.id
 
     useEffect(() => {
         if (orderId) {
             fetchShipments()
+            fetchActiveProvider()
         }
     }, [orderId])
+
+    const fetchActiveProvider = async () => {
+        try {
+            const res = await fetch("/admin/courier/active", { credentials: "include" })
+            const result = await res.json()
+            setActiveProvider(result.provider ?? null)
+        } catch {
+            // silently ignore
+        }
+    }
 
     const fetchShipments = async () => {
         try {
@@ -33,6 +45,10 @@ const CourierShipmentWidget = ({ data }: { data: any }) => {
     }
 
     const createShipment = async () => {
+        if (!activeProvider) {
+            alert("No active courier configured. Please go to Courier Settings and activate a provider.")
+            return
+        }
         try {
             setCreating(true)
             const response = await fetch("/admin/courier/shipment", {
@@ -43,7 +59,7 @@ const CourierShipmentWidget = ({ data }: { data: any }) => {
                 },
                 body: JSON.stringify({
                     order_id: orderId,
-                    provider: "pathao",
+                    provider: activeProvider,
                     delivery_type: 48,
                     item_type: 2,
                     item_weight: 0.5,
@@ -135,6 +151,8 @@ const CourierShipmentWidget = ({ data }: { data: any }) => {
                         variant="secondary"
                         onClick={createShipment}
                         isLoading={creating}
+                        disabled={!activeProvider}
+                        title={!activeProvider ? "No active courier configured" : undefined}
                     >
                         Create Shipment
                     </Button>

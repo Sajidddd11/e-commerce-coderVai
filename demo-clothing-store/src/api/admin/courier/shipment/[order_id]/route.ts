@@ -20,18 +20,17 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
         console.log('🔎 Found shipments:', shipments.length)
 
+        const safeJsonParse = (value: any) => {
+            if (typeof value !== 'string') return value
+            try { return JSON.parse(value) } catch { return value }
+        }
+
         // Parse JSON fields
         const parsedShipments = shipments.map(shipment => ({
             ...shipment,
-            tracking_data: typeof shipment.tracking_data === 'string'
-                ? JSON.parse(shipment.tracking_data)
-                : shipment.tracking_data,
-            request_payload: typeof shipment.request_payload === 'string'
-                ? JSON.parse(shipment.request_payload)
-                : shipment.request_payload,
-            response_payload: typeof shipment.response_payload === 'string'
-                ? JSON.parse(shipment.response_payload)
-                : shipment.response_payload
+            tracking_data: safeJsonParse(shipment.tracking_data),
+            request_payload: safeJsonParse(shipment.request_payload),
+            response_payload: safeJsonParse(shipment.response_payload),
         }))
 
         return res.json({ shipments: parsedShipments })

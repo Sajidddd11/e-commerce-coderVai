@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { PathaoService } from "~/lib/pathao-service"
+import { SteadfastService } from "~/lib/steadfast-service"
 
 /**
  * POST /admin/courier/shipment
@@ -241,6 +242,84 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                     order_id: order_id
                 }
             })
+        } else if (provider === 'steadfast') {
+            const steadfastService = new SteadfastService(config)
+
+            // Format phone for Steadfast (11-digit Bangladeshi number)
+            let formattedPhone = shippingAddress.phone || ''
+            formattedPhone = formattedPhone.replace(/\D/g, '')
+            if (formattedPhone.startsWith('88')) {
+                formattedPhone = formattedPhone.substring(2)
+            }
+            if (formattedPhone.length === 10 && !formattedPhone.startsWith('0')) {
+                formattedPhone = '0' + formattedPhone
+            }
+
+            const orderRequest = {
+                invoice: order.display_id.toString(),
+                recipient_name: shippingAddress.first_name + ' ' + (shippingAddress.last_name || ''),
+                recipient_phone: formattedPhone,
+                recipient_address: [
+                    shippingAddress.address_1,
+                    shippingAddress.address_2,
+                    shippingAddress.city,
+                    shippingAddress.postal_code
+                ].filter(Boolean).join(', '),
+                cod_amount: amountToCollectBDT,
+                note: special_instruction || '',
+                item_description: itemsDescription,
+            }
+
+            const steadfastResponse = await steadfastService.createOrder(orderRequest)
+            const consignment = steadfastResponse.consignment
+
+            // Save shipment record
+            const shipmentId = `ship_${Date.now().toString(36)}${Math.random().toString(36).substr(2, 9)}`.toUpperCase()
+            const now = new Date()
+
+            await pgConnection('courier_shipment').insert({
+                id: shipmentId,
+                order_id,
+                provider,
+                consignment_id: consignment.tracking_code, // use tracking_code as our consignment ref
+                merchant_order_id: order.display_id.toString(),
+                status: 'created',
+                tracking_data: JSON.stringify({
+                    order_status: consignment.status,
+                    consignment_id: consignment.consignment_id,
+                    tracking_code: consignment.tracking_code,
+                }),
+                request_payload: JSON.stringify(orderRequest),
+                response_payload: JSON.stringify(steadfastResponse),
+                created_at: now,
+                updated_at: now,
+            })
+
+            // Update order metadata
+            await orderModuleService.updateOrders(order_id, {
+                metadata: {
+                    ...order.metadata,
+                    courier_provider: provider,
+                    courier_consignment_id: consignment.consignment_id,
+                    courier_tracking_code: consignment.tracking_code,
+                    courier_shipment_id: shipmentId,
+                }
+            })
+
+            console.log('✅ Shipment created in Steadfast:', consignment.tracking_code)
+
+            return res.json({
+                success: true,
+                message: 'Shipment created successfully',
+                shipment: {
+                    id: shipmentId,
+                    provider: provider,
+                    status: 'created',
+                    consignment_id: consignment.consignment_id,
+                    tracking_code: consignment.tracking_code,
+                    order_id: order_id,
+                }
+            })
         } else {
             return res.status(400).json({
                 message: `Provider '${provider}' is not supported yet`
@@ -298,17 +377,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         console.log('🔎 Found shipments:', shipments.length)
 
         // Parse JSON fields
+        const safeJsonParse = (value: any) => {
+            if (typeof value !== 'string') return value
+            try { return JSON.parse(value) } catch { return value }
+        }
+
         const parsedShipments = shipments.map(shipment => ({
             ...shipment,
-            tracking_data: typeof shipment.tracking_data === 'string'
-                ? JSON.parse(shipment.tracking_data)
-                : shipment.tracking_data,
-            request_payload: typeof shipment.request_payload === 'string'
-                ? JSON.parse(shipment.request_payload)
-                : shipment.request_payload,
-            response_payload: typeof shipment.response_payload === 'string'
-                ? JSON.parse(shipment.response_payload)
-                : shipment.response_payload
+            tracking_data: safeJsonParse(shipment.tracking_data),
+            request_payload: safeJsonParse(shipment.request_payload),
+            response_payload: safeJsonParse(shipment.response_payload),
         }))
 
         return res.json({ shipments: parsedShipments })

@@ -27,6 +27,7 @@ const OrdersWithAddressPage = () => {
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set())
   const [creatingShipments, setCreatingShipments] = useState(false)
   const [trackingOrder, setTrackingOrder] = useState<string | null>(null)
+  const [activeProvider, setActiveProvider] = useState<string | null>(null)
 
   // Column visibility state
   const STORAGE_KEY = 'orders_visible_columns'
@@ -774,8 +775,20 @@ const OrdersWithAddressPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders])
 
+  // Fetch which courier is currently active
+  useEffect(() => {
+    fetch('/admin/courier/active', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => setActiveProvider(data.provider ?? null))
+      .catch(() => {/* silently ignore */})
+  }, [])
+
   // Create shipment for single order
   const createShipment = async (orderId: string) => {
+    if (!activeProvider) {
+      alert('No active courier configured. Please go to Courier Settings and activate a provider.')
+      return { success: false, error: 'No active provider' }
+    }
     try {
       const response = await fetch('/admin/courier/shipment', {
         method: 'POST',
@@ -783,7 +796,7 @@ const OrdersWithAddressPage = () => {
         credentials: 'include',
         body: JSON.stringify({
           order_id: orderId,
-          provider: 'pathao',
+          provider: activeProvider,
           delivery_type: 48, // Regular delivery
           item_type: 2, // Parcel
           item_weight: 0.5,
@@ -814,7 +827,7 @@ const OrdersWithAddressPage = () => {
     }
 
     const confirmed = confirm(
-      `Create Pathao shipments for ${selectedOrders.size} selected order(s)?`
+      `Create ${activeProvider ?? 'courier'} shipments for ${selectedOrders.size} selected order(s)?`
     )
     if (!confirmed) return
 
@@ -1090,7 +1103,7 @@ const OrdersWithAddressPage = () => {
                 onClick={handleBulkCreateShipments}
                 isLoading={creatingShipments}
               >
-                Create Pathao Shipments
+                Create Shipments
               </Button>
               <Button
                 variant="secondary"
@@ -1365,7 +1378,7 @@ const OrdersWithAddressPage = () => {
                     {visibleColumns.courierProvider && <Table.Cell><Text size="small">{shipments[order.id]?.provider ? <span className="capitalize">{shipments[order.id].provider}</span> : <span className="text-gray-400">-</span>}</Text></Table.Cell>}
                     {visibleColumns.courierStatus && <Table.Cell>{shipments[order.id] ? <span className={`inline-flex items-center px-2 py-1 rounded text-xs ${shipments[order.id].status === 'created' ? 'bg-blue-100 text-blue-700' : shipments[order.id].status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{shipments[order.id].status}</span> : <span className="text-gray-400 text-xs">-</span>}</Table.Cell>}
                     {visibleColumns.trackingId && <Table.Cell>{shipments[order.id]?.consignment_id ? <Text size="small" className="font-mono text-blue-600">{shipments[order.id].consignment_id}</Text> : <span className="text-gray-400 text-xs">-</span>}</Table.Cell>}
-                    {visibleColumns.courierActions && <Table.Cell onClick={(e) => e.stopPropagation()}><div className="flex gap-2">{!shipments[order.id] ? <Button variant="secondary" size="small" onClick={async (e) => { e.stopPropagation(); await createShipment(order.id) }}>Create</Button> : <><Button variant="secondary" size="small" onClick={async (e) => { e.stopPropagation(); await updateShipmentStatus(shipments[order.id].id, order.id) }} isLoading={trackingOrder === order.id}>Update</Button><a href={`https://merchant.pathao.com/tracking?consignment_id=${shipments[order.id].consignment_id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}><Button variant="secondary" size="small">Track</Button></a></>}</div></Table.Cell>}
+                    {visibleColumns.courierActions && <Table.Cell onClick={(e) => e.stopPropagation()}><div className="flex gap-2">{!shipments[order.id] ? <Button variant="secondary" size="small" onClick={async (e) => { e.stopPropagation(); await createShipment(order.id) }} disabled={!activeProvider} title={!activeProvider ? 'No active courier configured' : undefined}>Create</Button> : <><Button variant="secondary" size="small" onClick={async (e) => { e.stopPropagation(); await updateShipmentStatus(shipments[order.id].id, order.id) }} isLoading={trackingOrder === order.id}>Update</Button><a href={shipments[order.id].provider === 'pathao' ? `https://merchant.pathao.com/tracking?consignment_id=${shipments[order.id].consignment_id}` : `https://steadfast.com.bd/user/tracking?tracking_code=${shipments[order.id].consignment_id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}><Button variant="secondary" size="small">Track</Button></a></>}</div></Table.Cell>}
                   </Table.Row>
                 )
               })

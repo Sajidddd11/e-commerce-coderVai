@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { PathaoService } from "~/lib/pathao-service"
+import { SteadfastService } from "~/lib/steadfast-service"
 
 /**
  * POST /admin/courier/test-connection
@@ -36,6 +37,17 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                     token_obtained: !!token,
                     stores_count: stores.length,
                     stores: stores
+                }
+            })
+        } else if (provider === 'steadfast') {
+            const steadfastService = new SteadfastService(config)
+            const result = await steadfastService.testConnection()
+
+            return res.json({
+                success: result.success,
+                message: result.success ? 'Connected to Steadfast successfully' : 'Connection failed',
+                data: {
+                    current_balance: result.balance,
                 }
             })
         } else {

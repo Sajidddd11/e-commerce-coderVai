@@ -1,15 +1,41 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Button, Input, Switch, Badge, Text, Toaster, toast } from "@medusajs/ui"
+import {
+    Container,
+    Heading,
+    Button,
+    Input,
+    Switch,
+    Badge,
+    Text,
+    Toaster,
+    toast,
+} from "@medusajs/ui"
 import { useState, useEffect } from "react"
-import { BuildingStorefront, CheckCircle } from "@medusajs/icons"
+import { BuildingStorefront, CheckCircle, Spinner } from "@medusajs/icons"
+
+// ─── types ────────────────────────────────────────────────────────────────────
+
+interface CourierConfig {
+    provider: string
+    is_active: boolean
+    is_sandbox: boolean
+    config: Record<string, any>
+}
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+const apiFetch = (url: string, init?: RequestInit) =>
+    fetch(url, { credentials: "include", ...init })
+
+// ─── component ────────────────────────────────────────────────────────────────
 
 const CourierSettingsPage = () => {
-    const [configs, setConfigs] = useState<any[]>([])
+    const [configs, setConfigs] = useState<CourierConfig[]>([])
+    const [activeProvider, setActiveProvider] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
-    const [testing, setTesting] = useState(false)
+    const [switchingTo, setSwitchingTo] = useState<string | null>(null)
 
-    // Pathao form state
+    // ── Pathao state ──────────────────────────────────────────────────────────
     const [pathaoConfig, setPathaoConfig] = useState({
         base_url: "https://courier-api-sandbox.pathao.com",
         client_id: "",
@@ -18,103 +44,135 @@ const CourierSettingsPage = () => {
         password: "",
         grant_type: "password",
     })
-    const [pathaoActive, setPathaoActive] = useState(false)
     const [pathaoSandbox, setPathaoSandbox] = useState(true)
+    const [pathaoSaving, setPathaoSaving] = useState(false)
+    const [pathaoTesting, setPathaoTesting] = useState(false)
     const [stores, setStores] = useState<any[]>([])
     const [fetchingStores, setFetchingStores] = useState(false)
 
+    // ── Steadfast state ───────────────────────────────────────────────────────
+    const [steadfastConfig, setSteadfastConfig] = useState({
+        api_key: "",
+        secret_key: "",
+    })
+    const [steadfastSaving, setSteadfastSaving] = useState(false)
+    const [steadfastTesting, setSteadfastTesting] = useState(false)
+
+    // ── bootstrap ─────────────────────────────────────────────────────────────
+
     useEffect(() => {
-        fetchConfigs()
+        fetchAll()
     }, [])
 
-    const fetchConfigs = async () => {
+    const fetchAll = async () => {
         try {
             setLoading(true)
-            const response = await fetch("/admin/courier/config", {
-                credentials: "include",
-            })
-            const result = await response.json()
-            setConfigs(result.configs || [])
+            const [cfgRes, activeRes] = await Promise.all([
+                apiFetch("/admin/courier/config"),
+                apiFetch("/admin/courier/active"),
+            ])
+            const { configs: cfgList } = await cfgRes.json()
+            const { provider } = await activeRes.json()
 
-            // Load Pathao config if exists
-            const pathao = result.configs?.find((c: any) => c.provider === "pathao")
+            setConfigs(cfgList || [])
+            setActiveProvider(provider)
+
+            const pathao = cfgList?.find((c: CourierConfig) => c.provider === "pathao")
             if (pathao) {
                 setPathaoConfig(pathao.config)
-                setPathaoActive(pathao.is_active)
                 setPathaoSandbox(pathao.is_sandbox)
             }
-        } catch (error) {
-            console.error("Error fetching configs:", error)
+
+            const steadfast = cfgList?.find((c: CourierConfig) => c.provider === "steadfast")
+            if (steadfast) {
+                setSteadfastConfig(steadfast.config)
+            }
+        } catch (err) {
+            console.error(err)
             toast.error("Failed to load courier configurations")
         } finally {
             setLoading(false)
         }
     }
 
-    const testConnection = async () => {
+    // ── active switcher ───────────────────────────────────────────────────────
+
+    const switchActive = async (provider: string) => {
         try {
-            setTesting(true)
-            const response = await fetch("/admin/courier/test-connection", {
+            setSwitchingTo(provider)
+            const res = await apiFetch("/admin/courier/active", {
                 method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    provider: "pathao",
-                    config: pathaoConfig,
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider }),
             })
-
-            const result = await response.json()
-
-            if (result.success) {
-                toast.success(`Connected to Pathao API. Found ${result.data.stores_count} store(s).`)
+            const result = await res.json()
+            if (res.ok) {
+                setActiveProvider(provider)
+                setConfigs(prev =>
+                    prev.map(c => ({ ...c, is_active: c.provider === provider }))
+                )
+                toast.success(result.message)
             } else {
-                toast.error(result.message || "Failed to connect to Pathao API")
+                toast.error(result.message || "Failed to switch courier")
             }
-        } catch (error: any) {
-            console.error("Error testing connection:", error)
-            toast.error(error.message || "Failed to test connection")
+        } catch (err: any) {
+            toast.error(err.message || "Failed to switch courier")
         } finally {
-            setTesting(false)
+            setSwitchingTo(null)
         }
     }
 
-    const savePathaoConfig = async () => {
+    // ── Pathao helpers ────────────────────────────────────────────────────────
+
+    const testPathao = async () => {
         try {
-            setSaving(true)
-            const response = await fetch("/admin/courier/config", {
+            setPathaoTesting(true)
+            const res = await apiFetch("/admin/courier/test-connection", {
                 method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider: "pathao", config: pathaoConfig }),
+            })
+            const result = await res.json()
+            if (result.success) {
+                toast.success(`Connected to Pathao. Found ${result.data.stores_count} store(s).`)
+            } else {
+                toast.error(result.message || "Failed to connect to Pathao")
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Connection failed")
+        } finally {
+            setPathaoTesting(false)
+        }
+    }
+
+    const savePathao = async () => {
+        try {
+            setPathaoSaving(true)
+            const res = await apiFetch("/admin/courier/config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     provider: "pathao",
-                    is_active: pathaoActive,
+                    is_active: activeProvider === "pathao",
                     is_sandbox: pathaoSandbox,
                     config: pathaoConfig,
                 }),
             })
-
-            const result = await response.json()
-
+            const result = await res.json()
             if (result.config) {
-                toast.success("Pathao configuration saved successfully")
-                fetchConfigs()
+                toast.success("Pathao configuration saved")
+                fetchAll()
             } else {
-                toast.error(result.message || "Failed to save configuration")
+                toast.error(result.message || "Failed to save Pathao configuration")
             }
-        } catch (error: any) {
-            console.error("Error saving config:", error)
-            toast.error(error.message || "Failed to save configuration")
+        } catch (err: any) {
+            toast.error(err.message || "Failed to save")
         } finally {
-            setSaving(false)
+            setPathaoSaving(false)
         }
     }
 
-    const useSandboxCredentials = () => {
+    const useSandboxCreds = () => {
         setPathaoConfig({
             base_url: "https://courier-api-sandbox.pathao.com",
             client_id: "7N1aMJQbWm",
@@ -129,232 +187,275 @@ const CourierSettingsPage = () => {
     const fetchStores = async () => {
         try {
             setFetchingStores(true)
-            const response = await fetch("/admin/courier/pathao/stores", {
-                credentials: "include",
-            })
-            const result = await response.json()
-
-            if (result.api_stores && result.api_stores.length > 0) {
+            const res = await apiFetch("/admin/courier/pathao/stores")
+            const result = await res.json()
+            if (result.api_stores?.length > 0) {
                 setStores(result.api_stores)
                 toast.success(`Found ${result.api_stores.length} store(s) from Pathao`)
-
-                // Auto-save first store as default if no stores exist locally
-                if (!result.local_stores || result.local_stores.length === 0) {
+                if (!result.local_stores?.length) {
                     await saveStore(result.api_stores[0], true)
                 }
             } else {
                 toast.error("No stores found in your Pathao account")
             }
-        } catch (error: any) {
-            console.error("Error fetching stores:", error)
-            toast.error(error.message || "Failed to fetch stores")
+        } catch (err: any) {
+            toast.error(err.message || "Failed to fetch stores")
         } finally {
             setFetchingStores(false)
         }
     }
 
-    const saveStore = async (store: any, isDefault: boolean = false) => {
+    const saveStore = async (store: any, isDefault = false) => {
         try {
-            const response = await fetch("/admin/courier/pathao/stores", {
+            const res = await apiFetch("/admin/courier/pathao/stores", {
                 method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    store_id: store.store_id,
-                    store_name: store.store_name,
-                    contact_name: store.contact_name,
-                    contact_number: store.contact_number,
-                    address: store.address,
-                    city_id: store.city_id,
-                    zone_id: store.zone_id,
-                    area_id: store.area_id,
-                    is_default: isDefault,
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...store, is_default: isDefault }),
             })
-
-            const result = await response.json()
+            const result = await res.json()
             if (result.store) {
-                toast.success(isDefault ? "Default store configured successfully" : "Store saved successfully")
+                toast.success(isDefault ? "Default store configured" : "Store saved")
             } else {
                 toast.error(result.message || "Failed to save store")
             }
-        } catch (error: any) {
-            console.error("Error saving store:", error)
-            toast.error(error.message || "Failed to save store")
+        } catch (err: any) {
+            toast.error(err.message || "Failed to save store")
         }
     }
 
+    // ── Steadfast helpers ─────────────────────────────────────────────────────
+
+    const testSteadfast = async () => {
+        try {
+            setSteadfastTesting(true)
+            const res = await apiFetch("/admin/courier/test-connection", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider: "steadfast", config: steadfastConfig }),
+            })
+            const result = await res.json()
+            if (result.success) {
+                toast.success(
+                    `Connected to Steadfast. Balance: ৳${result.data?.current_balance ?? 0}`
+                )
+            } else {
+                toast.error(result.message || "Failed to connect to Steadfast")
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Connection failed")
+        } finally {
+            setSteadfastTesting(false)
+        }
+    }
+
+    const saveSteadfast = async () => {
+        try {
+            setSteadfastSaving(true)
+            const res = await apiFetch("/admin/courier/config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    provider: "steadfast",
+                    is_active: activeProvider === "steadfast",
+                    is_sandbox: false, // Steadfast is always live
+                    config: steadfastConfig,
+                }),
+            })
+            const result = await res.json()
+            if (result.config) {
+                toast.success("Steadfast configuration saved")
+                fetchAll()
+            } else {
+                toast.error(result.message || "Failed to save Steadfast configuration")
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Failed to save")
+        } finally {
+            setSteadfastSaving(false)
+        }
+    }
+
+    // ── render ────────────────────────────────────────────────────────────────
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-full py-20">
                 <Text className="text-ui-fg-subtle">Loading...</Text>
             </div>
         )
     }
 
+    const isPathaoConfigured = configs.some(c => c.provider === "pathao")
+    const isSteadfastConfigured = configs.some(c => c.provider === "steadfast")
+
     return (
         <div className="flex flex-col gap-y-4">
             <Toaster />
 
+            {/* ── Page header ── */}
             <div className="flex items-center gap-2">
                 <BuildingStorefront className="text-ui-fg-subtle" />
                 <Heading level="h1">Courier Integration Settings</Heading>
             </div>
 
             <Text className="text-ui-fg-subtle">
-                Configure courier service credentials to enable automated shipment creation and tracking.
+                Configure courier credentials and select which provider handles new shipments.
             </Text>
 
-            {/* Pathao Configuration */}
+            {/* ── Active courier banner ── */}
+            <Container className="p-0">
+                <div className="px-6 py-4 flex items-center justify-between">
+                    <div>
+                        <Text weight="plus">Active Courier</Text>
+                        <Text size="small" className="text-ui-fg-subtle mt-0.5">
+                            All new shipments will be sent through this provider.
+                        </Text>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {activeProvider ? (
+                            <Badge color="green" className="capitalize">
+                                <CheckCircle />
+                                {activeProvider}
+                            </Badge>
+                        ) : (
+                            <Badge color="orange">None selected</Badge>
+                        )}
+                    </div>
+                </div>
+
+                {/* Quick-switch buttons */}
+                <div className="border-t border-ui-border-base px-6 py-3 flex gap-2">
+                    {["pathao", "steadfast"].map(provider => {
+                        const configured = provider === "pathao" ? isPathaoConfigured : isSteadfastConfigured
+                        const isActive = activeProvider === provider
+                        const switching = switchingTo === provider
+                        return (
+                            <Button
+                                key={provider}
+                                size="small"
+                                variant={isActive ? "primary" : "secondary"}
+                                onClick={() => !isActive && configured && switchActive(provider)}
+                                disabled={!configured || isActive || !!switchingTo}
+                                className="capitalize"
+                            >
+                                {switching && <Spinner className="mr-1 animate-spin" />}
+                                {isActive ? `✓ ${provider} (active)` : `Use ${provider}`}
+                            </Button>
+                        )
+                    })}
+                    {!isPathaoConfigured && !isSteadfastConfigured && (
+                        <Text size="small" className="text-ui-fg-muted self-center">
+                            Save at least one provider below to activate it.
+                        </Text>
+                    )}
+                </div>
+            </Container>
+
+            {/* ── Pathao Configuration ── */}
             <Container className="divide-y p-0">
                 <div className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                         <Heading level="h2">Pathao Courier</Heading>
-                        {configs.find((c) => c.provider === "pathao")?.is_active && (
+                        {activeProvider === "pathao" && (
                             <Badge color="green">
                                 <CheckCircle />
                                 Active
                             </Badge>
                         )}
+                        {isPathaoConfigured && activeProvider !== "pathao" && (
+                            <Badge color="grey">Configured</Badge>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <Text size="small" className="text-ui-fg-subtle">
-                            Enable
-                        </Text>
+                        <Text size="small" className="text-ui-fg-subtle">Sandbox</Text>
                         <Switch
-                            checked={pathaoActive}
-                            onCheckedChange={setPathaoActive}
+                            checked={pathaoSandbox}
+                            onCheckedChange={(v) => {
+                                setPathaoSandbox(v)
+                                setPathaoConfig(prev => ({
+                                    ...prev,
+                                    base_url: v
+                                        ? "https://courier-api-sandbox.pathao.com"
+                                        : "https://courier-api.pathao.com",
+                                }))
+                            }}
                         />
                     </div>
                 </div>
 
                 <div className="px-6 py-4 space-y-4">
-                    {/* Environment Toggle */}
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <Text size="small" className="text-ui-fg-subtle">
-                                Sandbox Mode
-                            </Text>
-                            <Switch
-                                checked={pathaoSandbox}
-                                onCheckedChange={setPathaoSandbox}
-                            />
-                        </div>
-                        {pathaoSandbox && (
-                            <Button
-                                size="small"
-                                variant="transparent"
-                                onClick={useSandboxCredentials}
-                            >
-                                Use Sandbox Credentials
+                    {pathaoSandbox && (
+                        <div>
+                            <Button size="small" variant="transparent" onClick={useSandboxCreds}>
+                                Fill Sandbox Credentials
                             </Button>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* API URL */}
-                    <div className="space-y-2">
-                        <Text size="small" weight="plus">
-                            API Base URL
-                        </Text>
+                    <div className="space-y-1">
+                        <Text size="small" weight="plus">API Base URL</Text>
                         <Input
-                            type="text"
-                            placeholder="https://courier-api-sandbox.pathao.com"
                             value={pathaoConfig.base_url}
-                            onChange={(e) =>
-                                setPathaoConfig({ ...pathaoConfig, base_url: e.target.value })
-                            }
+                            onChange={e => setPathaoConfig({ ...pathaoConfig, base_url: e.target.value })}
+                            placeholder="https://courier-api-sandbox.pathao.com"
                         />
                     </div>
 
-                    {/* Client ID */}
-                    <div className="space-y-2">
-                        <Text size="small" weight="plus">
-                            Client ID
-                        </Text>
-                        <Input
-                            type="text"
-                            placeholder="Enter client ID"
-                            value={pathaoConfig.client_id}
-                            onChange={(e) =>
-                                setPathaoConfig({ ...pathaoConfig, client_id: e.target.value })
-                            }
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <Text size="small" weight="plus">Client ID</Text>
+                            <Input
+                                value={pathaoConfig.client_id}
+                                onChange={e => setPathaoConfig({ ...pathaoConfig, client_id: e.target.value })}
+                                placeholder="Client ID"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Text size="small" weight="plus">Client Secret</Text>
+                            <Input
+                                type="password"
+                                value={pathaoConfig.client_secret}
+                                onChange={e => setPathaoConfig({ ...pathaoConfig, client_secret: e.target.value })}
+                                placeholder="Client Secret"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Text size="small" weight="plus">Username (Email)</Text>
+                            <Input
+                                type="email"
+                                value={pathaoConfig.username}
+                                onChange={e => setPathaoConfig({ ...pathaoConfig, username: e.target.value })}
+                                placeholder="your@email.com"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Text size="small" weight="plus">Password</Text>
+                            <Input
+                                type="password"
+                                value={pathaoConfig.password}
+                                onChange={e => setPathaoConfig({ ...pathaoConfig, password: e.target.value })}
+                                placeholder="Password"
+                            />
+                        </div>
                     </div>
 
-                    {/* Client Secret */}
-                    <div className="space-y-2">
-                        <Text size="small" weight="plus">
-                            Client Secret
-                        </Text>
-                        <Input
-                            type="password"
-                            placeholder="Enter client secret"
-                            value={pathaoConfig.client_secret}
-                            onChange={(e) =>
-                                setPathaoConfig({ ...pathaoConfig, client_secret: e.target.value })
-                            }
-                        />
-                    </div>
-
-                    {/* Username */}
-                    <div className="space-y-2">
-                        <Text size="small" weight="plus">
-                            Username (Email)
-                        </Text>
-                        <Input
-                            type="email"
-                            placeholder="your@email.com"
-                            value={pathaoConfig.username}
-                            onChange={(e) =>
-                                setPathaoConfig({ ...pathaoConfig, username: e.target.value })
-                            }
-                        />
-                    </div>
-
-                    {/* Password */}
-                    <div className="space-y-2">
-                        <Text size="small" weight="plus">
-                            Password
-                        </Text>
-                        <Input
-                            type="password"
-                            placeholder="Enter password"
-                            value={pathaoConfig.password}
-                            onChange={(e) =>
-                                setPathaoConfig({ ...pathaoConfig, password: e.target.value })
-                            }
-                        />
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-4">
-                        <Button
-                            variant="secondary"
-                            onClick={testConnection}
-                            isLoading={testing}
-                        >
+                    <div className="flex gap-2 pt-2">
+                        <Button variant="secondary" onClick={testPathao} isLoading={pathaoTesting}>
                             Test Connection
                         </Button>
-                        <Button onClick={savePathaoConfig} isLoading={saving}>
+                        <Button onClick={savePathao} isLoading={pathaoSaving}>
                             Save Configuration
                         </Button>
-                        <Button
-                            variant="secondary"
-                            onClick={fetchStores}
-                            isLoading={fetchingStores}
-                        >
-                            Fetch & Save Stores
+                        <Button variant="secondary" onClick={fetchStores} isLoading={fetchingStores}>
+                            Fetch &amp; Save Stores
                         </Button>
                     </div>
 
-                    {/* Stores List */}
+                    {/* Stores list */}
                     {stores.length > 0 && (
-                        <div className="pt-4 space-y-2">
-                            <Text size="small" weight="plus">
-                                Available Stores ({stores.length})
-                            </Text>
+                        <div className="pt-2 space-y-2">
+                            <Text size="small" weight="plus">Available Stores ({stores.length})</Text>
                             <div className="space-y-2">
                                 {stores.map((store: any) => (
                                     <div
@@ -382,18 +483,66 @@ const CourierSettingsPage = () => {
                 </div>
             </Container>
 
-            {/* Future Couriers Placeholder */}
+            {/* ── Steadfast Configuration ── */}
             <Container className="divide-y p-0">
-                <div className="px-6 py-4">
-                    <Heading level="h2">Other Couriers</Heading>
+                <div className="flex items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        <Heading level="h2">Steadfast Courier</Heading>
+                        {activeProvider === "steadfast" && (
+                            <Badge color="green">
+                                <CheckCircle />
+                                Active
+                            </Badge>
+                        )}
+                        {isSteadfastConfigured && activeProvider !== "steadfast" && (
+                            <Badge color="grey">Configured</Badge>
+                        )}
+                    </div>
+                    <Badge color="blue">Live</Badge>
                 </div>
-                <div className="px-6 py-8 text-center">
-                    <Text className="text-ui-fg-muted">
-                        More courier integrations coming soon...
+
+                <div className="px-6 py-4 space-y-4">
+                    <Text size="small" className="text-ui-fg-subtle">
+                        Steadfast uses API Key authentication. Credentials are available from your{" "}
+                        <a
+                            href="https://portal.packzy.com"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-ui-fg-interactive underline"
+                        >
+                            Steadfast merchant portal
+                        </a>
+                        .
                     </Text>
-                    <Text size="small" className="text-ui-fg-subtle mt-2">
-                        (Steadfast, RedX, PaperFly, etc.)
-                    </Text>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <Text size="small" weight="plus">API Key</Text>
+                            <Input
+                                value={steadfastConfig.api_key}
+                                onChange={e => setSteadfastConfig({ ...steadfastConfig, api_key: e.target.value })}
+                                placeholder="Your Steadfast API Key"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Text size="small" weight="plus">Secret Key</Text>
+                            <Input
+                                type="password"
+                                value={steadfastConfig.secret_key}
+                                onChange={e => setSteadfastConfig({ ...steadfastConfig, secret_key: e.target.value })}
+                                placeholder="Your Steadfast Secret Key"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                        <Button variant="secondary" onClick={testSteadfast} isLoading={steadfastTesting}>
+                            Test Connection
+                        </Button>
+                        <Button onClick={saveSteadfast} isLoading={steadfastSaving}>
+                            Save Configuration
+                        </Button>
+                    </div>
                 </div>
             </Container>
         </div>
