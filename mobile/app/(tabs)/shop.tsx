@@ -7,6 +7,7 @@ import { CategoryChips } from "@components/layout/CategoryChips"
 import { ProductGrid } from "@components/product/ProductGrid"
 import { ProductSearchBar } from "@components/search/ProductSearchBar"
 import { SearchSuggestionsPanel } from "@components/search/SearchSuggestionsPanel"
+import { FilterBottomSheet } from "@components/search/FilterBottomSheet"
 import { ThemedText } from "@components/ui/ThemedText"
 import { useSearchSuggestions } from "@hooks/useSearchSuggestions"
 import { useRegionStore } from "@stores/region-store"
@@ -56,6 +57,7 @@ export default function ShopScreen() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [filterVisible, setFilterVisible] = useState(false)
 
   // Track request count to avoid race conditions with multiple concurrent fetches
   const requestCountRef = useRef(0)
@@ -173,6 +175,7 @@ export default function ShopScreen() {
             onSubmit={runSearch}
             onFocus={() => setShowSuggestions(true)}
             onClear={clearSearch}
+            onPressFilter={() => setFilterVisible(true)}
           />
 
           {showSuggestions && searchInput.trim().length >= 2 ? (
@@ -208,40 +211,6 @@ export default function ShopScreen() {
             </ThemedText>
           </View>
         ) : null}
-
-        <View style={styles.filters}>
-          <CategoryChips
-            categories={categories}
-            activeId={activeCategory}
-            onSelect={setActiveCategory}
-          />
-
-          <View style={styles.sortRow}>
-            {SORT_OPTIONS.map((opt) => {
-              const active = sortBy === opt.key
-              return (
-                <Pressable
-                  key={opt.key}
-                  onPress={() => setSortBy(opt.key)}
-                  style={[
-                    styles.sortChip,
-                    active ? styles.sortChipActive : styles.sortChipInactive
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.sortText,
-                      active ? styles.sortTextActive : styles.sortTextInactive
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              )
-            })}
-          </View>
-        </View>
-        <View style={styles.divider} />
       </View>
 
       <View style={styles.grid}>
@@ -263,6 +232,18 @@ export default function ShopScreen() {
           }
         />
       </View>
+
+      <FilterBottomSheet
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        categories={categories}
+        initialSortBy={sortBy}
+        initialCategory={activeCategory}
+        onApply={(newSortBy, newCategory) => {
+          setSortBy(newSortBy)
+          setActiveCategory(newCategory)
+        }}
+      />
     </Screen>
   )
 }

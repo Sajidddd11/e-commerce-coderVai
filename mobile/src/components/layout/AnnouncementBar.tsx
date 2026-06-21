@@ -13,16 +13,25 @@ export function AnnouncementBar({ scrollY }: AnnouncementBarProps) {
     return { opacity }
   })
 
+  const barStyle = useAnimatedStyle(() => {
+    // Curve bottom corners when connected, make sharp when disconnected
+    const radius = interpolate(scrollY?.value || 0, [-20, 0], [0, 24], Extrapolation.CLAMP)
+    return {
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
+    }
+  })
+
   return (
     <View style={styles.container}>
       {/* Absolute filler to sit behind the Header's curved corners */}
       <Animated.View style={[styles.filler, fillerStyle]} />
       
-      <View style={styles.bar}>
+      <Animated.View style={[styles.bar, barStyle]}>
         <Text style={styles.text}>
           🎉 Use code <Text style={styles.highlight}>WELCOME20</Text> for 20% off your first order!
         </Text>
-      </View>
+      </Animated.View>
     </View>
   )
 }

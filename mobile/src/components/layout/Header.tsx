@@ -2,22 +2,32 @@ import { useEffect, useState } from "react"
 import { View, Pressable, StyleSheet, Text } from "react-native"
 import Animated, { useAnimatedStyle, interpolate, Extrapolation, SharedValue, interpolateColor } from "react-native-reanimated"
 import { useRouter } from "expo-router"
-import { Search, MapPin, ChevronDown, Bell, SlidersHorizontal } from "lucide-react-native"
+import { MapPin, ChevronDown, Bell } from "lucide-react-native"
 import * as Location from "expo-location"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { colors } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
-import { useAnimatedPlaceholder } from "@hooks/useAnimatedPlaceholder"
+import { ProductSearchBar } from "@components/search/ProductSearchBar"
 
 interface HeaderProps {
   showSearch?: boolean
   scrollY?: SharedValue<number>
+  searchValue?: string
+  onChangeSearch?: (text: string) => void
+  onSubmitSearch?: (term: string) => void
+  onPressFilter?: () => void
 }
 
-export function Header({ showSearch = true, scrollY }: HeaderProps) {
+export function Header({
+  showSearch = true,
+  scrollY,
+  searchValue = "",
+  onChangeSearch = () => {},
+  onSubmitSearch = () => {},
+  onPressFilter,
+}: HeaderProps) {
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const animatedPlaceholder = useAnimatedPlaceholder()
   const [locationName, setLocationName] = useState("Locating...")
 
   useEffect(() => {
@@ -86,18 +96,14 @@ export function Header({ showSearch = true, scrollY }: HeaderProps) {
     }
   })
 
-  const heroSearchStyle = useAnimatedStyle(() => {
+  const searchFieldAnimatedStyle = useAnimatedStyle(() => {
     const value = scrollY?.value || 0
-    const opacity = interpolate(value, [0, 30], [1, 0], Extrapolation.CLAMP)
-    const zIndex = value < 25 ? 10 : 0
-    return { opacity, zIndex }
-  })
-
-  const stickySearchStyle = useAnimatedStyle(() => {
-    const value = scrollY?.value || 0
-    const opacity = interpolate(value, [20, 50], [0, 1], Extrapolation.CLAMP)
-    const zIndex = value >= 25 ? 10 : 0
-    return { opacity, zIndex }
+    // Fade in a grey border as the header background becomes white
+    const borderColor = interpolateColor(value, [20, 50], ["transparent", "#E5E7EB"])
+    return {
+      borderWidth: 2,
+      borderColor,
+    }
   })
 
   return (
@@ -119,44 +125,15 @@ export function Header({ showSearch = true, scrollY }: HeaderProps) {
         </Pressable>
       </Animated.View>
 
-      {/* Search Bars container */}
+      {/* Unified Search Bar */}
       {showSearch ? (
-        <View style={styles.searchContainerBox}>
-          {/* Hero Search Bar */}
-          <Animated.View style={[StyleSheet.absoluteFill, heroSearchStyle, { justifyContent: "center" }]}>
-            <Pressable
-              style={styles.heroSearchField}
-              onPress={() => router.push("/search")}
-              accessibilityRole="search"
-            >
-              <View style={styles.heroSearchInner}>
-                <Search size={20} color={colors.grey[40]} />
-                <Text style={styles.placeholder} numberOfLines={1}>
-                  {animatedPlaceholder}
-                </Text>
-              </View>
-              <View style={styles.heroFilterBtn}>
-                <SlidersHorizontal size={16} color={colors.grey[0]} />
-              </View>
-            </Pressable>
-          </Animated.View>
-
-          {/* Sticky/Old Search Bar */}
-          <Animated.View style={[StyleSheet.absoluteFill, stickySearchStyle, { justifyContent: "center" }]}>
-            <Pressable
-              style={styles.stickySearchField}
-              onPress={() => router.push("/search")}
-              accessibilityRole="search"
-            >
-              <Text style={styles.stickyPlaceholder} numberOfLines={1}>
-                {animatedPlaceholder}
-              </Text>
-              <View style={styles.stickySearchBtn}>
-                <Search size={12} color="white" />
-              </View>
-            </Pressable>
-          </Animated.View>
-        </View>
+        <ProductSearchBar
+          value={searchValue}
+          onChangeText={onChangeSearch}
+          onSubmit={onSubmitSearch}
+          onPressFilter={onPressFilter}
+          containerStyle={searchFieldAnimatedStyle}
+        />
       ) : null}
     </Animated.View>
   )
@@ -206,66 +183,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sale,
     borderWidth: 1,
     borderColor: colors.brand.teal,
-  },
-  searchContainerBox: {
-    height: 48, // Fixed height for both absolute search bars
-    position: "relative",
-  },
-  heroSearchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
-    borderRadius: 9999,
-    paddingLeft: 16,
-    paddingRight: 6,
-    paddingVertical: 6,
-    gap: 8,
-    justifyContent: "space-between",
-  },
-  heroSearchInner: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  heroFilterBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.brand.teal,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholder: {
-    flex: 1,
-    fontFamily: fontFamily.interRegular,
-    fontSize: fontSize.sm,
-    color: colors.grey[50],
-  },
-  stickySearchField: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
-    borderRadius: 9999,
-    borderWidth: 2,
-    borderColor: "#E5E7EB",
-    paddingLeft: 12,
-    paddingRight: 6,
-    paddingVertical: 6,
-    gap: 8,
-  },
-  stickyPlaceholder: {
-    flex: 1,
-    fontFamily: fontFamily.interRegular,
-    fontSize: fontSize.xs,
-    color: "#6B7280",
-  },
-  stickySearchBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#56AEBF",
-    justifyContent: "center",
-    alignItems: "center",
   },
 })

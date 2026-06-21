@@ -5,8 +5,11 @@ import {
   Pressable,
   StyleSheet,
   type TextInputProps,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native"
-import { Search, X } from "lucide-react-native"
+import Animated from "react-native-reanimated"
+import { Search, X, SlidersHorizontal } from "lucide-react-native"
 import { colors } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { useAnimatedPlaceholder } from "@hooks/useAnimatedPlaceholder"
@@ -18,7 +21,9 @@ interface ProductSearchBarProps extends Pick<TextInputProps, "autoFocus"> {
   onFocus?: () => void
   onBlur?: () => void
   onClear?: () => void
+  onPressFilter?: () => void
   placeholder?: string
+  containerStyle?: any // any to accept AnimatedStyle
 }
 
 export function ProductSearchBar({
@@ -28,8 +33,10 @@ export function ProductSearchBar({
   onFocus,
   onBlur,
   onClear,
+  onPressFilter,
   placeholder,
   autoFocus,
+  containerStyle,
 }: ProductSearchBarProps) {
   const [focused, setFocused] = useState(false)
   const animatedPlaceholder = useAnimatedPlaceholder()
@@ -41,7 +48,9 @@ export function ProductSearchBar({
   }
 
   return (
-    <View style={styles.wrap}>
+    <Animated.View style={[styles.wrap, containerStyle]}>
+      <Search size={20} color={colors.grey[40]} />
+
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -54,7 +63,7 @@ export function ProductSearchBar({
           onBlur?.()
         }}
         placeholder={displayPlaceholder}
-        placeholderTextColor="#6B7280"
+        placeholderTextColor={colors.grey[50]}
         returnKeyType="search"
         onSubmitEditing={submit}
         autoFocus={autoFocus}
@@ -76,10 +85,10 @@ export function ProductSearchBar({
         </Pressable>
       ) : null}
 
-      <Pressable onPress={submit} style={styles.submitBtn}>
-        <Search size={12} color="white" />
+      <Pressable onPress={onPressFilter || submit} style={styles.submitBtn}>
+        <SlidersHorizontal size={16} color="white" />
       </Pressable>
-    </View>
+    </Animated.View>
   )
 }
 
@@ -88,10 +97,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    borderRadius: 9999, // rounded-full to match home page
+    borderRadius: 9999, // rounded-full
     borderWidth: 2,
     borderColor: "#E5E7EB", // border-gray-200
-    paddingLeft: 12,
+    paddingLeft: 16,
     paddingRight: 6,
     paddingVertical: 6,
     gap: 8,
@@ -100,20 +109,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 0,
     fontFamily: fontFamily.interRegular,
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm, // matched with hero
     color: "#111827",
     backgroundColor: "transparent",
-    minHeight: 24, // Matches the button height
+    minHeight: 24,
   },
   iconBtn: {
     paddingHorizontal: 4,
     justifyContent: "center",
   },
   submitBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#56AEBF",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.brand.teal,
     justifyContent: "center",
     alignItems: "center",
   },

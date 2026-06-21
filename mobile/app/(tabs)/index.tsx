@@ -11,6 +11,7 @@ import { HeroCarousel } from "@components/home/HeroCarousel"
 import { SectionHeader } from "@components/home/SectionHeader"
 import { CategoryTiles } from "@components/home/CategoryTiles"
 import { ProductRail } from "@components/product/ProductRail"
+import { FilterBottomSheet } from "@components/search/FilterBottomSheet"
 import { useRegionStore } from "@stores/region-store"
 import { listProducts } from "@api/products"
 import { listCategories, filterCategoriesWithProducts } from "@api/categories"
@@ -37,6 +38,9 @@ export default function HomeScreen() {
   const [featured, setFeatured] = useState<FeaturedCollection[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+
+  const [searchValue, setSearchValue] = useState("")
+  const [filterVisible, setFilterVisible] = useState(false)
 
   const scrollY = useSharedValue(0)
 
@@ -89,6 +93,25 @@ export default function HomeScreen() {
     setRefreshing(false)
   }, [load])
 
+  const handleSearchSubmit = (term: string) => {
+    if (term.trim()) {
+      router.push({
+        pathname: "/(tabs)/shop",
+        params: { q: term.trim() },
+      })
+    }
+  }
+
+  const handleApplyFilter = (sortBy: string, category: string | null) => {
+    setFilterVisible(false)
+    const params: any = { sortBy }
+    if (category) params.category = category
+    router.push({
+      pathname: "/(tabs)/shop",
+      params,
+    })
+  }
+
   const localSlides: HeroSlide[] = [
     {
       image: require("../../Hero/1.jpeg"),
@@ -114,7 +137,13 @@ export default function HomeScreen() {
 
   return (
     <Screen edges={["bottom", "left", "right"]} background={colors.grey[0]}>
-      <Header scrollY={scrollY} />
+      <Header
+        scrollY={scrollY}
+        searchValue={searchValue}
+        onChangeSearch={setSearchValue}
+        onSubmitSearch={handleSearchSubmit}
+        onPressFilter={() => setFilterVisible(true)}
+      />
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
@@ -170,6 +199,15 @@ export default function HomeScreen() {
           </View>
         ))}
       </Animated.ScrollView>
+
+      <FilterBottomSheet
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        categories={categories}
+        initialSortBy="created_at"
+        initialCategory={null}
+        onApply={handleApplyFilter}
+      />
     </Screen>
   )
 }
