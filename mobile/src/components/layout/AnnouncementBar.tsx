@@ -1,17 +1,44 @@
 import { View, StyleSheet, Text } from "react-native"
+import Animated, { useAnimatedStyle, interpolate, Extrapolation, SharedValue } from "react-native-reanimated"
 import { colors } from "@design/theme"
 
-export function AnnouncementBar() {
+interface AnnouncementBarProps {
+  scrollY?: SharedValue<number>
+}
+
+export function AnnouncementBar({ scrollY }: AnnouncementBarProps) {
+  const fillerStyle = useAnimatedStyle(() => {
+    // Fade out the corner filler when pulling down so the banner doesn't look 'fat'
+    const opacity = interpolate(scrollY?.value || 0, [-20, 0], [0, 1], Extrapolation.CLAMP)
+    return { opacity }
+  })
+
   return (
-    <View style={styles.bar}>
-      <Text style={styles.text}>
-        🎉 Use code <Text style={styles.highlight}>WELCOME20</Text> for 20% off your first order!
-      </Text>
+    <View style={styles.container}>
+      {/* Absolute filler to sit behind the Header's curved corners */}
+      <Animated.View style={[styles.filler, fillerStyle]} />
+      
+      <View style={styles.bar}>
+        <Text style={styles.text}>
+          🎉 Use code <Text style={styles.highlight}>WELCOME20</Text> for 20% off your first order!
+        </Text>
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  container: {
+    position: "relative",
+  },
+  filler: {
+    position: "absolute",
+    top: -24,
+    left: 0,
+    right: 0,
+    height: 24,
+    backgroundColor: "rgba(86, 174, 191, 0.1)",
+  },
   bar: {
     backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
     paddingHorizontal: 16, // px-4

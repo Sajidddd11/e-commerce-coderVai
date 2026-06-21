@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import { ScrollView, RefreshControl, View, StyleSheet } from "react-native"
+import { RefreshControl, View, StyleSheet } from "react-native"
+import Animated, { useSharedValue, useAnimatedScrollHandler } from "react-native-reanimated"
 import { useRouter } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
@@ -36,6 +37,14 @@ export default function HomeScreen() {
   const [featured, setFeatured] = useState<FeaturedCollection[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+
+  const scrollY = useSharedValue(0)
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+  })
 
   const load = useCallback(async () => {
     try {
@@ -104,11 +113,14 @@ export default function HomeScreen() {
   const carouselSlides = slides.length > 0 ? slides : localSlides
 
   return (
-    <Screen>
-      <Header />
-      <ScrollView
+    <Screen edges={["bottom", "left", "right"]} background={colors.grey[0]}>
+      <Header scrollY={scrollY} />
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
+        style={{ backgroundColor: colors.grey[0], marginTop: -24 }}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -117,7 +129,7 @@ export default function HomeScreen() {
           />
         }
       >
-        <AnnouncementBar />
+        <AnnouncementBar scrollY={scrollY} />
 
         <HeroCarousel slides={carouselSlides} />
 
@@ -157,7 +169,7 @@ export default function HomeScreen() {
             <ProductRail products={collection.products} />
           </View>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     </Screen>
   )
 }

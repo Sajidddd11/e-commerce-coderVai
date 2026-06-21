@@ -2,12 +2,12 @@ import { useEffect, useState } from "react"
 import { Pressable, View, StyleSheet, Text } from "react-native"
 import { Image } from "expo-image"
 import { Link } from "expo-router"
-import { Star } from "lucide-react-native"
+import { Heart } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@utils/get-product-price"
 import { masonryAspectForIndex } from "@utils/masonry-columns"
 import { getProductReviews } from "@api/enhancements"
-import { colors, shadows } from "@design/theme"
+import { colors, shadows, borderRadius } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { ProductPrice } from "./ProductPrice"
 
@@ -44,6 +44,7 @@ export function ProductCard({
   variant = "shop",
 }: ProductCardProps) {
   const [rating, setRating] = useState<number | null>(null)
+  const [wishlisted, setWishlisted] = useState(false)
 
   useEffect(() => {
     if (!product?.id) return
@@ -66,7 +67,6 @@ export function ProductCard({
   const thumbnail = product.thumbnail || product.images?.[0]?.url
   const inStock = isInStock(product)
   const isNew = isNewProduct(product)
-  const productType = product.type?.value
 
   const aspectRatio =
     squareImage || masonryIndex === undefined
@@ -80,70 +80,63 @@ export function ProductCard({
       <Pressable
         style={({ pressed }) => [
           styles.card,
-          isHome ? styles.cardHome : styles.cardShop,
           width != null ? { width } : styles.fill,
           shadows.sm,
-          { transform: [{ scale: pressed ? 0.98 : 1 }] },
+          { transform: [{ scale: pressed ? 0.97 : 1 }] },
         ]}
       >
-        <View style={[styles.inner, isHome ? styles.innerHome : styles.innerShop]}>
-          <View style={[styles.imageWrap, { aspectRatio }]}>
-            <Image
-              source={thumbnail}
-              placeholder={BLUR_HASH}
-              contentFit="cover"
-              transition={200}
-              style={styles.image}
+        {/* Image container */}
+        <View style={[styles.imageWrap, { aspectRatio }]}>
+          <Image
+            source={thumbnail}
+            placeholder={BLUR_HASH}
+            contentFit="cover"
+            transition={200}
+            style={styles.image}
+          />
+
+          {/* Heart / wishlist button */}
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation?.()
+              setWishlisted((w) => !w)
+            }}
+            style={styles.heartBtn}
+            hitSlop={8}
+          >
+            <Heart
+              size={15}
+              color={wishlisted ? "#EF4444" : "#9CA3AF"}
+              fill={wishlisted ? "#EF4444" : "transparent"}
             />
+          </Pressable>
 
-            <View style={styles.topLeftBadge}>
-              {onSale && discountPct ? (
-                <View style={[styles.badge, isHome ? styles.badgeHome : styles.badgeShop, { backgroundColor: "#EF4444" }]}>
-                  <Text style={[styles.badgeText, isHome ? styles.badgeTextHome : styles.badgeTextShop]}>{discountPct}% off</Text>
-                </View>
-              ) : isNew ? (
-                <View style={[styles.badge, isHome ? styles.badgeHome : styles.badgeShop, { backgroundColor: "#56AEBF" }]}>
-                  <Text style={[styles.badgeText, isHome ? styles.badgeTextHome : styles.badgeTextShop]}>New</Text>
-                </View>
-              ) : null}
+          {/* Sale badge top-left */}
+          {onSale && discountPct ? (
+            <View style={[styles.topLeftBadge, { backgroundColor: "#EF4444" }]}>
+              <Text style={styles.badgeText}>{discountPct}% off</Text>
             </View>
-
-            {rating ? (
-              <View style={styles.bottomLeftBadge}>
-                <Star size={10} color="#EAB308" fill="#EAB308" />
-                <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-              </View>
-            ) : null}
-
-            {onSale && cheapestPrice ? (
-              <View style={[styles.originalBadge, isHome ? styles.originalBadgeHome : styles.originalBadgeShop]}>
-                <Text style={[styles.originalStrike, isHome ? styles.originalStrikeHome : styles.originalStrikeShop]}>
-                  {cheapestPrice.original_price}
-                </Text>
-              </View>
-            ) : null}
-
-            {!inStock ? (
-              <View style={styles.soldOut}>
-                <Text style={styles.soldOutText}>Out of stock</Text>
-              </View>
-            ) : null}
-          </View>
-
-          <View style={[styles.footer, isHome ? styles.footerHome : styles.footerShop]}>
-            {!isHome ? (
-              <Text numberOfLines={1} style={styles.type}>
-                {productType ? productType.toUpperCase() : " "}
-              </Text>
-            ) : null}
-
-            <Text numberOfLines={2} style={[styles.title, isHome ? styles.titleHome : styles.titleShop]}>
-              {product.title}
-            </Text>
-
-            <View style={styles.priceRow}>
-              <ProductPrice product={product} compact />
+          ) : isNew ? (
+            <View style={[styles.topLeftBadge, { backgroundColor: colors.brand.teal }]}>
+              <Text style={styles.badgeText}>New</Text>
             </View>
+          ) : null}
+
+          {/* Out of stock overlay */}
+          {!inStock ? (
+            <View style={styles.soldOut}>
+              <Text style={styles.soldOutText}>Out of stock</Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Footer: name + price */}
+        <View style={styles.footer}>
+          <Text numberOfLines={2} style={styles.name}>
+            {product.title}
+          </Text>
+          <View style={styles.priceRow}>
+            <ProductPrice product={product} compact />
           </View>
         </View>
       </Pressable>
@@ -153,160 +146,79 @@ export function ProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white", // bg-white
-    borderWidth: 1, // border-1
-  },
-  cardHome: {
-    borderRadius: 12, // rounded-xl
-    borderColor: "#E5E7EB", // border-gray-200 / border-black/1
-  },
-  cardShop: {
-    borderRadius: 8, // rounded-lg
-    borderColor: "#F3F4F6", // border-gray-100
-  },
-  inner: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: borderRadius.large,
     overflow: "hidden",
-    flex: 1,
-  },
-  innerHome: {
-    borderRadius: 11, // Slightly less than outer to prevent bleeding
-  },
-  innerShop: {
-    borderRadius: 7,
+    borderWidth: 0,
   },
   fill: {
     width: "100%",
   },
   imageWrap: {
     width: "100%",
-    backgroundColor: colors.grey[10], // bg-gray-100
+    backgroundColor: "#F3F4F6",
     position: "relative",
   },
   image: {
     width: "100%",
     height: "100%",
   },
+  heartBtn: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 3,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.88)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
   topLeftBadge: {
     position: "absolute",
-    top: 8, // top-2
-    left: 8, // left-2
-    zIndex: 2,
-  },
-  badge: {
-    paddingHorizontal: 8, // px-2
-    paddingVertical: 2, // py-0.5
-  },
-  badgeHome: {
-    borderRadius: 9999, // rounded-full
-  },
-  badgeShop: {
-    borderRadius: 2, // rounded-sm
-  },
-  badgeText: {
-    color: "white",
-    fontFamily: fontFamily.interBold,
-  },
-  badgeTextHome: {
-    fontSize: fontSize[9], // text-[9px]
-  },
-  badgeTextShop: {
-    fontSize: fontSize[10], // text-[10px]
-  },
-  originalBadge: {
-    position: "absolute",
-    bottom: 8, // bottom-2
-    right: 8, // right-2
-    borderRadius: 2, // rounded-sm
-    zIndex: 2,
-  },
-  originalBadgeHome: {
-    backgroundColor: "rgba(15, 23, 42, 0.8)", // bg-slate-900/80
-    paddingHorizontal: 6, // px-1.5
-    paddingVertical: 2, // py-0.5
-  },
-  originalBadgeShop: {
-    backgroundColor: "#0F172A", // bg-slate-900
-    paddingHorizontal: 8, // px-2
-    paddingVertical: 2, // py-0.5
-  },
-  originalStrike: {
-    fontFamily: fontFamily.interRegular,
-    color: "white",
-    textDecorationLine: "line-through", // line-through
-  },
-  originalStrikeHome: {
-    fontSize: fontSize[9], // text-[9px]
-  },
-  originalStrikeShop: {
-    fontSize: fontSize[10], // text-[10px]
-  },
-  bottomLeftBadge: {
-    position: "absolute",
-    bottom: 8,
+    top: 8,
     left: 8,
     zIndex: 2,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
   },
-  ratingText: {
-    fontFamily: fontFamily.interSemiBold,
+  badgeText: {
+    color: "#FFFFFF",
     fontSize: fontSize[10],
-    color: "#111827",
+    fontFamily: fontFamily.interSemiBold,
+    letterSpacing: 0.2,
   },
   soldOut: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(15, 23, 42, 0.55)", // bg-slate-900/55
+    backgroundColor: "rgba(15, 23, 42, 0.5)",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 3,
+    zIndex: 4,
   },
   soldOutText: {
     fontFamily: fontFamily.interSemiBold,
-    color: "white",
+    color: "#FFFFFF",
     fontSize: fontSize[13],
   },
   footer: {
-    alignItems: "flex-start",
-  },
-  footerHome: {
     paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 6,
-    backgroundColor: colors.grey[10], // bg-gray-100 (grey shade)
-    height: 68, // Tightened further to minimize bottom gap, adjusted for larger font
+    paddingTop: 9,
+    paddingBottom: 10,
+    backgroundColor: "#FFFFFF",
+    gap: 3,
   },
-  footerShop: {
-    paddingHorizontal: 8, // px-2
-    paddingTop: 6, // pt-1.5
-    paddingBottom: 8, // pb-2
-    backgroundColor: colors.grey[10], // bg-gray-100
-    height: 84, // Fixes card height
-  },
-  type: {
-    fontFamily: fontFamily.interRegular,
-    color: "#9CA3AF", // text-gray-400
-    textTransform: "uppercase",
-    fontSize: fontSize[10], // text-[10px]
-    letterSpacing: 0.5, // tracking-wide approx
-    marginBottom: 2, // mb-0.5
-  },
-  title: {
+  name: {
     fontFamily: fontFamily.interMedium,
-    color: "#111827", // text-gray-900
-    lineHeight: 16, // leading-tight approx
-    marginBottom: 4, // mb-1
-  },
-  titleHome: {
-    fontSize: fontSize[13], // text-[13px]
-    marginBottom: 2, // Tighter spacing for home cards
-  },
-  titleShop: {
-    fontSize: fontSize[13], // text-[13px]
+    fontSize: fontSize[13],
+    color: "#111827",
+    lineHeight: 18,
   },
   priceRow: {
     flexDirection: "row",
