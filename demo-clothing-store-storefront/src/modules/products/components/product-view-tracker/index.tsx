@@ -29,9 +29,9 @@ export default function ProductViewTracker({ product }: ProductViewTrackerProps)
     track({
       event_type:    "detail_view",
       product_id:    product.id,
-      category_id:   product.categories?.[0]?.id,
-      collection_id: product.collection?.id ?? product.collection_id,
-      price,
+      category_id:   product.categories?.[0]?.id ?? undefined,
+      collection_id: (product.collection?.id ?? product.collection_id) ?? undefined,
+      price:         price ?? undefined,
     })
   }, [product?.id])
 

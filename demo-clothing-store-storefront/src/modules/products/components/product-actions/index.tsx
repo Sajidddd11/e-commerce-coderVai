@@ -164,9 +164,9 @@ export default function ProductActions({
       track({
         event_type: "cart_addition",
         product_id: product.id,
-        category_id: product.categories?.[0]?.id,
-        collection_id: product.collection?.id ?? product.collection_id,
-        price: price,
+        category_id: product.categories?.[0]?.id ?? undefined,
+        collection_id: (product.collection?.id ?? product.collection_id) ?? undefined,
+        price: price ?? undefined,
         amount: quantity,
       })
     }
@@ -194,9 +194,9 @@ export default function ProductActions({
       track({
         event_type: "cart_addition",
         product_id: product.id,
-        category_id: product.categories?.[0]?.id,
-        collection_id: product.collection?.id ?? product.collection_id,
-        price: selectedVariant.calculated_price?.calculated_amount,
+        category_id: product.categories?.[0]?.id ?? undefined,
+        collection_id: (product.collection?.id ?? product.collection_id) ?? undefined,
+        price: selectedVariant.calculated_price?.calculated_amount ?? undefined,
         amount: quantity,
       })
     }

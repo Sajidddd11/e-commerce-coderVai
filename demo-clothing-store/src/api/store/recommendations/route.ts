@@ -182,7 +182,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
                 }
                 if (productIds.length >= limit) break
             }
-            strategy = "trending" // label as trending for mixed
+            strategy = "mixed" // label as mixed
         }
 
         if (strategy === "trending" || productIds.length === 0) {
