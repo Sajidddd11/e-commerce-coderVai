@@ -93,6 +93,7 @@ export default function ProductScreen() {
             product_id:    p.id,
             category_id:   p.categories?.[0]?.id,
             collection_id: p.collection_id ?? undefined,
+            price:         cheapestPrice?.calculated_price_number,
           })
           loadRelated(p)
           getProductReviews(p.id).then((res) => {
@@ -196,6 +197,7 @@ export default function ProductScreen() {
       event_type: "cart_addition",
       product_id: product.id,
       category_id: product.categories?.[0]?.id,
+      collection_id: product.collection_id ?? undefined,
       amount: 1,
       price: price?.calculated_price_number,
     })

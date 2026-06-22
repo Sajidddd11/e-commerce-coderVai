@@ -4,7 +4,8 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { sendOrderSms } from "./orders"
-import { revalidateTag } from "next/cache"
+import { revalidateTag as _revalidateTag } from "next/cache"
+const revalidateTag = (tag: string) => (_revalidateTag as any)(tag)
 import { cookies as nextCookies } from "next/headers"
 import { redirect } from "next/navigation"
 import {
@@ -59,7 +60,7 @@ export async function getOrSetCart(countryCode: string) {
     throw new Error(`Region not found for country code: ${countryCode}`)
   }
 
-  let cart = await retrieveCart(undefined, 'id,region_id')
+  let cart = await retrieveCart(undefined, 'id,region_id,metadata')
 
   const headers = {
     ...(await getAuthHeaders()),
@@ -93,6 +94,22 @@ export async function getOrSetCart(countryCode: string) {
     await sdk.store.cart.update(cart.id, { region_id: region.id }, {}, headers)
     const cartCacheTag = await getCacheTag("carts")
     revalidateTag(cartCacheTag)
+  }
+
+  // Ensure tracking metadata is present on existing carts
+  if (cart) {
+    const cookies = await nextCookies()
+    const session_id = cookies.get("rec_session_id")?.value
+    const fingerprint_id = cookies.get("rec_fingerprint_id")?.value
+
+    if (session_id && fingerprint_id && (!cart.metadata?.session_id || !cart.metadata?.fingerprint_id)) {
+      await sdk.store.cart.update(
+        cart.id,
+        { metadata: { ...cart.metadata, session_id, fingerprint_id } },
+        {},
+        headers
+      )
+    }
   }
 
   return cart

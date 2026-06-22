@@ -165,7 +165,7 @@ export default function ProductActions({
         event_type: "cart_addition",
         product_id: product.id,
         category_id: product.categories?.[0]?.id,
-        collection_id: product.collection?.id,
+        collection_id: product.collection?.id ?? product.collection_id,
         price: price,
         amount: quantity,
       })
@@ -195,7 +195,7 @@ export default function ProductActions({
         event_type: "cart_addition",
         product_id: product.id,
         category_id: product.categories?.[0]?.id,
-        collection_id: product.collection?.id,
+        collection_id: product.collection?.id ?? product.collection_id,
         price: selectedVariant.calculated_price?.calculated_amount,
         amount: quantity,
       })

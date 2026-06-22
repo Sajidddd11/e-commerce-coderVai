@@ -24,11 +24,14 @@ export default function ProductViewTracker({ product }: ProductViewTrackerProps)
     if (tracked.current || !product?.id) return
     tracked.current = true
 
+    const price = product.variants?.[0]?.calculated_price?.calculated_amount
+
     track({
       event_type:    "detail_view",
       product_id:    product.id,
       category_id:   product.categories?.[0]?.id,
-      collection_id: product.collection?.id,
+      collection_id: product.collection?.id ?? product.collection_id,
+      price,
     })
   }, [product?.id])
 

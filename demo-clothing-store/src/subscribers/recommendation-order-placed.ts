@@ -87,8 +87,8 @@ export default async function orderPlacedSubscriber({
                         session_id,
                         customer_id,
                         fingerprint_id,
-                        amount:         item.quantity,
-                        price:          item.unit_price,
+                        amount:         Number(item.quantity) || 1,
+                        price:          Number(item.unit_price),
                         category_id:    product?.categories?.[0]?.id,
                         collection_id:  product?.collection_id,
                     })
