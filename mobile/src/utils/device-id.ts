@@ -10,23 +10,24 @@
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import DeviceInfo from "react-native-device-info"
 
 const SESSION_KEY = "rec_session_id"
+const FINGERPRINT_KEY = "rec_fingerprint_id"
 
 /**
  * Returns a stable device fingerprint ID.
- *
- * Android: Android ID — stable per device, resets on factory reset.
- * iOS:     Vendor ID  — stable per app install, resets on reinstall.
- *
- * This is effectively a fingerprint for the physical device.
- * Unlike browser fingerprinting, this is 100% reliable on mobile.
+ * Since react-native-device-info requires a custom dev client,
+ * we use a persistent randomly generated ID stored in AsyncStorage.
  */
 export async function getDeviceFingerprint(): Promise<string> {
     try {
-        const id = await DeviceInfo.getUniqueId()
-        return id ?? `mobile_unknown_${Date.now()}`
+        let id = await AsyncStorage.getItem(FINGERPRINT_KEY)
+        if (!id) {
+            const rand = Math.random().toString(36).slice(2, 12)
+            id = `mob_fp_${Date.now()}_${rand}`
+            await AsyncStorage.setItem(FINGERPRINT_KEY, id)
+        }
+        return id
     } catch {
         return `mobile_fallback_${Date.now()}`
     }
