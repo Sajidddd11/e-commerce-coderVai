@@ -8,12 +8,15 @@ interface ProductRailProps {
   products: HttpTypes.StoreProduct[]
   loading?: boolean
   cardWidth?: number
+  /** Called when a product card is pressed — use for recommendation click tracking */
+  onProductPress?: (product: HttpTypes.StoreProduct) => void
 }
 
 export function ProductRail({
   products,
   loading = false,
   cardWidth = 160,
+  onProductPress,
 }: ProductRailProps) {
   if (loading && products.length === 0) {
     return (
@@ -43,7 +46,13 @@ export function ProductRail({
     >
       {valid.map((product) => (
         <View key={product.id} style={{ width: cardWidth }}>
-          <ProductCard product={product} width={cardWidth} squareImage variant="home" />
+          <ProductCard
+            product={product}
+            width={cardWidth}
+            squareImage
+            variant="home"
+            onPress={onProductPress ? () => onProductPress(product) : undefined}
+          />
         </View>
       ))}
     </ScrollView>
@@ -57,3 +66,4 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
 })
+

@@ -4,6 +4,7 @@
     "slug": "zahan-store",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "scheme": "zahan",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -22,7 +23,7 @@
       }
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "userInterfaceStyle": "light",
       "package": "com.zahan.store",
       "intentFilters": [
@@ -53,7 +54,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash.png",
+          "image": "./assets/icon.png",
+          "imageWidth": 200,
           "backgroundColor": "#FFFFFF",
           "resizeMode": "contain"
         }

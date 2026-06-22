@@ -5,6 +5,7 @@ import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { sendOrderSms } from "./orders"
 import { revalidateTag } from "next/cache"
+import { cookies as nextCookies } from "next/headers"
 import { redirect } from "next/navigation"
 import {
   getAuthHeaders,
@@ -65,8 +66,18 @@ export async function getOrSetCart(countryCode: string) {
   }
 
   if (!cart) {
+    const cookies = await nextCookies()
+    const session_id = cookies.get("rec_session_id")?.value
+    const fingerprint_id = cookies.get("rec_fingerprint_id")?.value
+
     const cartResp = await sdk.store.cart.create(
-      { region_id: region.id },
+      { 
+        region_id: region.id,
+        metadata: {
+          session_id,
+          fingerprint_id,
+        }
+      },
       {},
       headers
     )

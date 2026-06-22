@@ -2,6 +2,7 @@ import { HttpTypes } from "@medusajs/types"
 import { sdk, MEDUSA_BACKEND, PUBLISHABLE_KEY } from "./sdk"
 import { getRegion } from "./regions"
 import { getAuthHeaders, storage, STORAGE_KEYS } from "@utils/storage"
+import { getIdentity } from "@utils/device-id"
 
 /**
  * Ported from web src/lib/data/cart.ts.
@@ -54,8 +55,16 @@ export async function getOrSetCart(
   let cart = await retrieveCart()
 
   if (!cart) {
+    const identity = await getIdentity()
+
     const { cart: newCart } = await sdk.store.cart.create(
-      { region_id: region.id },
+      { 
+        region_id: region.id,
+        metadata: {
+          session_id: identity.session_id,
+          fingerprint_id: identity.fingerprint_id,
+        }
+      },
       {},
       headers
     )

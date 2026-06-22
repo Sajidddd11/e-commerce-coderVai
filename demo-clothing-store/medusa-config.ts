@@ -75,6 +75,10 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/perfume-asset",
     },
+    // Recommendation Module - Behaviour tracking + "Suggested For You" engine
+    {
+      resolve: "./src/modules/recommendation",
+    },
     {
       resolve: "@medusajs/file",
       options: {

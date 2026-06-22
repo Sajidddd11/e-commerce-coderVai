@@ -17,6 +17,7 @@ import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 import ReactMarkdown from "react-markdown"
 import { trackAddToCart } from "@lib/util/facebook-pixel"
+import { useTrackBehaviour } from "@hooks/use-track-behaviour"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -58,6 +59,7 @@ export default function ProductActions({
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
+  const { track } = useTrackBehaviour()
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -157,6 +159,18 @@ export default function ProductActions({
       currency: region?.currency_code?.toUpperCase() || "BDT",
     })
 
+    // Track for AI suggestion engine
+    if (product.id) {
+      track({
+        event_type: "cart_addition",
+        product_id: product.id,
+        category_id: product.categories?.[0]?.id,
+        collection_id: product.collection?.id,
+        price: price,
+        amount: quantity,
+      })
+    }
+
     setIsAdding(false)
   }
 
@@ -174,6 +188,18 @@ export default function ProductActions({
       quantity: quantity,
       countryCode,
     })
+
+    // Track for AI suggestion engine
+    if (product.id) {
+      track({
+        event_type: "cart_addition",
+        product_id: product.id,
+        category_id: product.categories?.[0]?.id,
+        collection_id: product.collection?.id,
+        price: selectedVariant.calculated_price?.calculated_amount,
+        amount: quantity,
+      })
+    }
 
     setIsAdding(false)
 

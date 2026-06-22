@@ -17,6 +17,8 @@ interface ProductCardProps {
   masonryIndex?: number
   squareImage?: boolean
   variant?: "home" | "shop"
+  /** Optional extra callback fired before navigation (used for rec click tracking) */
+  onPress?: () => void
 }
 
 const BLUR_HASH = "L6PZfSi_.AyE_3t7t7R**0o#DgR4"
@@ -42,6 +44,7 @@ export function ProductCard({
   masonryIndex,
   squareImage = false,
   variant = "shop",
+  onPress,
 }: ProductCardProps) {
   const [rating, setRating] = useState<number | null>(null)
   const [wishlisted, setWishlisted] = useState(false)
@@ -84,6 +87,7 @@ export function ProductCard({
           shadows.sm,
           { transform: [{ scale: pressed ? 0.97 : 1 }] },
         ]}
+        onPress={() => onPress?.()}
       >
         <View style={styles.innerCard}>
           {/* Image container */}
@@ -195,7 +199,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through",
   },
   soldOut: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(15, 23, 42, 0.5)",
     alignItems: "center",
     justifyContent: "center",

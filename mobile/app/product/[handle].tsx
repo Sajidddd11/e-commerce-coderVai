@@ -21,10 +21,12 @@ import { Skeleton } from "@components/ui/Skeleton"
 import { ProductPrice } from "@components/product/ProductPrice"
 import { ProductReviews } from "@components/product/ProductReviews"
 import { ProductRail } from "@components/product/ProductRail"
+import { BoughtTogetherRail } from "@components/product/BoughtTogetherRail"
 import { useRegionStore } from "@stores/region-store"
 import { useCartStore } from "@stores/cart-store"
 import { getProductByHandle, listProducts } from "@api/products"
 import { getProductReviews } from "@api/enhancements"
+import { trackEvent } from "@api/recommendations"
 import { getProductPrice } from "@utils/get-product-price"
 import { trackViewContent, trackAddToCart } from "@utils/facebook-analytics"
 import { colors } from "@design/theme"
@@ -84,6 +86,13 @@ export default function ProductScreen() {
             contentName: p.title,
             value: cheapestPrice?.calculated_price_number,
             currency: cheapestPrice?.currency_code,
+          })
+          // Track detail_view for recommendation engine
+          trackEvent({
+            event_type:    "detail_view",
+            product_id:    p.id,
+            category_id:   p.categories?.[0]?.id,
+            collection_id: p.collection_id ?? undefined,
           })
           loadRelated(p)
           getProductReviews(p.id).then((res) => {
@@ -182,6 +191,14 @@ export default function ProductScreen() {
       value: price?.calculated_price_number,
       currency: price?.currency_code,
     })
+    // Track cart_addition for recommendation engine
+    trackEvent({
+      event_type: "cart_addition",
+      product_id: product.id,
+      category_id: product.categories?.[0]?.id,
+      amount: 1,
+      price: price?.calculated_price_number,
+    })
   }
 
   const resolveVariant = (): string | null => {
@@ -198,6 +215,7 @@ export default function ProductScreen() {
     }
     try {
       await addChosen(chosen)
+
       Alert.alert("Added to cart", `${product.title} was added to your cart.`, [
         { text: "Keep shopping" },
         { text: "View cart", onPress: () => router.push("/(tabs)/cart") },
@@ -217,6 +235,7 @@ export default function ProductScreen() {
     try {
       await clearCart()
       await addChosen(chosen)
+
       router.push("/checkout")
     } catch {
       Alert.alert("Error", "Could not process your request. Please try again.")
@@ -360,7 +379,7 @@ export default function ProductScreen() {
   }
 
   return (
-    <Screen edges={["top"]} style={{ backgroundColor: "white" }}>
+    <Screen edges={["top"]} background="white">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
@@ -481,6 +500,11 @@ export default function ProductScreen() {
               <ProductRail products={row.products} />
             </View>
           ))}
+
+          {/* Frequently Bought Together */}
+          {product ? (
+            <BoughtTogetherRail productId={product.id} />
+          ) : null}
         </View>
       </ScrollView>
 
@@ -527,7 +551,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140, // pb-35
   },
   imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0,0,0,0.01)", // bg-black/1 from demo
   },
   backBtn: {

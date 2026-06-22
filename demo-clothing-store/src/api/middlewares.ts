@@ -70,6 +70,19 @@ export default defineMiddlewares({
       matcher: /^\/store\/sslcommerz\/(success|fail|cancel|ipn)/,
       middlewares: [addPublishableKeyForSslCallbacks],
     },
+    // ─── Recommendation Engine: public store endpoints (no auth needed) ──────
+    // POST /store/track — event ingestion (guests + logged-in users)
+    {
+      matcher: "/store/track",
+      method: ["POST"],
+      middlewares: [],
+    },
+    // GET /store/recommendations — returns product suggestions
+    {
+      matcher: "/store/recommendations",
+      method: ["GET"],
+      middlewares: [],
+    },
     // ─── File size limit: reject uploads > 500 KB ──────────────────────────
     {
       matcher: "/admin/uploads",

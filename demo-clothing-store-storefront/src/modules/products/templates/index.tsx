@@ -9,6 +9,8 @@ import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import ProductDescriptionSection from "@modules/products/components/product-description-section"
 import ViewContentTracker from "@modules/products/components/view-content-tracker"
+import ProductViewTracker from "@modules/products/components/product-view-tracker"
+import FrequentlyBoughtTogether from "@modules/products/components/frequently-bought-together"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 
@@ -90,6 +92,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       {/* Track Facebook Pixel ViewContent event */}
       <ViewContentTracker product={product} region={region} />
 
+      {/* Track recommendation engine detail_view event */}
+      <ProductViewTracker product={product} />
+
       <div className="w-full min-h-screen bg-white">
         <div className="content-container py-2 small:py-2 medium:py-3">
           {/* Breadcrumb Navigation */}
@@ -159,6 +164,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           <div className="border-t-2 border-slate-200 pt-8 small:pt-12 medium:pt-16">
             <ProductTabs product={product} />
           </div>
+
+          {/* Frequently Bought Together */}
+          <FrequentlyBoughtTogether
+            product={product}
+            region={region}
+            regionId={region.id}
+          />
         </div>
       </div>
 

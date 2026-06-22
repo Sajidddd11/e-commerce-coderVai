@@ -11,6 +11,7 @@ import { HeroBanner } from "@components/home/HeroBanner"
 import { HeroCarousel } from "@components/home/HeroCarousel"
 import { SectionHeader } from "@components/home/SectionHeader"
 import { CategoryTiles } from "@components/home/CategoryTiles"
+import { SuggestedForYouRail } from "@components/home/SuggestedForYouRail"
 import { ProductRail } from "@components/product/ProductRail"
 import { FilterBottomSheet } from "@components/search/FilterBottomSheet"
 import { useRegionStore } from "@stores/region-store"
@@ -186,6 +187,9 @@ export default function HomeScreen() {
             <ProductRail products={bestSelling} />
           </View>
         ) : null}
+
+        {/* Suggested For You — personalised or trending based on behaviour */}
+        <SuggestedForYouRail limit={10} />
 
         {featured.map((collection) => (
           <View key={collection.id}>
