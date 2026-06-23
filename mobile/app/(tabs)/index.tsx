@@ -151,6 +151,7 @@ export default function HomeScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={colors.brand.teal}
+            progressViewOffset={140 + insets.top}
           />
         }
       >

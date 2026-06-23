@@ -43,7 +43,8 @@ export default function RootLayout() {
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(colors.grey[0]).catch(() => {})
     if (Platform.OS === "android") {
-      RNStatusBar.setBackgroundColor(colors.grey[0])
+      RNStatusBar.setTranslucent(true)
+      RNStatusBar.setBackgroundColor("transparent")
       RNStatusBar.setBarStyle("dark-content")
     }
   }, [])
