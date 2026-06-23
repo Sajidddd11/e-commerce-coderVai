@@ -68,7 +68,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             region_id,
         } = req.query as Record<string, string>
 
-        const limit = parseInt((req.query.limit as string) ?? "10", 10)
+        // Default to 10, but cap at 100 to prevent heavy DB queries if abused
+        const limit = Math.min(parseInt((req.query.limit as string) ?? "10", 10), 100)
 
         if (!session_id) {
             return res.status(400).json({ message: "session_id is required" })
@@ -159,8 +160,12 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
                     await upstashRedis.set(cacheKey, productIds, CACHE_TTL_PERSONALISED)
                 }
             }
-            // Fall through to trending if not enough personalised results
-            if (productIds.length < Math.ceil(limit / 2)) strategy = "trending"
+            // If we don't have enough personalised results to fill the limit,
+            // pad the rest with trending products so the user still sees a full grid.
+            if (productIds.length < limit) {
+                const trendingIds = await recommendationService.getTrending({ limit: limit - productIds.length, excludeIds: productIds })
+                productIds = [...productIds, ...trendingIds]
+            }
         }
 
         if (strategy === "mixed") {

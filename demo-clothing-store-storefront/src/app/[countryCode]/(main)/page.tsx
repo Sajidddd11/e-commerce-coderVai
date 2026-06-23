@@ -10,8 +10,10 @@ import SuggestedForYou from "@modules/home/components/suggested-for-you"
 import { listCollections } from "@lib/data/collections"
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
+import { retrieveCustomer } from "@lib/data/customer"
 
-export const revalidate = 300 // Revalidate every 5 minutes
+// No static revalidate — this page reads auth cookies so Next.js makes it
+// dynamic automatically. Each request gets the correct customer context.
 
 export const metadata: Metadata = {
   title: "ZAHAN Fashion and Lifestyle",
@@ -37,6 +39,11 @@ export default async function Home(props: {
     return null
   }
 
+  // Fetch the logged-in customer so we can pass their ID to the recommendation
+  // engine. Without this, the API queries only by session_id (current browser
+  // session) and never reaches the 5-event threshold for "Suggested For You".
+  const customer = await retrieveCustomer()
+
   return (
     <div className="w-full">
       <section data-testid="section-announcement">
@@ -52,7 +59,12 @@ export default async function Home(props: {
         <FeaturedProductsShowcase collections={collections} region={region} />
       </section>
       <section data-testid="section-suggested-for-you">
-        <SuggestedForYou region={region} regionId={region.id} limit={10} />
+        <SuggestedForYou
+          region={region}
+          regionId={region.id}
+          limit={10}
+          customerId={customer?.id}
+        />
       </section>
       <section data-testid="section-trust">
         <TrustSection />

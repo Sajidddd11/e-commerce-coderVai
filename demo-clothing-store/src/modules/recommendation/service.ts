@@ -73,30 +73,33 @@ class RecommendationModuleService extends MedusaService({
     }): Promise<void> {
         const { customer_id, session_id, fingerprint_id } = opts
 
-        // We use raw manager here because MikroORM's ORM-level update
-        // doesn't support OR conditions efficiently across indexed columns.
-        const em = (this as any).__container__?.manager ?? (this as any).manager_
-
+        // We use standard list and update methods because Medusa v2 MedusaService 
+        // doesn't expose the underlying MikroORM em.nativeUpdate directly.
+        
         // Merge by session_id
-        await em?.nativeUpdate?.(
-            "BehaviourEvent",
-            {
-                customer_id: null,
-                session_id,
-            },
-            { customer_id }
-        )
+        const sessionEvents = await this.listBehaviourEvents({
+            session_id,
+            customer_id: null
+        }, { take: 5000 })
+        
+        if (sessionEvents.length > 0) {
+            await this.updateBehaviourEvents(
+                sessionEvents.map(e => ({ id: e.id, customer_id }))
+            )
+        }
 
         // Merge by fingerprint_id (covers other browser profiles on same device)
         if (fingerprint_id) {
-            await em?.nativeUpdate?.(
-                "BehaviourEvent",
-                {
-                    customer_id:    null,
-                    fingerprint_id,
-                },
-                { customer_id }
-            )
+            const fpEvents = await this.listBehaviourEvents({
+                fingerprint_id,
+                customer_id: null
+            }, { take: 5000 })
+            
+            if (fpEvents.length > 0) {
+                await this.updateBehaviourEvents(
+                    fpEvents.map(e => ({ id: e.id, customer_id }))
+                )
+            }
         }
     }
 

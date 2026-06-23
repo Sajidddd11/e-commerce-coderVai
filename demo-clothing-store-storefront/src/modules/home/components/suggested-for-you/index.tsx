@@ -18,7 +18,12 @@ import { HttpTypes } from "@medusajs/types"
 import { useRecommendations } from "@hooks/use-recommendations"
 import { useTrackBehaviour } from "@hooks/use-track-behaviour"
 import ProductPreview from "@modules/products/components/product-preview"
-import InteractiveLink from "@modules/common/components/interactive-link"
+import dynamic from "next/dynamic"
+
+// Only load the debugger bundle when debug mode is enabled — zero cost in prod
+const RecommendationDebugger = process.env.NEXT_PUBLIC_REC_DEBUG === "true"
+    ? dynamic(() => import("@modules/home/components/recommendation-debugger"), { ssr: false })
+    : null
 
 const STRATEGY_LABELS: Record<string, { title: string; subtitle: string }> = {
   personalised:    { title: "Suggested For You",   subtitle: "Handpicked based on your browsing" },
@@ -49,7 +54,7 @@ export default function SuggestedForYou({
   const [showAll, setShowAll] = useState(false)
 
   // Fetch full list upfront so "See All" is instant
-  const { products, strategy, recommId, loading } = useRecommendations({
+  const { products, strategy, recommId, loading, error, debug } = useRecommendations({
     customerId,
     regionId,
     limit: FULL_LIMIT,
@@ -113,6 +118,7 @@ export default function SuggestedForYou({
   if (products.length === 0) return null
 
   return (
+    <>
     <div
       className="w-full bg-white py-8 small:py-10 medium:py-12 pb-4 small:pb-6 medium:pb-8"
       data-testid="suggested-for-you-section"
@@ -182,5 +188,11 @@ export default function SuggestedForYou({
         </div>
       </div>
     </div>
+
+    {/* ── Debug panel (floating, only when NEXT_PUBLIC_REC_DEBUG=true) ── */}
+    {RecommendationDebugger && (
+      <RecommendationDebugger debug={debug} loading={loading} error={error} />
+    )}
+  </>
   )
 }
