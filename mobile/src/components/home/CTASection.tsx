@@ -33,7 +33,7 @@ export function CTASection({ embedded }: CTASectionProps = {}) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: spacing.base },
+  wrap: { paddingHorizontal: spacing.md },
   wrapEmbedded: { paddingHorizontal: 0 },
   card: {
     backgroundColor: colors.dark.bg,

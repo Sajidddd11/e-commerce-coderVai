@@ -1,6 +1,6 @@
 import { View, StyleSheet, Text } from "react-native"
 import Animated, { useAnimatedStyle, interpolate, Extrapolation, SharedValue } from "react-native-reanimated"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 
 interface AnnouncementBarProps {
   scrollY?: SharedValue<number>
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingVertical: 8, // py-2
     justifyContent: "center",
     alignItems: "center",

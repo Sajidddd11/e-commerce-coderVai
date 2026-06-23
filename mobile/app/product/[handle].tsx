@@ -29,7 +29,7 @@ import { getProductReviews } from "@api/enhancements"
 import { trackEvent } from "@api/recommendations"
 import { getProductPrice } from "@utils/get-product-price"
 import { trackViewContent, trackAddToCart } from "@utils/facebook-analytics"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
 const COLOR_MAP: Record<string, string> = {
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   body: {
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingTop: 16, // pt-4
     gap: 16, // gap-4
     backgroundColor: "white",
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
     gap: 12, // gap-3
   },
   variantChip: {
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingVertical: 6, // py-1.5
     borderRadius: 9999, // rounded-full
     borderWidth: 1,
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB", // border-gray-200
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingVertical: 8, // py-2
     flexDirection: "row",
     gap: 8,

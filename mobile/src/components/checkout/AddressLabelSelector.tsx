@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 8,
     borderRadius: borderRadius.base,
     borderWidth: 1,

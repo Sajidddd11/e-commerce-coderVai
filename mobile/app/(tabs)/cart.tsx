@@ -8,7 +8,7 @@ import { Screen } from "@components/layout/Screen"
 import { useCartStore } from "@stores/cart-store"
 import { getFreeShippingThreshold, FreeShippingInfo } from "@api/enhancements"
 import { convertToLocale } from "@utils/money"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 
 function currencyOf(cart: HttpTypes.StoreCart | null) {
   return cart?.currency_code || cart?.region?.currency_code || "bdt"
@@ -332,7 +332,7 @@ export default function CartScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingTop: 4, // reduced
     paddingBottom: 8, // reduced
     borderBottomWidth: 1,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
   freeShip: {
     backgroundColor: "rgba(86, 174, 191, 0.1)", // bg-[#56aebf]/10
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12, // py-3
     flexDirection: "row",
     alignItems: "center",
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   itemsContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingTop: 16, // pt-4
     gap: 8, // gap-2
   },
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   promoBlock: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingTop: 8, // pt-2
     paddingBottom: 16, // pb-4
     gap: 12, // gap-3
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   promoBtn: {
     backgroundColor: colors.brand.teal,
     borderRadius: 8, // rounded-lg
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingVertical: 8, // py-2
     justifyContent: "center",
     alignItems: "center",
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: colors.grey[20],
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 12,
   },
   checkoutBtn: {

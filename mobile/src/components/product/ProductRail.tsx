@@ -62,7 +62,7 @@ export function ProductRail({
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
   },
 })

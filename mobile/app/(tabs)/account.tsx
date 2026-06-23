@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingTop: spacing["2xl"],
     paddingBottom: spacing.base,
     gap: spacing.base,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingVertical: 14,
   },
   menuRowBorder: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   menuLabel: { flex: 1, fontWeight: '600' },
   logoutContainer: {
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     marginBottom: spacing["2xl"],
   },
   logoutButton: {

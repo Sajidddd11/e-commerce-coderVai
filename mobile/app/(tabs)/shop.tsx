@@ -14,7 +14,7 @@ import { useRegionStore } from "@stores/region-store"
 import { listProductsWithSort } from "@api/products"
 import { listCategories, filterCategoriesWithProducts } from "@api/categories"
 import { SortOptions } from "@utils/sort-products"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
 const SORT_OPTIONS: { key: SortOptions; label: string }[] = [
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   searchRow: {
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingTop: 16, // pt-4
     paddingBottom: 12, // pb-3
   },
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   resultsHeader: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingBottom: 8,
   },
   filters: {
@@ -271,10 +271,10 @@ const styles = StyleSheet.create({
   sortRow: {
     flexDirection: "row",
     gap: 8, // gap-2
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
   },
   sortChip: {
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     height: 32, // h-8
     justifyContent: "center",
     alignItems: "center",

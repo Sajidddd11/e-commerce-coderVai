@@ -25,7 +25,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
 
   const validSlides = slides.filter((s) => s.image != null)
 
-  const H_PAD = spacing.base
+  const H_PAD = spacing.md
   const cardWidth = width - H_PAD * 2
   // 2:1 — industry standard for landscape promo banners
   const cardHeight = Math.round(cardWidth / 2)

@@ -1,6 +1,6 @@
 import { ScrollView, Pressable, StyleSheet, Text } from "react-native"
 import { HttpTypes } from "@medusajs/types"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
 interface CategoryChipsProps {
@@ -58,11 +58,11 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     gap: 8, // gap-2
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingBottom: 4, // pb-1
   },
   chip: {
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     height: 32, // h-8
     justifyContent: "center",
     alignItems: "center",

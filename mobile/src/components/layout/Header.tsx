@@ -5,7 +5,7 @@ import { useRouter } from "expo-router"
 import { MapPin, ChevronDown, Bell } from "lucide-react-native"
 import * as Location from "expo-location"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { ProductSearchBar } from "@components/search/ProductSearchBar"
 
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     zIndex: 10,
   },
   topRow: {

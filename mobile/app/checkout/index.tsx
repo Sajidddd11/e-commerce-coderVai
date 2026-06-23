@@ -37,7 +37,7 @@ import {
 } from "@utils/shipping"
 import { convertToLocale } from "@utils/money"
 import { trackInitiateCheckout } from "@utils/facebook-analytics"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { paymentInfoMap } from "@design/constants"
 
 export default function CheckoutScreen() {
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingTop: 4, // reduced from 12
     paddingBottom: 8, // reduced from 12
     borderBottomWidth: 1,
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingTop: 8,
     paddingBottom: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     marginBottom: 16, // mb-4
   },
   scroll: {
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingBottom: 112, // pb-28
     gap: 24, // gap-6
     paddingTop: 16,

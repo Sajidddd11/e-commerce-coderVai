@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { X } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@utils/sort-products"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
 const SORT_OPTIONS: { key: SortOptions; label: string }[] = [
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.base,
     paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   content: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.base,
     paddingBottom: 20,
   },
   sectionTitle: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
     borderRadius: 9999,
     borderWidth: 1,

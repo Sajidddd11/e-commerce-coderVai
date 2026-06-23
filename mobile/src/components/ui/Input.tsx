@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey[10],
     borderWidth: 1,
     borderRadius: borderRadius.base,
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontFamily: fontFamily.body,
     fontSize: fontSize.md,

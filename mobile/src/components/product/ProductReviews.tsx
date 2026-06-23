@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
   },
   form: { padding: spacing.base, gap: spacing.base },

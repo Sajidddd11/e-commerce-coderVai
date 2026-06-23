@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     flexDirection:    "row",
     alignItems:       "center",
     gap:              spacing.sm,
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingVertical:   spacing.md,
   },
   back: {
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   empty: {
     alignItems:    "center",
     paddingVertical: spacing["4xl"],
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     textAlign:     "center",
   },
 })

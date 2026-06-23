@@ -2,7 +2,7 @@ import { ScrollView, Pressable, View, StyleSheet, Text } from "react-native"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
 interface CategoryTilesProps {
@@ -66,7 +66,7 @@ export function CategoryTiles({ categories }: CategoryTilesProps) {
 const styles = StyleSheet.create({
   container: {
     gap: 16, // gap-4 in tailwind
-    paddingHorizontal: 16, // px-4
+    paddingHorizontal: spacing.md, // px-4
     paddingBottom: 4, // pb-1
   },
   tile: {

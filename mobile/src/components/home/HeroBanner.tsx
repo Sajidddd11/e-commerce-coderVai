@@ -49,7 +49,7 @@ export function HeroBanner() {
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
     paddingTop: spacing.base,
   },
   banner: {
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   content: {
     ...StyleSheet.absoluteFillObject,
-    paddingHorizontal: 24, // px-6
+    paddingHorizontal: spacing.base, // px-6
     paddingVertical: 20, // py-5
     justifyContent: "center",
     alignItems: "flex-start",
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   cta: {
     borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.md,
   },
   dots: {
     position: "absolute",

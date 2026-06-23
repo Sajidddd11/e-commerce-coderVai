@@ -1,6 +1,6 @@
 import { View, Pressable, StyleSheet, Text } from "react-native"
 import { ChevronRight } from "lucide-react-native"
-import { colors } from "@design/theme"
+import { colors, spacing } from "@design/theme"
 
 interface SectionHeaderProps {
   title: string
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     marginBottom: 12, // mb-3
     marginTop: 20, // mt-5 applied to the wrapper in the demo
   },
