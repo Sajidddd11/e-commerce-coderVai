@@ -129,7 +129,13 @@ export async function login(_currentState: unknown, formData: FormData) {
     return error.toString()
   }
 
-  return { success: true }
+  // Fetch customer_id so the client can merge guest browsing history
+  try {
+    const customer = await retrieveCustomer()
+    return { success: true, customer_id: customer?.id ?? null }
+  } catch {
+    return { success: true, customer_id: null }
+  }
 }
 
 export async function signout(countryCode: string) {

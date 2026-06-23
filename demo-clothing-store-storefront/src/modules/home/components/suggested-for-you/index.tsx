@@ -2,146 +2,185 @@
 
 /**
  * SuggestedForYou — Client component that fetches & renders personalised
- * product recommendations. Used on the home page.
+ * product recommendations. Styled to match FeaturedProductsShowcase.
  *
  * Strategy waterfall (decided by backend):
  *   personalised  → if user has 5+ events
  *   mixed         → if 1–4 events
  *   trending      → no history (new / anonymous user)
  *
- * The component also handles:
- *   • detail_view tracking on card click (recomm_id forwarded)
- *   • Skeleton loading state
- *   • Graceful empty / error states (hides itself)
+ * "See All" button expands the grid from the initial limit to the full
+ * recommendation set (fetched at 40 items, shown incrementally).
  */
 
-import { useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { useRecommendations } from "@hooks/use-recommendations"
 import { useTrackBehaviour } from "@hooks/use-track-behaviour"
 import ProductPreview from "@modules/products/components/product-preview"
+import InteractiveLink from "@modules/common/components/interactive-link"
 
-const STRATEGY_LABELS: Record<string, string> = {
-  personalised:    "Suggested For You",
-  mixed:           "Suggested For You",
-  trending:        "Trending Right Now",
-  bought_together: "Frequently Bought Together",
+const STRATEGY_LABELS: Record<string, { title: string; subtitle: string }> = {
+  personalised:    { title: "Suggested For You",   subtitle: "Handpicked based on your browsing" },
+  mixed:           { title: "Suggested For You",   subtitle: "Personalised picks just for you" },
+  trending:        { title: "Trending Right Now",  subtitle: "Most loved products this week" },
+  bought_together: { title: "Frequently Bought Together", subtitle: "Customers also love these" },
 }
+
+const INITIAL_LIMIT = 5
+const FULL_LIMIT    = 40
 
 type SuggestedForYouProps = {
   region:      HttpTypes.StoreRegion
   customerId?: string
   regionId?:   string
-  limit?:      number
-  /** Section title override */
   title?:      string
+  /** How many items to show initially (before "See All") */
+  initialLimit?: number
 }
 
 export default function SuggestedForYou({
   region,
   customerId,
   regionId,
-  limit = 10,
   title,
+  initialLimit = INITIAL_LIMIT,
 }: SuggestedForYouProps) {
+  const [showAll, setShowAll] = useState(false)
+
+  // Fetch full list upfront so "See All" is instant
   const { products, strategy, recommId, loading } = useRecommendations({
     customerId,
     regionId,
-    limit,
+    limit: FULL_LIMIT,
     type: "auto",
   })
 
   const { track } = useTrackBehaviour()
   const hasTracked = useRef(false)
 
-  // Once we have products, track an implicit "impression"
-  // (not a real event — just used for debugging in dev)
   useEffect(() => {
     if (!loading && products.length > 0 && !hasTracked.current) {
       hasTracked.current = true
     }
   }, [loading, products])
 
-  const sectionTitle = title ?? STRATEGY_LABELS[strategy] ?? "Suggested For You"
+  const labels        = STRATEGY_LABELS[strategy] ?? STRATEGY_LABELS.trending
+  const sectionTitle  = title ?? labels.title
+  const sectionSub    = labels.subtitle
+  const hasMore       = products.length > initialLimit
+  const visibleItems  = showAll ? products : products.slice(0, initialLimit)
 
-  // Show skeleton while loading
+  const handleCardClick = (product: HttpTypes.StoreProduct) => {
+    if (!product.id) return
+    track({
+      event_type:    "detail_view",
+      product_id:    product.id,
+      category_id:   product.categories?.[0]?.id,
+      collection_id: product.collection?.id,
+      recomm_id:     recommId ?? undefined,
+    })
+  }
+
+  // ── Skeleton ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <section
-        className="w-full py-12 bg-white border-t border-slate-100"
-        data-testid="suggested-for-you-section"
-      >
+      <div className="w-full bg-white py-8 small:py-10 medium:py-12 pb-4 small:pb-6 medium:pb-8">
         <div className="content-container">
-          <div className="mb-8">
-            <div className="h-8 w-56 bg-slate-200 rounded animate-pulse mb-2" />
-            <div className="w-12 h-1 bg-slate-200 rounded-full" />
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col small:flex-row small:items-center small:justify-between gap-3 small:gap-0">
+              <div className="flex flex-col gap-1 small:gap-2">
+                <div className="h-8 w-56 bg-slate-200 rounded animate-pulse" />
+                <div className="h-4 w-40 bg-slate-100 rounded animate-pulse" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-3 xsmall:gap-4 small:gap-4 medium:gap-5 large:gap-6">
+              {Array.from({ length: initialLimit }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-3">
+                  <div className="aspect-square bg-slate-100 rounded-lg animate-pulse" />
+                  <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4" />
+                  <div className="h-4 bg-slate-100 rounded animate-pulse w-1/2" />
+                </div>
+              ))}
+            </div>
           </div>
-          <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-5 gap-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <li key={i} className="flex flex-col gap-3">
-                <div className="aspect-square bg-slate-100 rounded animate-pulse" />
-                <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4" />
-                <div className="h-4 bg-slate-100 rounded animate-pulse w-1/2" />
-              </li>
-            ))}
-          </ul>
         </div>
-      </section>
+      </div>
     )
   }
 
   // Hide if nothing to show
   if (products.length === 0) return null
 
-  const handleCardClick = (product: HttpTypes.StoreProduct) => {
-    if (!product.id) return
-    track({
-      event_type:   "detail_view",
-      product_id:   product.id,
-      category_id:  product.categories?.[0]?.id,
-      collection_id: product.collection?.id,
-      recomm_id:    recommId ?? undefined,
-    })
-  }
-
   return (
-    <section
-      className="w-full py-12 bg-white border-t border-slate-100"
+    <div
+      className="w-full bg-white py-8 small:py-10 medium:py-12 pb-4 small:pb-6 medium:pb-8"
       data-testid="suggested-for-you-section"
     >
       <div className="content-container">
-        {/* Section header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl small:text-3xl font-bold text-slate-900 mb-2">
-              {sectionTitle}
-            </h2>
-            <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-transparent rounded-full" />
-          </div>
-          {strategy === "personalised" && (
-            <span className="hidden small:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              Personalised for you
-            </span>
-          )}
-        </div>
+        <div className="flex flex-col gap-8">
 
-        {/* Product grid */}
-        <ul
-          className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-5 gap-3 small:gap-4"
-          data-testid="suggested-products-grid"
-        >
-          {products.map((product) => (
-            <li
-              key={product.id}
-              className="h-full w-full"
-              onClick={() => handleCardClick(product)}
-            >
-              <ProductPreview product={product} region={region} />
-            </li>
-          ))}
-        </ul>
+          {/* ── Header ─────────────────────────────────────────────────────── */}
+          <div className="flex flex-col small:flex-row small:items-center small:justify-between gap-3 small:gap-0">
+            <div className="flex flex-col gap-1 small:gap-2">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg xsmall:text-2xl small:text-3xl font-bold text-slate-900">
+                  {sectionTitle}
+                </h3>
+                {strategy === "personalised" && (
+                  <span className="hidden small:flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Personalised
+                  </span>
+                )}
+              </div>
+              <p className="text-slate-600 text-xs xsmall:text-sm">
+                {sectionSub}
+              </p>
+            </div>
+
+            {/* "See All" / "Show Less" link — only shown when there are more items */}
+            {hasMore && (
+              <button
+                onClick={() => setShowAll((v) => !v)}
+                className="inline-flex items-center gap-2 text-slate-900 hover:text-slate-600 font-semibold text-xs xsmall:text-sm group transition-colors w-fit"
+              >
+                {showAll ? "Show Less" : "See All"}
+                <span className={`transition-transform inline-block ${showAll ? "rotate-90" : "group-hover:translate-x-1"}`}>→</span>
+              </button>
+            )}
+          </div>
+
+          {/* ── Products Grid ───────────────────────────────────────────────── */}
+          <div
+            className="grid grid-cols-2 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-3 xsmall:gap-4 small:gap-4 medium:gap-5 large:gap-6"
+            data-testid="suggested-products-grid"
+          >
+            {visibleItems.map((product) => (
+              <div
+                key={product.id}
+                className="group h-full rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg border border-grey-20 shadow-sm"
+                onClick={() => handleCardClick(product)}
+              >
+                <ProductPreview product={product} region={region} isFeatured />
+              </div>
+            ))}
+          </div>
+
+          {/* ── Bottom "See All" for mobile (below the grid) ──────────────── */}
+          {hasMore && !showAll && (
+            <div className="flex justify-center small:hidden">
+              <button
+                onClick={() => setShowAll(true)}
+                className="px-6 py-2.5 text-sm font-semibold text-slate-900 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"
+              >
+                See All {products.length} Products →
+              </button>
+            </div>
+          )}
+
+        </div>
       </div>
-    </section>
+    </div>
   )
 }

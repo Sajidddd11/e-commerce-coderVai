@@ -129,13 +129,19 @@ class RecommendationModuleService extends MedusaService({
         if (!customer_id && !session_id && !fingerprint_id) return []
 
         // ── Step 1: Fetch recent events ──────────────────────────────────────
+        // Priority: customer_id > fingerprint_id > session_id
+        // After merge, all guest events carry customer_id, giving full history.
+        const eventFilter: Record<string, any> = { deleted_at: null }
+        if (customer_id) {
+            eventFilter.customer_id = customer_id
+        } else if (fingerprint_id) {
+            eventFilter.fingerprint_id = fingerprint_id
+        } else if (session_id) {
+            eventFilter.session_id = session_id
+        }
+
         const recentEvents = await this.listBehaviourEvents(
-            {
-                ...(customer_id    ? { customer_id }    : {}),
-                ...(session_id     ? { session_id }     : {}),
-                ...(fingerprint_id ? { fingerprint_id } : {}),
-                deleted_at: null,
-            },
+            eventFilter,
             {
                 take:  PERSONALISATION_WINDOW,
                 order: { created_at: "DESC" },
@@ -289,15 +295,22 @@ class RecommendationModuleService extends MedusaService({
         session_id?:     string
         fingerprint_id?: string
     }): Promise<number> {
-        const events = await this.listBehaviourEvents(
-            {
-                ...(opts.customer_id    ? { customer_id:    opts.customer_id }    : {}),
-                ...(opts.session_id     ? { session_id:     opts.session_id }     : {}),
-                ...(opts.fingerprint_id ? { fingerprint_id: opts.fingerprint_id } : {}),
-                deleted_at: null,
-            },
-            { take: 100 }
-        )
+        // Priority: customer_id > fingerprint_id > session_id
+        // After a merge, all guest events are tagged with customer_id,
+        // so querying by customer_id gives the full cross-device count.
+        const filter: Record<string, any> = { deleted_at: null }
+
+        if (opts.customer_id) {
+            filter.customer_id = opts.customer_id
+        } else if (opts.fingerprint_id) {
+            filter.fingerprint_id = opts.fingerprint_id
+        } else if (opts.session_id) {
+            filter.session_id = opts.session_id
+        } else {
+            return 0
+        }
+
+        const events = await this.listBehaviourEvents(filter, { take: 100 })
         return events.length
     }
 

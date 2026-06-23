@@ -78,6 +78,19 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             console.error("[Track] ⚠️ Failed to save event:", err?.message)
         })
 
+        // ── Auto-merge guest → customer on first authenticated track event ────
+        // If the user is logged in, ensure all prior guest events are linked to
+        // their customer_id. This is fire-and-forget — never blocks the response.
+        if (customer_id && session_id) {
+            recommendationService.mergeGuestToCustomer({
+                customer_id,
+                session_id,
+                fingerprint_id: fingerprint_id ?? undefined,
+            }).catch(err => {
+                console.error("[Track] ⚠️ Failed to merge guest session:", err?.message)
+            })
+        }
+
         return res.status(200).json({ ok: true })
     } catch (error: any) {
         console.error("[Track] ❌ Error:", error)

@@ -2,6 +2,7 @@ import { HttpTypes } from "@medusajs/types"
 import { sdk } from "./sdk"
 import { getAuthHeaders, setToken, removeToken } from "@utils/storage"
 import { getCartId, removeCartId } from "./cart"
+import { mergeGuestHistory } from "./recommendations"
 
 /**
  * Ported from web src/lib/data/customer.ts.
@@ -50,6 +51,13 @@ export async function login({
 
     await setToken(token)
     await transferCart()
+
+    // Merge guest browsing history to this customer's account (fire-and-forget)
+    const customer = await retrieveCustomer()
+    if (customer?.id) {
+      mergeGuestHistory(customer.id).catch(() => null)
+    }
+
     return { success: true }
   } catch (e: any) {
     return { success: false, error: e?.message ?? "Wrong email or password" }
@@ -91,6 +99,12 @@ export async function signup({
     if (typeof loginToken === "string") {
       await setToken(loginToken)
       await transferCart()
+
+      // Merge guest browsing history after signup
+      const customer = await retrieveCustomer()
+      if (customer?.id) {
+        mergeGuestHistory(customer.id).catch(() => null)
+      }
     }
 
     return { success: true }

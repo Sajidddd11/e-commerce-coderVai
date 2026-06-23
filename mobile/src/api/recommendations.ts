@@ -124,3 +124,37 @@ export async function getRecommendations(
 
     return res.json() as Promise<RecommendationsResponse>
 }
+
+// ─── Merge guest history to customer on login ────────────────────────────────
+
+/**
+ * Fire-and-forget merge: links all guest behaviour events (session_id +
+ * fingerprint_id) to the now-authenticated customer_id.
+ * Call this immediately after login or signup.
+ */
+export async function mergeGuestHistory(customerId: string): Promise<void> {
+    try {
+        const identity = await getIdentity()
+
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        }
+        if (PUBLISHABLE_KEY) {
+            headers["x-publishable-api-key"] = PUBLISHABLE_KEY
+        }
+
+        fetch(`${MEDUSA_BACKEND}/store/recommendations/merge`, {
+            method:  "POST",
+            headers,
+            body: JSON.stringify({
+                customer_id:    customerId,
+                session_id:     identity.session_id,
+                fingerprint_id: identity.fingerprint_id,
+            }),
+        }).catch(() => {
+            // Silently ignore — merge must never affect UX
+        })
+    } catch {
+        // Silently ignore
+    }
+}

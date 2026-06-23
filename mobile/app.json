@@ -2,7 +2,7 @@
   "expo": {
     "name": "ZAHAN",
     "slug": "zahan-store",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "zahan",
@@ -23,7 +23,7 @@
       }
     },
     "android": {
-      "versionCode": 3,
+      "versionCode": 4,
       "userInterfaceStyle": "light",
       "package": "com.zahan.store",
       "intentFilters": [

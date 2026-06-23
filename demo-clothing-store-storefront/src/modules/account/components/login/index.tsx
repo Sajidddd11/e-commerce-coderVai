@@ -5,6 +5,7 @@ import { SubmitButton } from "@modules/checkout/components/submit-button"
 import Input from "@modules/common/components/input"
 import { toast } from "@medusajs/ui"
 import { useActionState, useEffect } from "react"
+import { mergeGuestHistory } from "@lib/merge-guest-history"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
@@ -18,6 +19,11 @@ const Login = ({ setCurrentView }: Props) => {
       toast.success("Welcome back!", {
         description: "You have successfully signed in.",
       })
+      // Merge guest browsing history into this customer account (fire-and-forget)
+      // Reads customer_id from /store/customers/me after auth is set
+      if ((state as any).customer_id) {
+        mergeGuestHistory((state as any).customer_id)
+      }
     }
   }, [state])
 
