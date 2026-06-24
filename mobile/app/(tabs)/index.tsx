@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { RefreshControl, View, StyleSheet } from "react-native"
-import Animated, { useSharedValue, useAnimatedScrollHandler } from "react-native-reanimated"
+import Animated, { useSharedValue, useAnimatedScrollHandler, runOnJS } from "react-native-reanimated"
 import { useRouter } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { HttpTypes } from "@medusajs/types"
@@ -13,6 +13,7 @@ import { SectionHeader } from "@components/home/SectionHeader"
 import { CategoryTiles } from "@components/home/CategoryTiles"
 import { SuggestedForYouRail } from "@components/home/SuggestedForYouRail"
 import { ProductRail } from "@components/product/ProductRail"
+import { CustomRefreshIndicator } from "@components/ui/CustomRefreshIndicator"
 import { FilterBottomSheet } from "@components/search/FilterBottomSheet"
 import { useRegionStore } from "@stores/region-store"
 import { listProducts } from "@api/products"
@@ -41,17 +42,18 @@ export default function HomeScreen() {
   const [featured, setFeatured] = useState<FeaturedCollection[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [localRefreshing, setLocalRefreshing] = useState(false)
+  const shouldRefresh = useSharedValue(false)
+
+  useEffect(() => {
+    setLocalRefreshing(refreshing)
+  }, [refreshing])
 
   const [searchValue, setSearchValue] = useState("")
   const [filterVisible, setFilterVisible] = useState(false)
 
   const scrollY = useSharedValue(0)
-
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y
-    },
-  })
+  const isDragging = useSharedValue(false)
 
   const load = useCallback(async () => {
     try {
@@ -86,15 +88,48 @@ export default function HomeScreen() {
     }
   }, [countryCode, region?.id])
 
-  useEffect(() => {
-    if (isReady) load()
-  }, [isReady, load])
-
-  const onRefresh = useCallback(async () => {
+  const startRefresh = useCallback(async () => {
     setRefreshing(true)
     await load()
     setRefreshing(false)
   }, [load])
+
+  const handleRefreshControlTrigger = useCallback(() => {
+    if (isDragging.value) {
+      shouldRefresh.value = true
+      setLocalRefreshing(true)
+    } else {
+      startRefresh()
+    }
+  }, [startRefresh])
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+    onBeginDrag: () => {
+      isDragging.value = true
+    },
+    onEndDrag: () => {
+      isDragging.value = false
+      if (shouldRefresh.value) {
+        shouldRefresh.value = false
+        runOnJS(startRefresh)()
+      }
+    },
+    onMomentumEnd: () => {
+      isDragging.value = false
+      if (shouldRefresh.value) {
+        shouldRefresh.value = false
+        runOnJS(startRefresh)()
+      }
+    },
+  })
+
+  useEffect(() => {
+    if (isReady) load()
+  }, [isReady, load])
+
 
   const handleSearchSubmit = (term: string) => {
     if (term.trim()) {
@@ -148,13 +183,17 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.brand.teal}
+            refreshing={localRefreshing}
+            onRefresh={handleRefreshControlTrigger}
+            tintColor="transparent"
+            colors={["transparent"]}
+            style={{ backgroundColor: "transparent" }}
+            progressBackgroundColor="transparent"
             progressViewOffset={140 + insets.top}
           />
         }
       >
+        <CustomRefreshIndicator scrollY={scrollY} isRefreshing={localRefreshing} initialOffset={-(140 + insets.top)} isDragging={isDragging} />
         <AnnouncementBar scrollY={scrollY} />
 
         <HeroCarousel slides={carouselSlides} />

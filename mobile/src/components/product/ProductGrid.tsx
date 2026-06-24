@@ -1,7 +1,6 @@
-import { useMemo, useCallback } from "react"
+import { useMemo, useCallback, useState, useEffect } from "react"
 import {
   View,
-  ScrollView,
   StyleSheet,
   RefreshControl,
   useWindowDimensions,
@@ -9,9 +8,11 @@ import {
   NativeScrollEvent,
   ActivityIndicator,
 } from "react-native"
+import Animated, { useSharedValue, useAnimatedScrollHandler, runOnJS } from "react-native-reanimated"
 import { HttpTypes } from "@medusajs/types"
 import { ProductCard } from "./ProductCard"
 import { Skeleton } from "../ui/Skeleton"
+import { CustomRefreshIndicator } from "../ui/CustomRefreshIndicator"
 import { splitIntoMasonryColumns } from "@utils/masonry-columns"
 import { colors, spacing } from "@design/theme"
 
@@ -49,16 +50,61 @@ export function ProductGrid({
     [valid, columnWidth]
   )
 
-  const handleScroll = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (!onEndReached) return
-      const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent
-      const nearBottom =
-        layoutMeasurement.height + contentOffset.y >= contentSize.height - 240
-      if (nearBottom) onEndReached()
+  const [localRefreshing, setLocalRefreshing] = useState(false)
+  const shouldRefresh = useSharedValue(false)
+
+  useEffect(() => {
+    setLocalRefreshing(refreshing || false)
+  }, [refreshing])
+
+  const scrollY = useSharedValue(0)
+  const isDragging = useSharedValue(false)
+
+  const startRefresh = useCallback(() => {
+    if (onRefresh) {
+      onRefresh()
+    }
+  }, [onRefresh])
+
+  const handleRefreshControlTrigger = useCallback(() => {
+    if (isDragging.value) {
+      shouldRefresh.value = true
+      setLocalRefreshing(true)
+    } else {
+      startRefresh()
+    }
+  }, [startRefresh])
+
+  const handleScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+      if (onEndReached) {
+        const { layoutMeasurement, contentOffset, contentSize } = event
+        const nearBottom =
+          layoutMeasurement.height + contentOffset.y >= contentSize.height - 240
+        if (nearBottom) {
+          runOnJS(onEndReached)()
+        }
+      }
     },
-    [onEndReached]
-  )
+    onBeginDrag: () => {
+      isDragging.value = true
+    },
+    onEndDrag: () => {
+      isDragging.value = false
+      if (shouldRefresh.value) {
+        shouldRefresh.value = false
+        runOnJS(startRefresh)()
+      }
+    },
+    onMomentumEnd: () => {
+      isDragging.value = false
+      if (shouldRefresh.value) {
+        shouldRefresh.value = false
+        runOnJS(startRefresh)()
+      }
+    },
+  })
 
   if (loading && valid.length === 0) {
     return (
@@ -101,7 +147,7 @@ export function ProductGrid({
         : ListHeaderComponent
 
   return (
-    <ScrollView
+    <Animated.ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.content}
       onScroll={handleScroll}
@@ -109,13 +155,17 @@ export function ProductGrid({
       refreshControl={
         onRefresh ? (
           <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.brand.teal}
+            refreshing={localRefreshing}
+            onRefresh={handleRefreshControlTrigger}
+            tintColor="transparent"
+            colors={["transparent"]}
+            style={{ backgroundColor: "transparent" }}
+            progressBackgroundColor="transparent"
           />
         ) : undefined
       }
     >
+      {onRefresh && <CustomRefreshIndicator scrollY={scrollY} isRefreshing={localRefreshing} isDragging={isDragging} />}
       {header}
       <View style={styles.masonryRow}>
         {renderColumn(leftColumn)}
@@ -126,7 +176,7 @@ export function ProductGrid({
           <ActivityIndicator size="small" color={colors.brand.teal} />
         </View>
       ) : null}
-    </ScrollView>
+    </Animated.ScrollView>
   )
 }
 
