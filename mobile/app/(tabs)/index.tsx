@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { RefreshControl, View, StyleSheet } from "react-native"
+import { RefreshControl, View, StyleSheet, Platform } from "react-native"
 import Animated, { useSharedValue, useAnimatedScrollHandler, runOnJS } from "react-native-reanimated"
 import { useRouter } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -189,7 +189,7 @@ export default function HomeScreen() {
             colors={["transparent"]}
             style={{ backgroundColor: "transparent" }}
             progressBackgroundColor="transparent"
-            progressViewOffset={140 + insets.top}
+            progressViewOffset={Platform.OS === 'android' ? 30 : 140 + insets.top}
           />
         }
       >
@@ -237,7 +237,7 @@ export default function HomeScreen() {
             <ProductRail products={collection.products} />
           </View>
         ))}
-      </Animated.ScrollView>
+        </Animated.ScrollView>
 
       <Header
         scrollY={scrollY}

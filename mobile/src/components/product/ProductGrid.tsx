@@ -7,6 +7,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   ActivityIndicator,
+  Platform,
 } from "react-native"
 import Animated, { useSharedValue, useAnimatedScrollHandler, runOnJS } from "react-native-reanimated"
 import { HttpTypes } from "@medusajs/types"
@@ -161,6 +162,7 @@ export function ProductGrid({
             colors={["transparent"]}
             style={{ backgroundColor: "transparent" }}
             progressBackgroundColor="transparent"
+            progressViewOffset={Platform.OS === 'android' ? -100 : 0}
           />
         ) : undefined
       }

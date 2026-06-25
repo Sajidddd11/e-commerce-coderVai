@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, useWindowDimensions, Text } from 'react-native';
+import { View, StyleSheet, useWindowDimensions, Text, Platform } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   interpolate,
@@ -75,7 +75,7 @@ export function CustomRefreshIndicator({
       if (next.refreshing && !next.dragging) {
         refreshProgress.value = withTiming(1, { duration: 300 });
         spinnerRotation.value = withRepeat(
-          withTiming(360, { duration: 1000, easing: Easing.linear }),
+          withTiming(360, { duration: 600, easing: Easing.linear }),
           -1, // infinite
           false
         );
@@ -97,12 +97,14 @@ export function CustomRefreshIndicator({
     const finalHeight = isRefreshing ? Math.max(pullOffset, 60) : pullOffset;
     
     const offsetValue = Math.abs(initialOffset);
-    const topPosition = offsetValue - finalHeight;
+    const topPosition = Platform.OS === 'android'
+      ? offsetValue
+      : offsetValue - finalHeight;
 
     return {
       height: finalHeight,
       top: topPosition,
-      opacity: finalHeight > 0 ? 1 : 0,
+      opacity: finalHeight > 0 || (Platform.OS === 'android' && isRefreshing) ? 1 : 0,
     };
   });
 
@@ -245,7 +247,7 @@ export function CustomRefreshIndicator({
               stroke="#fff" 
               strokeWidth="24" 
               fill="transparent" 
-              strokeDasharray="300 1000" 
+              strokeDasharray="200 1000" 
               strokeLinecap="round" 
             />
           </Svg>
