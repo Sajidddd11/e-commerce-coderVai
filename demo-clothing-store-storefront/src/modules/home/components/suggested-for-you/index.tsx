@@ -98,7 +98,7 @@ export default function SuggestedForYou({
               </div>
             </div>
             <div className="grid grid-cols-2 xsmall:grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-3 xsmall:gap-4 small:gap-4 medium:gap-5 large:gap-6">
-              {Array.from({ length: initialLimit }).map((_, i) => (
+              {Array.from({ length: limit }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-3">
                   <div className="aspect-square bg-slate-100 rounded-lg animate-pulse" />
                   <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4" />

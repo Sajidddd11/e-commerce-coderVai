@@ -41,7 +41,7 @@ export default async function Checkout({
               <Review cart={cart} />
             </div>
             <div className="bg-white rounded-lg border border-slate-200 p-5 small:p-6 h-fit small:sticky top-20 small:top-24">
-              <CheckoutSummary cart={cart} showDiscountCode={false} />
+              <CheckoutSummary cart={cart} customer={customer} showDiscountCode={false} />
             </div>
           </div>
         ) : (

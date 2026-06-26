@@ -65,6 +65,13 @@ export default defineMiddlewares({
       matcher: /^\/store\/payment-collections\/[^\/]+\/payment-sessions$/,
       middlewares: [enrichPaymentContext],
     },
+    // Authenticate storefront loyalty endpoints
+    {
+      matcher: "/store/loyalty*",
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+      ],
+    },
     // Add publishable key for SSLCommerz callbacks
     {
       matcher: /^\/store\/sslcommerz\/(success|fail|cancel|ipn)/,

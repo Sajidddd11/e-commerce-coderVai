@@ -55,6 +55,10 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/blog",
     },
+    // Loyalty Module - Custom reward points system
+    {
+      resolve: "./src/modules/loyalty",
+    },
     // Delete Log Module - Audit trail for all deletions
     {
       resolve: "./src/modules/delete-log",

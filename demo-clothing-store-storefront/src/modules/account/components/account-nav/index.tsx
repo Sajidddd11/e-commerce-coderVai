@@ -92,6 +92,33 @@ const AccountNav = ({
                   </LocalizedClientLink>
                 </li>
                 <li>
+                  <LocalizedClientLink
+                    href="/account/loyalty"
+                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    data-testid="loyalty-link"
+                  >
+                    <div className="flex items-center gap-x-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width={20}
+                        height={20}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="8" cy="8" r="6" />
+                        <circle cx="18" cy="18" r="4" />
+                        <path d="M12 18a6 6 0 0 0-4-5.65" />
+                      </svg>
+                      <span>Loyalty Reward Coins</span>
+                    </div>
+                    <ChevronDown className="transform -rotate-90" />
+                  </LocalizedClientLink>
+                </li>
+                <li>
                   <button
                     type="button"
                     className="flex items-center justify-between py-4 border-b border-gray-200 px-8 w-full"
@@ -151,6 +178,15 @@ const AccountNav = ({
                   data-testid="orders-link"
                 >
                   Orders
+                </AccountNavLink>
+              </li>
+              <li>
+                <AccountNavLink
+                  href="/account/loyalty"
+                  route={route!}
+                  data-testid="loyalty-link"
+                >
+                  Loyalty Rewards
                 </AccountNavLink>
               </li>
               <li className="text-grey-700">

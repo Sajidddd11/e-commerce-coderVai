@@ -12,6 +12,7 @@ export default async function myScript({ container }: { container: MedusaContain
             "items.*",
         ],
     })
-    
-    console.log(JSON.stringify(orders[0]?.items[0], null, 2))
+    if (orders && orders[0]) {
+        console.log(JSON.stringify(orders[0]?.items?.[0], null, 2))
+    }
 }
