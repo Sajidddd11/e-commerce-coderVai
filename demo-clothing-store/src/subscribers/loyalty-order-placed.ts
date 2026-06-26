@@ -16,11 +16,11 @@ export default async function loyaltyOrderPlacedSubscriber({
         // 1. Fetch order details
         const { data: orders } = await query.graph({
             entity: "order",
-            fields: ["id", "customer_id", "subtotal", "metadata"],
+            fields: ["id", "display_id", "customer_id", "subtotal", "metadata"],
             filters: { id: orderId },
         })
 
-        const order = orders?.[0]
+        const order = orders?.[0] as any
         if (!order || !order.customer_id) {
             return
         }
@@ -36,14 +36,14 @@ export default async function loyaltyOrderPlacedSubscriber({
                 customerId,
                 -pointsToRedeem,
                 "redeem",
-                `Redeemed points on order #${orderId}`,
+                `Redeemed points on order #${order.display_id || orderId}`,
                 orderId
             )
         }
 
         // 3. Calculate and credit earned points
         const settings = await loyaltyService.getSettings()
-        const orderSubtotalBDT = (order.subtotal || 0) / 100
+        const orderSubtotalBDT = Number(order.subtotal || 0)
         const pointsEarned = Math.floor(orderSubtotalBDT * settings.points_per_bdt_earned)
 
         if (pointsEarned > 0) {
@@ -52,7 +52,7 @@ export default async function loyaltyOrderPlacedSubscriber({
                 customerId,
                 pointsEarned,
                 "earn",
-                `Earned points on order #${orderId}`,
+                `Earned points on order #${order.display_id || orderId}`,
                 orderId
             )
         }

@@ -46,10 +46,12 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         const existingCodes = (cart.promo_codes || []) as string[]
         const newCodes = existingCodes.filter(c => c !== promoCode)
 
-        // Keep other metadata fields but remove loyalty ones
-        const newMetadata = { ...cart.metadata }
-        delete newMetadata.loyalty_points_to_redeem
-        delete newMetadata.loyalty_discount_amount
+        // Keep other metadata fields but reset loyalty ones to null
+        const newMetadata = {
+            ...cart.metadata,
+            loyalty_points_to_redeem: null,
+            loyalty_discount_amount: null,
+        }
 
         const { result: updatedCart } = await updateCartWorkflow(req.scope).run({
             input: {

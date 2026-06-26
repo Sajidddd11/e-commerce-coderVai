@@ -48,15 +48,19 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         // 3. Calculate allowed points based on cart subtotal
         // We cap the discount to cart.subtotal.
         // Let's first calculate max allowed discount in BDT, then in minor units.
-        const cartSubtotalBDT = (cart.subtotal || 0) / 100
-        const maxPointsNeeded = Math.ceil(cartSubtotalBDT * settings.points_per_bdt_discount)
+        const cartSubtotalBDT = Number(cart.subtotal || 0)
+        // Cap the BDT discount to the floor of the subtotal (whole currency unit)
+        const maxDiscountBDT = Math.floor(cartSubtotalBDT)
+        const maxPointsNeeded = maxDiscountBDT * settings.points_per_bdt_discount
         const allowedPoints = Math.min(points, maxPointsNeeded, account.points)
 
-        const discountBDT = allowedPoints / settings.points_per_bdt_discount
-        const discountMinor = Math.floor(discountBDT * 100)
+        // Ensure the discount is a round integer value in BDT
+        const discountBDT = Math.floor(allowedPoints / settings.points_per_bdt_discount)
+        const finalAllowedPoints = discountBDT * settings.points_per_bdt_discount
+        const discountMinor = discountBDT * 100
 
-        if (discountMinor <= 0) {
-            return res.status(400).json({ message: "Points amount too small to generate discount" })
+        if (finalAllowedPoints <= 0) {
+            return res.status(400).json({ message: "Points amount too small to generate a whole discount amount" })
         }
 
         // 4. Create/Recreate the Promotion for this Cart
@@ -91,7 +95,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                 promo_codes: newCodes,
                 metadata: {
                     ...cart.metadata,
-                    loyalty_points_to_redeem: allowedPoints,
+                    loyalty_points_to_redeem: finalAllowedPoints,
                     loyalty_discount_amount: discountMinor,
                 }
             }
@@ -100,7 +104,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         res.json({
             message: "Loyalty points applied successfully",
             cart: updatedCart,
-            appliedPoints: allowedPoints,
+            appliedPoints: finalAllowedPoints,
             discountAmount: discountMinor,
         })
     } catch (error: any) {

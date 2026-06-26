@@ -21,6 +21,10 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
   const [errorMessage, setErrorMessage] = React.useState("")
 
   const { promotions = [] } = cart
+  const filteredPromotions = promotions.filter(
+    (promotion) => !promotion.code?.startsWith("LOYALTY-")
+  )
+
   const removePromotionCode = async (code: string) => {
     const validPromotions = promotions.filter(
       (promotion) => promotion.code !== code
@@ -55,7 +59,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
     }
   }
 
-  const hasAppliedCoupons = promotions.length > 0
+  const hasAppliedCoupons = filteredPromotions.length > 0
 
   return (
     <div className="w-full bg-white flex flex-col">
@@ -94,7 +98,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
         ) : (
           <div className="w-full flex items-center">
             <div className="flex flex-col w-full gap-y-3">
-              {promotions.map((promotion) => {
+              {filteredPromotions.map((promotion) => {
                 return (
                   <div
                     key={promotion.id}

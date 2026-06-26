@@ -16,11 +16,11 @@ export default async function loyaltyOrderCanceledSubscriber({
         // 1. Fetch order details
         const { data: orders } = await query.graph({
             entity: "order",
-            fields: ["id", "customer_id", "subtotal", "metadata"],
+            fields: ["id", "display_id", "customer_id", "subtotal", "metadata"],
             filters: { id: orderId },
         })
 
-        const order = orders?.[0]
+        const order = orders?.[0] as any
         if (!order || !order.customer_id) {
             return
         }
@@ -36,14 +36,14 @@ export default async function loyaltyOrderCanceledSubscriber({
                 customerId,
                 pointsToRedeem,
                 "refund",
-                `Refund of redeemed points for canceled order #${orderId}`,
+                `Refund of redeemed points for canceled order #${order.display_id || orderId}`,
                 orderId
             )
         }
 
         // 3. Clawback earned points
         const settings = await loyaltyService.getSettings()
-        const orderSubtotalBDT = (order.subtotal || 0) / 100
+        const orderSubtotalBDT = Number(order.subtotal || 0)
         const pointsEarned = Math.floor(orderSubtotalBDT * settings.points_per_bdt_earned)
 
         if (pointsEarned > 0) {
@@ -52,7 +52,7 @@ export default async function loyaltyOrderCanceledSubscriber({
                 customerId,
                 -pointsEarned,
                 "refund",
-                `Clawback of earned points for canceled order #${orderId}`,
+                `Clawback of earned points for canceled order #${order.display_id || orderId}`,
                 orderId
             )
         }
