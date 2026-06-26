@@ -1,12 +1,79 @@
 import React, { useState, useEffect } from "react"
 import { View, Text, Pressable, StyleSheet } from "react-native"
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolateColor,
+} from "react-native-reanimated"
 import { Input } from "@components/ui/Input"
 import { colors, borderRadius, spacing } from "@design/theme"
 import { fontFamily } from "@design/typography"
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+
 type AddressLabelSelectorProps = {
   value: string
   onChange: (value: string) => void
+}
+
+interface AddressLabelChipProps {
+  label: string
+  active: boolean
+  onPress: () => void
+}
+
+function AddressLabelChip({ label, active, onPress }: AddressLabelChipProps) {
+  const progress = useSharedValue(active ? 1 : 0)
+
+  useEffect(() => {
+    progress.value = withSpring(active ? 1 : 0, {
+      damping: 18,
+      stiffness: 200,
+      mass: 0.5,
+    })
+  }, [active])
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      ["#ffffff", colors.slate[900]]
+    )
+    const borderColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.grey[20], colors.slate[900]]
+    )
+    const scale = 1 + progress.value * 0.04 - progress.value * progress.value * 0.04
+    return {
+      backgroundColor,
+      borderColor,
+      transform: [{ scale }],
+    }
+  })
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.slate[900], "#ffffff"]
+    )
+    return {
+      color,
+    }
+  })
+
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      style={[styles.chip, animatedStyle]}
+    >
+      <Animated.Text style={[styles.chipText, animatedTextStyle]}>
+        {label}
+      </Animated.Text>
+    </AnimatedPressable>
+  )
 }
 
 export function AddressLabelSelector({ value, onChange }: AddressLabelSelectorProps) {
@@ -65,15 +132,12 @@ export function AddressLabelSelector({ value, onChange }: AddressLabelSelectorPr
         {chips.map((chip) => {
           const isActive = mode === chip
           return (
-            <Pressable
+            <AddressLabelChip
               key={chip}
+              label={chip}
+              active={isActive}
               onPress={() => handleModeChange(chip)}
-              style={[styles.chip, isActive && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-                {chip}
-              </Text>
-            </Pressable>
+            />
           )
         })}
       </View>

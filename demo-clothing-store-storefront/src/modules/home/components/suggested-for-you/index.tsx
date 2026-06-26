@@ -13,11 +13,12 @@
  * recommendation set (fetched at 40 items, shown incrementally).
  */
 
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { useRecommendations } from "@hooks/use-recommendations"
 import { useTrackBehaviour } from "@hooks/use-track-behaviour"
 import ProductPreview from "@modules/products/components/product-preview"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import dynamic from "next/dynamic"
 
 // Only load the debugger bundle when debug mode is enabled — zero cost in prod
@@ -33,15 +34,13 @@ const STRATEGY_LABELS: Record<string, { title: string; subtitle: string }> = {
 }
 
 const INITIAL_LIMIT = 5
-const FULL_LIMIT    = 40
 
 type SuggestedForYouProps = {
   region:      HttpTypes.StoreRegion
   customerId?: string
   regionId?:   string
   title?:      string
-  /** How many items to show initially (before "See All") */
-  initialLimit?: number
+  limit?:      number
 }
 
 export default function SuggestedForYou({
@@ -49,15 +48,14 @@ export default function SuggestedForYou({
   customerId,
   regionId,
   title,
-  initialLimit = INITIAL_LIMIT,
+  limit = INITIAL_LIMIT,
 }: SuggestedForYouProps) {
-  const [showAll, setShowAll] = useState(false)
 
-  // Fetch full list upfront so "See All" is instant
+  // Fetch limit + 1 upfront to determine if there is more
   const { products, strategy, recommId, loading, error, debug } = useRecommendations({
     customerId,
     regionId,
-    limit: FULL_LIMIT,
+    limit: limit + 1,
     type: "auto",
   })
 
@@ -73,8 +71,8 @@ export default function SuggestedForYou({
   const labels        = STRATEGY_LABELS[strategy] ?? STRATEGY_LABELS.trending
   const sectionTitle  = title ?? labels.title
   const sectionSub    = labels.subtitle
-  const hasMore       = products.length > initialLimit
-  const visibleItems  = showAll ? products : products.slice(0, initialLimit)
+  const hasMore       = products.length > limit
+  const visibleItems  = products.slice(0, limit)
 
   const handleCardClick = (product: HttpTypes.StoreProduct) => {
     if (!product.id) return
@@ -145,15 +143,15 @@ export default function SuggestedForYou({
               </p>
             </div>
 
-            {/* "See All" / "Show Less" link — only shown when there are more items */}
+            {/* "See All" link — redirects to suggested page */}
             {hasMore && (
-              <button
-                onClick={() => setShowAll((v) => !v)}
+              <LocalizedClientLink
+                href="/suggested"
                 className="inline-flex items-center gap-2 text-slate-900 hover:text-slate-600 font-semibold text-xs xsmall:text-sm group transition-colors w-fit"
               >
-                {showAll ? "Show Less" : "See All"}
-                <span className={`transition-transform inline-block ${showAll ? "rotate-90" : "group-hover:translate-x-1"}`}>→</span>
-              </button>
+                See All
+                <span className="transition-transform inline-block group-hover:translate-x-1">→</span>
+              </LocalizedClientLink>
             )}
           </div>
 
@@ -174,14 +172,14 @@ export default function SuggestedForYou({
           </div>
 
           {/* ── Bottom "See All" for mobile (below the grid) ──────────────── */}
-          {hasMore && !showAll && (
+          {hasMore && (
             <div className="flex justify-center small:hidden">
-              <button
-                onClick={() => setShowAll(true)}
-                className="px-6 py-2.5 text-sm font-semibold text-slate-900 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"
+              <LocalizedClientLink
+                href="/suggested"
+                className="px-6 py-2.5 text-sm font-semibold text-slate-900 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors inline-block text-center"
               >
-                See All {products.length} Products →
-              </button>
+                See All Products →
+              </LocalizedClientLink>
             </div>
           )}
 

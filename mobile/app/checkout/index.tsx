@@ -14,6 +14,15 @@ import { useRouter } from "expo-router"
 import { ChevronLeft, ChevronDown } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  runOnJS,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  interpolateColor,
+} from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Input } from "@components/ui/Input"
 import { DistrictPicker } from "@components/checkout/DistrictPicker"
@@ -39,6 +48,115 @@ import { convertToLocale } from "@utils/money"
 import { trackInitiateCheckout } from "@utils/facebook-analytics"
 import { colors, spacing } from "@design/theme"
 import { paymentInfoMap } from "@design/constants"
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+
+interface PaymentOptionCardProps {
+  p: HttpTypes.StorePaymentProvider
+  selected: boolean
+  onPress: () => void
+  info: { title: string; iconKey: string }
+  isCod: boolean
+}
+
+function PaymentOptionCard({
+  p,
+  selected,
+  onPress,
+  info,
+  isCod,
+}: PaymentOptionCardProps) {
+  const progress = useSharedValue(selected ? 1 : 0)
+
+  useEffect(() => {
+    progress.value = withSpring(selected ? 1 : 0, {
+      damping: 15,
+      stiffness: 180,
+      mass: 0.6,
+    })
+  }, [selected])
+
+  const animatedCardStyle = useAnimatedStyle(() => {
+    const borderColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.grey[20], colors.brand.teal]
+    )
+    const backgroundColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      [
+        "rgba(255, 255, 255, 1)",
+        isCod ? "rgba(86, 174, 191, 0.08)" : "rgba(86, 174, 191, 0.02)"
+      ]
+    )
+    return {
+      borderColor,
+      backgroundColor,
+    }
+  })
+
+  const animatedAccentBarStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scaleY: progress.value },
+        { translateX: (1 - progress.value) * -4 }
+      ],
+      opacity: progress.value,
+    }
+  })
+
+  const animatedRadioStyle = useAnimatedStyle(() => {
+    const borderColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.grey[20], colors.brand.teal]
+    )
+    const scale = 1 + progress.value * 0.05
+    return {
+      borderColor,
+      transform: [{ scale }],
+    }
+  })
+
+  const animatedRadioInnerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: progress.value }],
+      opacity: progress.value,
+    }
+  })
+
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      style={[
+        styles.paymentCard,
+        animatedCardStyle,
+      ]}
+    >
+      <Animated.View style={[styles.accentBar, animatedAccentBarStyle]} />
+      <Animated.View style={[styles.radio, animatedRadioStyle]}>
+        <Animated.View style={[styles.radioInner, animatedRadioInnerStyle]} />
+      </Animated.View>
+      <PaymentIcon providerId={p.id} size={24} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.paymentTitle}>
+          {info.title}
+        </Text>
+        <Text style={styles.paymentDesc}>
+          {isCod
+            ? "Pay when you receive"
+            : p.id.includes("bkash")
+              ? "Pay securely via bKash"
+              : p.id.includes("nagad")
+                ? "Pay securely via Nagad"
+                : "Visa · Mastercard · Amex"
+          }
+        </Text>
+      </View>
+    </AnimatedPressable>
+  )
+}
 
 export default function CheckoutScreen() {
   const router = useRouter()
@@ -398,35 +516,14 @@ export default function CheckoutScreen() {
                   const isCod = p.id.startsWith("pp_system_default")
                   const selected = form.paymentProviderId === p.id
                   return (
-                    <Pressable
+                    <PaymentOptionCard
                       key={p.id}
+                      p={p}
+                      selected={selected}
                       onPress={() => setForm({ paymentProviderId: p.id })}
-                      style={[
-                        styles.paymentCard,
-                        selected && isCod && styles.paymentCardActiveCod,
-                        selected && !isCod && styles.paymentCardActiveOther,
-                      ]}
-                    >
-                      <View style={[styles.radio, selected && styles.radioActive]}>
-                        {selected && <View style={styles.radioInner} />}
-                      </View>
-                      <PaymentIcon providerId={p.id} size={24} />
-                      <View style={{ flex: 1, gap: 2 }}>
-                        <Text style={styles.paymentTitle}>
-                          {info.title}
-                        </Text>
-                        <Text style={styles.paymentDesc}>
-                          {isCod 
-                            ? "Pay when you receive" 
-                            : p.id.includes("bkash")
-                              ? "Pay securely via bKash"
-                              : p.id.includes("nagad")
-                                ? "Pay securely via Nagad"
-                                : "Visa · Mastercard · Amex"
-                          }
-                        </Text>
-                      </View>
-                    </Pressable>
+                      info={info}
+                      isCod={isCod}
+                    />
                   )
                 })}
               </View>
@@ -602,7 +699,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: spacing.md, // px-4
-    paddingBottom: 112, // pb-28
+    paddingBottom: 160, // increased from 112 to prevent bottom footer overlap
     gap: 24, // gap-6
     paddingTop: 16,
   },
@@ -688,10 +785,22 @@ const styles = StyleSheet.create({
     padding: 16, // p-4
     gap: 12, // gap-3
     borderWidth: 1,
+    borderLeftWidth: 1, // specified explicitly to prevent layout jump during selection transition
     borderColor: colors.grey[20],
     borderRadius: 8, // rounded-lg
     backgroundColor: "white",
     alignItems: "flex-start",
+    overflow: "hidden", // clipping the accentBar perfectly
+  },
+  accentBar: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: colors.brand.teal,
+    borderTopLeftRadius: 7,
+    borderBottomLeftRadius: 7,
   },
   paymentCardActiveCod: {
     borderColor: colors.brand.teal, // border-l-[#56AEBF] border-1

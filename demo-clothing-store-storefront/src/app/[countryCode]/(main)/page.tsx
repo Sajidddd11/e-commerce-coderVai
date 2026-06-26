@@ -52,19 +52,19 @@ export default async function Home(props: {
       <section data-testid="section-hero">
         <HomeHero />
       </section>
+      <section data-testid="section-suggested-for-you">
+        <SuggestedForYou
+          region={region}
+          regionId={region.id}
+          limit={5}
+          customerId={customer?.id}
+        />
+      </section>
       <section data-testid="section-categories">
         <CategoryShowcase categories={categories} countryCode={countryCode} />
       </section>
       <section data-testid="section-featured-products">
         <FeaturedProductsShowcase collections={collections} region={region} />
-      </section>
-      <section data-testid="section-suggested-for-you">
-        <SuggestedForYou
-          region={region}
-          regionId={region.id}
-          limit={10}
-          customerId={customer?.id}
-        />
       </section>
       <section data-testid="section-trust">
         <TrustSection />
