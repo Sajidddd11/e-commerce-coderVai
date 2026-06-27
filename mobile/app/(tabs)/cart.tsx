@@ -8,7 +8,7 @@ import { Screen } from "@components/layout/Screen"
 import { useCartStore } from "@stores/cart-store"
 import { getFreeShippingThreshold, FreeShippingInfo } from "@api/enhancements"
 import { convertToLocale } from "@utils/money"
-import { colors, spacing } from "@design/theme"
+import { colors, spacing, borderRadius } from "@design/theme"
 
 function currencyOf(cart: HttpTypes.StoreCart | null) {
   return cart?.currency_code || cart?.region?.currency_code || "bdt"
@@ -65,6 +65,7 @@ export default function CartScreen() {
     ? freeShipping!.threshold - subtotalAmount
     : 0
   const appliedPromos = (cart?.promotions ?? []).filter((p) => p.code)
+  const visiblePromos = appliedPromos.filter((p) => p.code && !p.code.startsWith("LOYALTY-"))
 
   const onApplyPromo = async () => {
     const code = promoInput.trim()
@@ -252,9 +253,9 @@ export default function CartScreen() {
             </Pressable>
           </View>
           {promoError && <Text style={styles.promoError}>{promoError}</Text>}
-          {appliedPromos.length > 0 ? (
+          {visiblePromos.length > 0 ? (
             <View style={styles.promoChips}>
-              {appliedPromos.map((p) => (
+              {visiblePromos.map((p) => (
                 <View key={p.id} style={styles.promoChip}>
                   <Text style={styles.promoChipText}>
                     {p.code}
@@ -465,18 +466,19 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: colors.grey[20],
-    borderRadius: 8, // rounded-lg
-    paddingHorizontal: 12, // px-3
-    paddingVertical: 8, // py-2
+    borderRadius: borderRadius.base,
+    paddingHorizontal: 16,
+    height: 48,
     fontSize: 14,
     color: colors.slate[900],
     fontFamily: "Inter-Regular",
+    backgroundColor: colors.grey[10],
   },
   promoBtn: {
     backgroundColor: colors.brand.teal,
-    borderRadius: 8, // rounded-lg
-    paddingHorizontal: spacing.md, // px-4
-    paddingVertical: 8, // py-2
+    borderRadius: borderRadius.base,
+    paddingHorizontal: 20,
+    height: 48,
     justifyContent: "center",
     alignItems: "center",
   },

@@ -34,7 +34,7 @@ const LoyaltyRedeem: React.FC<LoyaltyRedeemProps> = ({ cart, customer }) => {
         return (
             <div className="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 flex flex-col gap-y-1">
                 <Text className="txt-medium font-semibold text-slate-800 flex items-center gap-x-1.5">
-                    <Coin size={16} /> Loyalty Reward Coins
+                    <Coin size={16} /> Zahan Coins
                 </Text>
                 <Text className="text-xs text-slate-500">
                     Log in to your account during checkout to earn coins on this purchase and redeem points for a discount!
@@ -91,7 +91,7 @@ const LoyaltyRedeem: React.FC<LoyaltyRedeemProps> = ({ cart, customer }) => {
         <div className="w-full bg-white flex flex-col border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
             <div className="flex items-center justify-between">
                 <Heading level="h3" className="txt-medium text-lg flex items-center gap-x-1.5 text-slate-800">
-                    <Coin size={18} /> Loyalty Reward Coins
+                    <Coin size={18} /> Zahan Coins
                 </Heading>
                 {pointsBalance !== null && (pointsBalance > 0 || appliedPoints > 0) && (
                     <Switch

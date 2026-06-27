@@ -37,6 +37,8 @@ export default function CheckoutReviewScreen() {
   const currency = cart?.currency_code || "bdt"
   const addr = cart?.shipping_address
   const shippingMethod = cart?.shipping_methods?.[0]
+  const metadata = (cart?.metadata || {}) as Record<string, any>
+  const appliedPoints = Number(metadata.loyalty_points_to_redeem) || 0
 
   const session = cart?.payment_collection?.payment_sessions?.find(
     (s) => s.status === "pending"
@@ -226,7 +228,7 @@ export default function CheckoutReviewScreen() {
           />
           {cart.discount_total ? (
             <Row
-              label="Discount"
+              label={appliedPoints > 0 ? "Zahan Coins Discount" : "Discount"}
               value={`-${convertToLocale({
                 amount: cart.discount_total,
                 currency_code: currency,

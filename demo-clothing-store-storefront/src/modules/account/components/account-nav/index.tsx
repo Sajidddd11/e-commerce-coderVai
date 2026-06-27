@@ -113,7 +113,7 @@ const AccountNav = ({
                         <circle cx="18" cy="18" r="4" />
                         <path d="M12 18a6 6 0 0 0-4-5.65" />
                       </svg>
-                      <span>Loyalty Reward Coins</span>
+                      <span>Zahan Coins</span>
                     </div>
                     <ChevronDown className="transform -rotate-90" />
                   </LocalizedClientLink>
@@ -186,7 +186,7 @@ const AccountNav = ({
                   route={route!}
                   data-testid="loyalty-link"
                 >
-                  Loyalty Rewards
+                  Zahan Coins
                 </AccountNavLink>
               </li>
               <li className="text-grey-700">

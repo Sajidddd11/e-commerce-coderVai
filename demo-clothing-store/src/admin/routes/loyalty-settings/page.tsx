@@ -63,7 +63,7 @@ const LoyaltySettingsPage = () => {
             {/* Page Header */}
             <div>
                 <Heading level="h1" className="text-2xl font-bold text-ui-fg-base">
-                    Loyalty Reward Coins
+                    Zahan Coins
                 </Heading>
                 <Text className="text-ui-fg-subtle mt-1 text-sm">
                     Configure your storefront's dynamic coin reward and redemption rules.
@@ -135,7 +135,7 @@ const LoyaltySettingsPage = () => {
 }
 
 export const config = defineRouteConfig({
-    label: "Loyalty Coins",
+    label: "Zahan Coins",
     icon: CheckCircle, // Re-using standard icon
 })
 

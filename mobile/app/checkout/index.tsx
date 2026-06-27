@@ -8,10 +8,12 @@ import {
   Platform,
   ActivityIndicator,
   Text,
-  TextInput
+  TextInput,
+  Switch
 } from "react-native"
 import { useRouter } from "expo-router"
 import { ChevronLeft, ChevronDown } from "lucide-react-native"
+import { CoinIcon } from "@components/ui/CoinIcon"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import Animated, {
@@ -36,7 +38,8 @@ import { AddressSelect } from "@components/checkout/AddressSelect"
 import { listCartShippingMethods } from "@api/fulfillment"
 import { listCartPaymentMethods } from "@api/payment"
 import { prepareCheckout } from "@api/checkout"
-import { updateCart } from "@api/cart"
+import { updateCart, retrieveCart } from "@api/cart"
+import { retrieveLoyaltyDetails, applyLoyaltyPoints, removeLoyaltyPoints } from "@api/loyalty"
 import { listCustomerAddresses } from "@api/customer"
 import {
   autoSelectShippingMethod,
@@ -183,6 +186,11 @@ export default function CheckoutScreen() {
     HttpTypes.StoreCustomerAddress[]
   >([])
 
+  const [pointsBalance, setPointsBalance] = useState<number | null>(null)
+  const [applyingCoins, setApplyingCoins] = useState(false)
+  const [coinsError, setCoinsError] = useState<string | null>(null)
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+
   useEffect(() => {
     if (!customer) {
       setSavedAddresses([])
@@ -192,6 +200,14 @@ export default function CheckoutScreen() {
       setSavedAddresses(list ?? [])
     })
   }, [customer])
+
+  useEffect(() => {
+    if (customer) {
+      retrieveLoyaltyDetails().then(({ account }) => {
+        if (account) setPointsBalance(account.points)
+      })
+    }
+  }, [customer, cart?.id])
 
   const currency = cart?.currency_code || region?.currency_code || "bdt"
 
@@ -312,6 +328,44 @@ export default function CheckoutScreen() {
     return calculateShippingCost(form.district, form.deliveryType)
   }, [shippingMethods, form.shippingMethodId, form.district, form.deliveryType])
 
+  const metadata = (cart?.metadata || {}) as Record<string, any>
+  const appliedPoints = Number(metadata.loyalty_points_to_redeem) || 0
+  const appliedDiscount = (Number(metadata.loyalty_discount_amount) || 0) / 100
+
+  const handleToggleCoins = async (checked: boolean) => {
+    if (!cart?.id) return
+    setCoinsError(null)
+    setApplyingCoins(true)
+    try {
+      if (checked) {
+        if (pointsBalance === null || pointsBalance <= 0) return
+        const res = await applyLoyaltyPoints(cart.id, pointsBalance)
+        if (res && (res as any).error) {
+          setCoinsError((res as any).error)
+        } else if (res) {
+          const freshCart = await retrieveCart()
+          useCartStore.getState().setCart(freshCart)
+          const details = await retrieveLoyaltyDetails()
+          if (details.account) setPointsBalance(details.account.points)
+        }
+      } else {
+        const res = await removeLoyaltyPoints(cart.id)
+        if (res && (res as any).error) {
+          setCoinsError((res as any).error)
+        } else {
+          const freshCart = await retrieveCart()
+          useCartStore.getState().setCart(freshCart)
+          const details = await retrieveLoyaltyDetails()
+          if (details.account) setPointsBalance(details.account.points)
+        }
+      }
+    } catch (e: any) {
+      setCoinsError(e.message || "Failed to update coins")
+    } finally {
+      setApplyingCoins(false)
+    }
+  }
+
   const subtotal = cart?.item_subtotal ?? cart?.subtotal ?? 0
   const discount = cart?.discount_total ?? 0
   const total = subtotal + shippingCost - discount
@@ -327,6 +381,7 @@ export default function CheckoutScreen() {
 
   const onSubmit = async () => {
     setError(null)
+    setAttemptedSubmit(true)
     if (!canSubmit) {
       setError("Please complete all required fields.")
       return
@@ -452,11 +507,17 @@ export default function CheckoutScreen() {
               onChangeText={(v) => setForm({ fullName: v })}
               autoCapitalize="words"
               placeholder="Full name"
+              error={attemptedSubmit && !form.fullName.trim() ? "Full name is required" : undefined}
             />
 
             <View style={styles.phoneInputWrap}>
               <Text style={styles.inputLabel}>Phone Number</Text>
-              <View style={styles.phoneInputBox}>
+              <View
+                style={[
+                  styles.phoneInputBox,
+                  attemptedSubmit && !form.phone.trim() && { borderColor: colors.error },
+                ]}
+              >
                 <View style={styles.phonePrefix}>
                   <Text style={styles.phonePrefixText}>+88</Text>
                 </View>
@@ -468,6 +529,11 @@ export default function CheckoutScreen() {
                   placeholder="01XXXXXXXXX"
                 />
               </View>
+              {attemptedSubmit && !form.phone.trim() ? (
+                <Text style={[styles.error, { marginTop: 2 }]}>
+                  Phone number is required
+                </Text>
+              ) : null}
             </View>
 
             <Input
@@ -478,12 +544,14 @@ export default function CheckoutScreen() {
               autoCapitalize="none"
               placeholder="your@email.com"
               editable={!customer}
+              error={attemptedSubmit && !form.email.trim() ? "Email address is required" : undefined}
             />
 
             <DistrictPicker
               label="District"
               value={form.district}
               onChange={(d) => setForm({ district: d })}
+              error={attemptedSubmit && !form.district ? "District is required" : undefined}
             />
 
             <Input
@@ -491,6 +559,7 @@ export default function CheckoutScreen() {
               value={form.address1}
               onChangeText={(v) => setForm({ address1: v })}
               placeholder="House, road, area"
+              error={attemptedSubmit && !form.address1.trim() ? "Address is required" : undefined}
             />
 
             <AddressLabelSelector
@@ -505,6 +574,48 @@ export default function CheckoutScreen() {
               placeholder="e.g. Leave with security guard"
             />
           </Section>
+
+          {customer && pointsBalance !== null && (pointsBalance > 0 || appliedPoints > 0) ? (
+            <Section title="Zahan Coins">
+              <View style={styles.coinsCard}>
+                <View style={styles.coinsCardHeader}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <CoinIcon size={20} />
+                    <Text style={styles.coinsCardTitle}>Redeem Zahan Coins</Text>
+                  </View>
+                  <Switch
+                    value={appliedPoints > 0}
+                    onValueChange={handleToggleCoins}
+                    disabled={applyingCoins}
+                    trackColor={{ false: colors.grey[20], true: colors.brand.teal }}
+                    thumbColor={Platform.OS === "android" ? "white" : undefined}
+                  />
+                </View>
+
+                <View style={styles.coinsCardBody}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <Text style={styles.coinsBalanceLabel}>Available Balance:</Text>
+                    <Text style={styles.coinsBalanceValue}>{pointsBalance} Coins</Text>
+                  </View>
+
+                  {applyingCoins ? (
+                    <ActivityIndicator size="small" color={colors.brand.teal} style={{ marginTop: 8 }} />
+                  ) : appliedPoints > 0 ? (
+                    <View style={styles.coinsAppliedBox}>
+                      <Text style={styles.coinsAppliedTitle}>Redeeming {appliedPoints} Coins</Text>
+                      <Text style={styles.coinsAppliedSubtitle}>
+                        Discount: {convertToLocale({ amount: appliedDiscount, currency_code: currency })}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {coinsError ? (
+                    <Text style={styles.coinsError}>{coinsError}</Text>
+                  ) : null}
+                </View>
+              </View>
+            </Section>
+          ) : null}
 
           <Section title="Payment Method">
             {loadingOptions ? (
@@ -538,18 +649,54 @@ export default function CheckoutScreen() {
         </ScrollView>
 
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          {/* Subtotal */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+            <Text style={{ fontFamily: "Inter-Regular", color: colors.grey[50], fontSize: 13 }}>
+              Subtotal
+            </Text>
+            <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900], fontSize: 13 }}>
+              {convertToLocale({ amount: subtotal, currency_code: currency })}
+            </Text>
+          </View>
+
+          {/* Discount */}
+          {discount > 0 ? (
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+              <Text style={{ fontFamily: "Inter-Regular", color: colors.grey[50], fontSize: 13 }}>
+                {appliedPoints > 0 ? "Zahan Coins Discount" : "Discount"}
+              </Text>
+              <Text style={{ fontFamily: "Inter-Medium", color: colors.sale, fontSize: 13 }}>
+                -{convertToLocale({ amount: discount, currency_code: currency })}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Shipping */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
-            <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900], fontSize: 14 }}>
+            <Text style={{ fontFamily: "Inter-Regular", color: colors.grey[50], fontSize: 13 }}>
               Shipping {getShippingLabel() ? `(${getShippingLabel()})` : ""}
             </Text>
-            <Text style={{ fontFamily: "Inter-SemiBold", color: colors.slate[900], fontSize: 14 }}>
+            <Text style={{ fontFamily: "Inter-Medium", color: colors.slate[900], fontSize: 13 }}>
               {convertToLocale({ amount: shippingCost, currency_code: currency })}
+            </Text>
+          </View>
+
+          {/* Divider */}
+          <View style={{ height: 1, backgroundColor: colors.grey[20], marginBottom: 12 }} />
+
+          {/* Total */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
+            <Text style={{ fontFamily: "Inter-SemiBold", color: colors.slate[900], fontSize: 15 }}>
+              Total
+            </Text>
+            <Text style={{ fontFamily: "Inter-Bold", color: colors.slate[900], fontSize: 16 }}>
+              {convertToLocale({ amount: total, currency_code: currency })}
             </Text>
           </View>
 
           <Pressable
             style={styles.reviewBtn}
-            disabled={!canSubmit || submitting}
+            disabled={submitting}
             onPress={onSubmit}
           >
             {submitting ? (
@@ -882,5 +1029,64 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14, // text-sm
     fontWeight: "600",
+  },
+  coinsCard: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 8,
+    padding: 16,
+    gap: 12,
+  },
+  coinsCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  coinsCardTitle: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 14,
+    color: colors.slate[900],
+  },
+  coinsCardBody: {
+    gap: 8,
+  },
+  coinsBalanceLabel: {
+    fontFamily: "Inter-Regular",
+    fontSize: 13,
+    color: colors.grey[50],
+  },
+  coinsBalanceValue: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 13,
+    color: colors.slate[900],
+  },
+  coinsAppliedBox: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: colors.grey[5],
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 6,
+    gap: 2,
+  },
+  coinsAppliedTitle: {
+    fontFamily: "Inter-SemiBold",
+    fontWeight: "600",
+    fontSize: 12,
+    color: colors.slate[900],
+  },
+  coinsAppliedSubtitle: {
+    fontFamily: "Inter-Regular",
+    fontSize: 10,
+    color: colors.grey[50],
+  },
+  coinsError: {
+    fontFamily: "Inter-Regular",
+    fontSize: 11,
+    color: colors.error,
+    marginTop: 4,
   },
 })

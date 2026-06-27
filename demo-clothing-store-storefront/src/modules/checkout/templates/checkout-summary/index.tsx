@@ -31,7 +31,7 @@ const CheckoutSummary = ({
         <CartTotals totals={cart} shippingOverride={shippingOverride} />
         <ItemsPreviewTemplate cart={cart} />
         
-        {/* Loyalty coins redemption */}
+        {/* Zahan Coins redemption */}
         <div className="my-4">
           <LoyaltyRedeem cart={cart} customer={customer} />
         </div>

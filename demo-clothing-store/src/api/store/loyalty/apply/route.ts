@@ -24,7 +24,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         // 1. Fetch Cart
         const { data: carts } = await query.graph({
             entity: "cart",
-            fields: ["id", "currency_code", "subtotal", "promo_codes", "metadata", "customer_id"],
+            fields: ["id", "currency_code", "subtotal", "promotions.code", "metadata", "customer_id"],
             filters: { id: cartId },
         })
 
@@ -85,7 +85,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         })
 
         // 5. Update Cart with the new promo code and metadata
-        const existingCodes = (cart.promo_codes || []) as string[]
+        const existingCodes = (cart.promotions || []).map((p: any) => p.code).filter(Boolean) as string[]
         const newCodes = existingCodes.filter(c => c !== promoCode)
         newCodes.push(promoCode)
 

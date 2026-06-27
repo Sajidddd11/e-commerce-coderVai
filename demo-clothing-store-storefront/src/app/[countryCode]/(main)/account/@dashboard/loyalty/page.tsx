@@ -7,8 +7,8 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Coin from "@modules/common/icons/coin"
 
 export const metadata: Metadata = {
-    title: "Loyalty Rewards",
-    description: "Manage your loyalty reward points and check history.",
+    title: "Zahan Coins",
+    description: "Manage your Zahan Coins and check history.",
 }
 
 export default async function LoyaltyPage() {
@@ -42,7 +42,7 @@ export default async function LoyaltyPage() {
         <div className="w-full" data-testid="loyalty-page-wrapper">
             {/* Header */}
             <div className="mb-8 flex flex-col gap-y-4">
-                <h1 className="text-2xl font-semibold text-gray-900">Loyalty Rewards</h1>
+                <h1 className="text-2xl font-semibold text-gray-900">Zahan Coins</h1>
                 <p className="text-base text-gray-500">
                     Earn coins on every purchase and redeem them for exclusive discounts at checkout.
                 </p>

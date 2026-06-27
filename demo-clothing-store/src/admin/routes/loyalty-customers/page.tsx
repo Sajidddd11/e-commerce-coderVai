@@ -83,10 +83,10 @@ const LoyaltyCustomersPage = () => {
             {/* Page Header */}
             <div>
                 <Heading level="h1" className="text-2xl font-bold text-ui-fg-base">
-                    Loyalty Customers
+                    Zahan Coins Customers
                 </Heading>
                 <Text className="text-ui-fg-subtle mt-1 text-sm">
-                    Manage customer loyalty coin accounts and perform manual point adjustments.
+                    Manage customer Zahan Coins accounts and perform manual coin adjustments.
                 </Text>
             </div>
 
@@ -234,7 +234,7 @@ const LoyaltyCustomersPage = () => {
 }
 
 export const config = defineRouteConfig({
-    label: "Loyalty Customers",
+    label: "Zahan Coins Customers",
     icon: Users,
 })
 

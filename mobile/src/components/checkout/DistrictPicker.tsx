@@ -17,9 +17,10 @@ interface DistrictPickerProps {
   label?: string
   value: string
   onChange: (district: string) => void
+  error?: string
 }
 
-export function DistrictPicker({ label, value, onChange }: DistrictPickerProps) {
+export function DistrictPicker({ label, value, onChange, error }: DistrictPickerProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
 
@@ -38,7 +39,12 @@ export function DistrictPicker({ label, value, onChange }: DistrictPickerProps) 
       ) : null}
 
       <Pressable
-        style={styles.trigger}
+        style={[
+          styles.trigger,
+          {
+            borderColor: error ? colors.error : colors.grey[20],
+          },
+        ]}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Select district"
@@ -51,6 +57,11 @@ export function DistrictPicker({ label, value, onChange }: DistrictPickerProps) 
         </ThemedText>
         <ChevronDown size={18} color={colors.grey[50]} />
       </Pressable>
+      {error ? (
+        <ThemedText variant="bodySmall" color={colors.error} style={{ marginTop: 2 }}>
+          {error}
+        </ThemedText>
+      ) : null}
 
       <Modal
         visible={open}

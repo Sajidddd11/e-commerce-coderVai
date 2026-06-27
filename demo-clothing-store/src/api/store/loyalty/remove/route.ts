@@ -21,7 +21,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         // 1. Fetch Cart
         const { data: carts } = await query.graph({
             entity: "cart",
-            fields: ["id", "promo_codes", "metadata", "customer_id"],
+            fields: ["id", "promotions.code", "metadata", "customer_id"],
             filters: { id: cartId },
         })
 
@@ -36,15 +36,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
         const promoCode = `LOYALTY-${cartId}`
 
-        // 2. Remove the Promotion entity if it exists
-        const existingPromos = await promotionModuleService.listPromotions({ code: promoCode })
-        if (existingPromos && existingPromos.length > 0) {
-            await promotionModuleService.deletePromotions(existingPromos.map(p => p.id))
-        }
-
-        // 3. Remove code from cart and clear metadata
-        const existingCodes = (cart.promo_codes || []) as string[]
+        // 2. Build the new codes list first (remove loyalty code, keep all others)
+        const existingCodes = (cart.promotions || []).map((p: any) => p.code).filter(Boolean) as string[]
         const newCodes = existingCodes.filter(c => c !== promoCode)
+
+        console.log("[loyalty/remove] cart.promotions:", JSON.stringify(cart.promotions))
+        console.log("[loyalty/remove] existingCodes:", existingCodes)
+        console.log("[loyalty/remove] newCodes after removing loyalty:", newCodes)
 
         // Keep other metadata fields but reset loyalty ones to null
         const newMetadata = {
@@ -53,6 +51,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             loyalty_discount_amount: null,
         }
 
+        // 3. Update cart FIRST (so Medusa re-applies remaining codes while loyalty still exists)
         const { result: updatedCart } = await updateCartWorkflow(req.scope).run({
             input: {
                 id: cartId,
@@ -60,6 +59,12 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                 metadata: newMetadata,
             }
         })
+
+        // 4. NOW delete the promotion entity (after cart no longer references it)
+        const existingPromos = await promotionModuleService.listPromotions({ code: promoCode })
+        if (existingPromos && existingPromos.length > 0) {
+            await promotionModuleService.deletePromotions(existingPromos.map(p => p.id))
+        }
 
         res.json({
             message: "Loyalty points removed successfully",
