@@ -6,7 +6,6 @@ import FeaturedProductsShowcase from "@modules/home/components/featured-products
 import TrustSection from "@modules/home/components/trust-section"
 import CTASection from "@modules/home/components/cta-section"
 import HomeHero from "@modules/home/components/home-hero"
-import SuggestedForYou from "@modules/home/components/suggested-for-you"
 import { listCollections } from "@lib/data/collections"
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
@@ -52,16 +51,13 @@ export default async function Home(props: {
       <section data-testid="section-hero">
         <HomeHero />
       </section>
-      <section data-testid="section-suggested-for-you">
-        <SuggestedForYou
+      <section data-testid="section-categories">
+        <CategoryShowcase 
+          categories={categories} 
+          countryCode={countryCode} 
           region={region}
-          regionId={region.id}
-          limit={5}
           customerId={customer?.id}
         />
-      </section>
-      <section data-testid="section-categories">
-        <CategoryShowcase categories={categories} countryCode={countryCode} />
       </section>
       <section data-testid="section-featured-products">
         <FeaturedProductsShowcase collections={collections} region={region} />

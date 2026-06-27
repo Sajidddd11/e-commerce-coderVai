@@ -7,10 +7,13 @@ import { listProducts } from "@lib/data/products"
 import ProductCardWithPrice from "./product-card"
 import ResponsiveProductGrid from "./responsive-product-grid"
 import { Ratio } from "lucide-react"
+import SuggestedForYou from "@modules/home/components/suggested-for-you"
 
 interface CategoryShowcaseProps {
   categories: HttpTypes.StoreProductCategory[]
   countryCode: string
+  region: HttpTypes.StoreRegion
+  customerId?: string
 }
 
 const getRandomImage = (index: number) => {
@@ -38,6 +41,8 @@ const getRandomImage = (index: number) => {
 export default async function CategoryShowcase({
   categories,
   countryCode,
+  region,
+  customerId,
 }: CategoryShowcaseProps) {
   const topLevelCategories = categories
     .filter((cat) => !cat.parent_category && cat.products && cat.products.length > 0)
@@ -134,6 +139,12 @@ export default async function CategoryShowcase({
 
           {/* Category Products Sections */}
           <div className="w-full flex flex-col gap-12 pt-8 xsmall:pt-12 small:pt-16">
+            <SuggestedForYou
+              region={region}
+              regionId={region.id}
+              customerId={customerId}
+            />
+
             {topLevelCategories.map((category, categoryIndex) => (
               <CategoryProductSection
                 key={category.id}

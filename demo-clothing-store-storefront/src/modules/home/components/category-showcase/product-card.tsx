@@ -8,8 +8,10 @@ import ResponsivePrice from "@modules/common/components/responsive-price"
 
 function ProductCardWithPrice({
   product,
+  onClick,
 }: {
   product: HttpTypes.StoreProduct
+  onClick?: () => void
 }) {
   const { cheapestPrice } = getProductPrice({ product })
 
@@ -34,7 +36,7 @@ function ProductCardWithPrice({
     <LocalizedClientLink
       href={`/products/${product.handle}`}
       className="group w-full shadow-md hover:shadow-2xl relative overflow-visible rounded-sm transition-all duration-300"
-
+      onClick={onClick}
     >
       {/* Image Container - 1:1 ratio */}
       <div className="relative bg-gray-100 overflow-hidden rounded-t-sm flex-grow" style={{ aspectRatio: "1 / 1" }}>

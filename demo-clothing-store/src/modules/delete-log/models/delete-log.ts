@@ -2,6 +2,7 @@ import { model } from "@medusajs/framework/utils"
 
 const DeleteLog = model.define("delete_log", {
     id: model.id().primaryKey(),
+    action: model.text().default("delete"), // "create" | "update" | "delete"
     // What was deleted
     entity_type: model.text(),          // e.g. "product", "blog_post", "hero_slide", "review", "customer"
     entity_id: model.text(),            // the deleted record's ID

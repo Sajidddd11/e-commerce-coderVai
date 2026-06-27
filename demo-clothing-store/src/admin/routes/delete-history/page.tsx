@@ -21,6 +21,7 @@ import { useState, useEffect, useCallback, ComponentType } from "react"
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface DeleteLog {
     id: string
+    action?: string
     entity_type: string
     entity_id: string
     entity_label: string | null
@@ -57,6 +58,19 @@ const ENTITY_META: Record<string, EntityMeta> = {
     team_user: { label: "Team User", color: "#a855f7", bg: "#faf5ff", Icon: Users },
     region: { label: "Region", color: "#06b6d4", bg: "#ecfeff", Icon: Buildings },
     api_key: { label: "API Key", color: "#64748b", bg: "#f1f5f9", Icon: ShieldCheck },
+}
+
+// ─── Action Metadata ───────────────────────────────────────────────────────────
+interface ActionMeta {
+    label: string
+    color: string
+    bg: string
+}
+
+const ACTION_META: Record<string, ActionMeta> = {
+    create: { label: "Add", color: "#10b981", bg: "#ecfdf5" },
+    update: { label: "Edit", color: "#3b82f6", bg: "#eff6ff" },
+    delete: { label: "Delete", color: "#ef4444", bg: "#fef2f2" },
 }
 
 function getEntityMeta(type: string): EntityMeta {
@@ -108,6 +122,23 @@ const TypeBadge = ({ type }: { type: string }) => {
     )
 }
 
+// ─── Action Badge ───────────────────────────────────────────────────────────────
+const ActionBadge = ({ action }: { action?: string }) => {
+    const act = action ?? "delete"
+    const meta = ACTION_META[act] ?? ACTION_META.delete
+    return (
+        <span
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap"
+            style={{
+                background: meta.bg,
+                color: meta.color,
+            }}
+        >
+            {meta.label}
+        </span>
+    )
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const DeleteHistoryPage = () => {
     const [logs, setLogs] = useState<DeleteLog[]>([])
@@ -115,6 +146,7 @@ const DeleteHistoryPage = () => {
     const [loading, setLoading] = useState(true)
     const [page, setPage] = useState(0)
     const [filter, setFilter] = useState("all")
+    const [actionFilter, setActionFilter] = useState("all")
     const [search, setSearch] = useState("")
     const limit = 30
 
@@ -126,20 +158,21 @@ const DeleteHistoryPage = () => {
                 offset: String(page * limit),
             })
             if (filter !== "all") params.set("entity_type", filter)
+            if (actionFilter !== "all") params.set("action", actionFilter)
 
             const res = await fetch(`/admin/delete-history?${params}`, { credentials: "include" })
             const data = await res.json()
             setLogs(data.logs ?? [])
             setCount(data.count ?? 0)
         } catch (e) {
-            console.error("Failed to load delete history:", e)
+            console.error("Failed to load audit history:", e)
         } finally {
             setLoading(false)
         }
-    }, [page, filter])
+    }, [page, filter, actionFilter])
 
     useEffect(() => { fetchLogs() }, [fetchLogs])
-    useEffect(() => { setPage(0) }, [filter])
+    useEffect(() => { setPage(0) }, [filter, actionFilter])
 
     // Client-side search
     const visible = search.trim()
@@ -159,15 +192,15 @@ const DeleteHistoryPage = () => {
 
             {/* ── Header ── */}
             <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl bg-ui-tag-red-bg flex items-center justify-center">
-                    <ArchiveBox className="text-ui-tag-red-text w-4.5 h-4.5" />
+                <div className="w-10 h-10 rounded-xl bg-ui-tag-blue-bg flex items-center justify-center">
+                    <ShieldCheck className="text-ui-tag-blue-text w-5 h-5" />
                 </div>
                 <div>
                     <h1 className="text-xl font-extrabold text-ui-fg-base m-0">
-                        Delete History
+                        Audit Logs
                     </h1>
                     <p className="text-[12px] text-ui-fg-subtle m-0.5 mt-0">
-                        Audit trail of all deleted records · {count} total
+                        Audit trail of all administrative actions · {count} total
                     </p>
                 </div>
             </div>
@@ -193,6 +226,17 @@ const DeleteHistoryPage = () => {
                     ))}
                 </select>
 
+                <select
+                    value={actionFilter}
+                    onChange={(e) => setActionFilter(e.target.value)}
+                    className="px-3 py-2 border border-ui-border-base rounded-lg text-[12px] text-ui-fg-base outline-none bg-ui-bg-base cursor-pointer"
+                >
+                    <option value="all">All Actions</option>
+                    <option value="create">Add / Create</option>
+                    <option value="update">Edit / Update</option>
+                    <option value="delete">Delete</option>
+                </select>
+
                 <button
                     onClick={fetchLogs}
                     disabled={loading}
@@ -212,21 +256,23 @@ const DeleteHistoryPage = () => {
             ) : visible.length === 0 ? (
                 <div className="text-center py-[60px] text-ui-fg-muted text-[14px]">
                     <div className="flex justify-center mb-3">
-                        <ArchiveBox className="w-10 h-10 text-ui-border-strong" />
+                        <ShieldCheck className="w-10 h-10 text-ui-border-strong" />
                     </div>
-                    {search ? "No results match your search." : "No deletions recorded yet."}
+                    {search ? "No results match your search." : "No actions recorded yet."}
                 </div>
             ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {visible.map((log) => {
                         const m = getEntityMeta(log.entity_type)
+                        const act = log.action ?? "delete"
+                        const actMeta = ACTION_META[act] ?? ACTION_META.delete
                         const { Icon } = m
                         return (
                             <div
                                 key={log.id}
                                 className="flex items-center gap-3.5 px-[18px] py-[14px] bg-ui-bg-base border border-ui-border-base rounded-xl shadow-sm transition-shadow duration-150 hover:shadow-md"
                                 style={{
-                                    borderLeft: `4px solid ${m.color}`,
+                                    borderLeft: `4px solid ${actMeta.color}`,
                                 }}
                             >
                                 {/* Icon */}
@@ -240,6 +286,7 @@ const DeleteHistoryPage = () => {
                                 {/* Main info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-[3px]">
+                                        <ActionBadge action={log.action} />
                                         <TypeBadge type={log.entity_type} />
                                         <span className="font-bold text-[13px] text-ui-fg-base">
                                             {log.entity_label ?? log.entity_id}
@@ -315,8 +362,8 @@ const DeleteHistoryPage = () => {
 }
 
 export const config = defineRouteConfig({
-    label: "Delete History",
-    icon: ArchiveBox,
+    label: "Audit Logs",
+    icon: ShieldCheck,
 })
 
 export default DeleteHistoryPage
