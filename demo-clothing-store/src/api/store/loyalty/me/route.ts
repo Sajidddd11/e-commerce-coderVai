@@ -12,17 +12,18 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     const loyaltyService: LoyaltyModuleService = req.scope.resolve(LOYALTY_MODULE)
 
     try {
-        const [account, history] = await Promise.all([
+        const [account, history, settings] = await Promise.all([
             loyaltyService.getOrCreateAccount(customerId),
             loyaltyService.listLoyaltyHistories(
                 { customer_id: customerId },
                 {
                     order: { created_at: "DESC" },
                 }
-            )
+            ),
+            loyaltyService.getSettings()
         ])
 
-        res.json({ account, history })
+        res.json({ account, history, settings })
     } catch (error: any) {
         res.status(500).json({
             message: "Error fetching loyalty details",

@@ -13,7 +13,7 @@ import { ChevronLeft } from "lucide-react-native"
 import { Screen } from "@components/layout/Screen"
 import { ThemedText } from "@components/ui/ThemedText"
 import { CoinIcon } from "@components/ui/CoinIcon"
-import { retrieveLoyaltyDetails, LoyaltyAccount, LoyaltyHistory } from "@api/loyalty"
+import { retrieveLoyaltyDetails, LoyaltyAccount, LoyaltyHistory, LoyaltySettings } from "@api/loyalty"
 import { colors, spacing, borderRadius } from "@design/theme"
 
 export default function CoinsScreen() {
@@ -21,18 +21,23 @@ export default function CoinsScreen() {
   const [loading, setLoading] = useState(true)
   const [account, setAccount] = useState<LoyaltyAccount | null>(null)
   const [history, setHistory] = useState<LoyaltyHistory[]>([])
+  const [settings, setSettings] = useState<LoyaltySettings | null>(null)
 
   useEffect(() => {
     retrieveLoyaltyDetails()
       .then((res) => {
         setAccount(res.account)
         setHistory(res.history || [])
+        if (res.settings) {
+          setSettings(res.settings)
+        }
       })
       .finally(() => setLoading(false))
   }, [])
 
   const pointsBalance = account?.points || 0
-  const pointsValueBDT = pointsBalance / 100
+  const redemptionRate = settings?.points_per_bdt_discount || 100
+  const pointsValueBDT = pointsBalance / redemptionRate
 
   const getTransactionInfo = (type: string) => {
     switch (type) {
@@ -101,7 +106,7 @@ export default function CoinsScreen() {
 
             <View style={styles.cardFooter as ViewStyle}>
               <ThemedText style={styles.rateRuleText as TextStyle}>
-                100 Coins = BDT 1.00 Discount at checkout
+                {redemptionRate} Coins = BDT 1.00 Discount at checkout
               </ThemedText>
             </View>
           </View>

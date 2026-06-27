@@ -19,18 +19,24 @@ export interface LoyaltyHistory {
   created_at: string
 }
 
+export interface LoyaltySettings {
+  points_per_bdt_earned: number
+  points_per_bdt_discount: number
+}
+
 /**
  * Fetches the user's available Zahan Coins balance and transaction history logs
  */
 export async function retrieveLoyaltyDetails(): Promise<{
   account: LoyaltyAccount | null
   history: LoyaltyHistory[]
+  settings?: LoyaltySettings
 }> {
   const headers = await getAuthHeaders()
   if (!headers.authorization) return { account: null, history: [] }
 
   return sdk.client
-    .fetch<{ account: LoyaltyAccount; history: LoyaltyHistory[] }>("/store/loyalty/me", {
+    .fetch<{ account: LoyaltyAccount; history: LoyaltyHistory[]; settings?: LoyaltySettings }>("/store/loyalty/me", {
       method: "GET",
       headers,
     })
