@@ -14,17 +14,15 @@ export default async function loyaltyOrderPlacedSubscriber({
         const loyaltyService: LoyaltyModuleService = container.resolve(LOYALTY_MODULE)
         const promotionModuleService = container.resolve(Modules.PROMOTION)
 
-        // 1. Fetch order details (including cart_id to find the loyalty promo code)
+        // 1. Fetch order details including promotions relation
         const { data: orders } = await query.graph({
             entity: "order",
-            fields: ["id", "display_id", "customer_id", "subtotal", "metadata", "cart_id"],
+            fields: ["id", "display_id", "customer_id", "subtotal", "metadata", "promotions.id", "promotions.code"],
             filters: { id: orderId },
         })
 
         const order = orders?.[0] as any
-        if (!order || !order.customer_id) {
-            return
-        }
+        if (!order || !order.customer_id) return
 
         const customerId = order.customer_id
         const metadata = (order.metadata || {}) as Record<string, any>
@@ -32,7 +30,7 @@ export default async function loyaltyOrderPlacedSubscriber({
 
         // 2. Deduct redeemed points if any
         if (pointsToRedeem > 0) {
-            console.log(`[Loyalty Subscriber] Deducting ${pointsToRedeem} points for customer ${customerId} (Order: ${orderId})`)
+            console.log(`[Loyalty] Deducting ${pointsToRedeem} pts for ${customerId} (Order: ${orderId})`)
             await loyaltyService.adjustPoints(
                 customerId,
                 -pointsToRedeem,
@@ -42,13 +40,13 @@ export default async function loyaltyOrderPlacedSubscriber({
             )
         }
 
-        // 3. Calculate and credit earned points
+        // 3. Credit earned points
         const settings = await loyaltyService.getSettings()
         const orderSubtotalBDT = Number(order.subtotal || 0)
         const pointsEarned = Math.floor(orderSubtotalBDT * settings.points_per_bdt_earned)
 
         if (pointsEarned > 0) {
-            console.log(`[Loyalty Subscriber] Crediting ${pointsEarned} points to customer ${customerId} (Order: ${orderId})`)
+            console.log(`[Loyalty] Crediting ${pointsEarned} pts to ${customerId} (Order: ${orderId})`)
             await loyaltyService.adjustPoints(
                 customerId,
                 pointsEarned,
@@ -58,15 +56,18 @@ export default async function loyaltyOrderPlacedSubscriber({
             )
         }
 
-        // 4. Clean up the temporary LOYALTY promotion entity for this cart
-        if (order.cart_id) {
-            const promoCode = `LOYALTY-${order.cart_id}`
-            const existingPromos = await promotionModuleService.listPromotions({ code: promoCode })
-            if (existingPromos && existingPromos.length > 0) {
-                await promotionModuleService.deletePromotions(existingPromos.map((p: any) => p.id))
-                console.log(`[Loyalty Subscriber] Cleaned up promotion entity ${promoCode}`)
+        // 4. Clean up the LOYALTY- promotion entity created for this cart
+        const orderPromotions: Array<{ id?: string; code?: string }> = order.promotions || []
+        const loyaltyPromos = orderPromotions.filter((p) => p.code?.startsWith("LOYALTY-"))
+
+        if (loyaltyPromos.length > 0) {
+            const ids = loyaltyPromos.map((p) => p.id).filter(Boolean) as string[]
+            if (ids.length > 0) {
+                await promotionModuleService.deletePromotions(ids)
+                console.log(`[Loyalty] Cleaned up promotion(s): ${loyaltyPromos.map((p) => p.code).join(", ")}`)
             }
         }
+
     } catch (error: any) {
         console.error(`[Loyalty Subscriber] Error processing order.placed: ${error.message}`)
     }
