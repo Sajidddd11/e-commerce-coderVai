@@ -190,6 +190,7 @@ export default function CheckoutScreen() {
   const [applyingCoins, setApplyingCoins] = useState(false)
   const [coinsError, setCoinsError] = useState<string | null>(null)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+  const [footerHeight, setFooterHeight] = useState(280)
 
   useEffect(() => {
     if (!customer) {
@@ -452,7 +453,7 @@ export default function CheckoutScreen() {
         keyboardVerticalOffset={80}
       >
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, { paddingBottom: footerHeight + 24 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -648,7 +649,10 @@ export default function CheckoutScreen() {
           ) : null}
         </ScrollView>
 
-        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View
+          style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}
+          onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+        >
           {/* Subtotal */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
             <Text style={{ fontFamily: "Inter-Regular", color: colors.grey[50], fontSize: 13 }}>
@@ -845,9 +849,9 @@ const styles = StyleSheet.create({
     marginBottom: 16, // mb-4
   },
   scroll: {
-    paddingHorizontal: spacing.md, // px-4
-    paddingBottom: 160, // increased from 112 to prevent bottom footer overlap
-    gap: 24, // gap-6
+    paddingHorizontal: spacing.md,
+    paddingBottom: 280, // fallback; overridden dynamically via footerHeight
+    gap: 24,
     paddingTop: 16,
   },
   section: { gap: 12 }, // gap-3
