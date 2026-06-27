@@ -1,5 +1,5 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { LOYALTY_MODULE } from "../modules/loyalty"
 import type LoyaltyModuleService from "../modules/loyalty/service"
 
@@ -12,11 +12,12 @@ export default async function loyaltyOrderPlacedSubscriber({
     try {
         const query = container.resolve(ContainerRegistrationKeys.QUERY)
         const loyaltyService: LoyaltyModuleService = container.resolve(LOYALTY_MODULE)
+        const promotionModuleService = container.resolve(Modules.PROMOTION)
 
-        // 1. Fetch order details
+        // 1. Fetch order details (including cart_id to find the loyalty promo code)
         const { data: orders } = await query.graph({
             entity: "order",
-            fields: ["id", "display_id", "customer_id", "subtotal", "metadata"],
+            fields: ["id", "display_id", "customer_id", "subtotal", "metadata", "cart_id"],
             filters: { id: orderId },
         })
 
@@ -55,6 +56,16 @@ export default async function loyaltyOrderPlacedSubscriber({
                 `Earned points on order #${order.display_id || orderId}`,
                 orderId
             )
+        }
+
+        // 4. Clean up the temporary LOYALTY promotion entity for this cart
+        if (order.cart_id) {
+            const promoCode = `LOYALTY-${order.cart_id}`
+            const existingPromos = await promotionModuleService.listPromotions({ code: promoCode })
+            if (existingPromos && existingPromos.length > 0) {
+                await promotionModuleService.deletePromotions(existingPromos.map((p: any) => p.id))
+                console.log(`[Loyalty Subscriber] Cleaned up promotion entity ${promoCode}`)
+            }
         }
     } catch (error: any) {
         console.error(`[Loyalty Subscriber] Error processing order.placed: ${error.message}`)
