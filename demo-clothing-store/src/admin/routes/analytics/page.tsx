@@ -70,6 +70,51 @@ interface CustomPeriodResult {
     daily_breakdown: { date: string; revenue: number; orders: number }[]
 }
 
+// ─────────────────────────── Preset config ────────────────────────────────────
+const PRESETS = [
+    { key: "today", label: "Today" },
+    { key: "7d", label: "Last 7d" },
+    { key: "30d", label: "Last 30d" },
+    { key: "this_month", label: "This Month" },
+    { key: "last_month", label: "Last Month" },
+    { key: "all", label: "All Time" },
+    { key: "custom", label: "Custom" },
+] as const
+type Preset = (typeof PRESETS)[number]["key"]
+
+const getPresetRange = (preset: Preset): { start: string; end: string } => {
+    const now = new Date()
+    const todayStr = now.toISOString().split("T")[0]
+    switch (preset) {
+        case "today":
+            return { start: todayStr, end: todayStr }
+        case "7d": {
+            const d = new Date()
+            d.setDate(d.getDate() - 6)
+            return { start: d.toISOString().split("T")[0], end: todayStr }
+        }
+        case "30d": {
+            const d = new Date()
+            d.setDate(d.getDate() - 29)
+            return { start: d.toISOString().split("T")[0], end: todayStr }
+        }
+        case "this_month": {
+            const s = new Date(now.getFullYear(), now.getMonth(), 1)
+            return { start: s.toISOString().split("T")[0], end: todayStr }
+        }
+        case "last_month": {
+            const s = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+            const e = new Date(now.getFullYear(), now.getMonth(), 0)
+            return {
+                start: s.toISOString().split("T")[0],
+                end: e.toISOString().split("T")[0],
+            }
+        }
+        default:
+            return { start: "", end: "" }
+    }
+}
+
 // ─────────────────────────── Helpers ──────────────────────────────────────────
 const fmt = (amount: number, currency = "BDT") => {
     if (!amount && amount !== 0) return "—"
@@ -85,28 +130,24 @@ const pct = (a: number, b: number): number | null => {
     return ((a - b) / b) * 100
 }
 
-// ─── Shared skeleton ──────────────────────────────────────────────────────────
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 const Sk = ({ h = 20, w = "100%" }: { h?: number; w?: string | number }) => (
     <div
-        style={{
-            height: h,
-            width: w,
-            borderRadius: 6,
-        }}
+        style={{ height: h, width: w, borderRadius: 6 }}
         className="bg-ui-bg-subtle animate-pulse"
     />
 )
 
-// ─── Trend Badge ──────────────────────────────────────────────────────────────
+// ─── Trend Badge ─────────────────────────────────────────────────────────────
 const TrendBadge = ({ value }: { value: number | null }) => {
     if (value === null) return null
     const up = value >= 0
     return (
         <span
             className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                up 
-                ? "bg-ui-tag-green-bg text-ui-tag-green-text" 
-                : "bg-ui-tag-red-bg text-ui-tag-red-text"
+                up
+                    ? "bg-ui-tag-green-bg text-ui-tag-green-text"
+                    : "bg-ui-tag-red-bg text-ui-tag-red-text"
             }`}
         >
             {up ? (
@@ -116,6 +157,41 @@ const TrendBadge = ({ value }: { value: number | null }) => {
             )}
             {Math.abs(value).toFixed(1)}%
         </span>
+    )
+}
+
+// ─── Pill Button ──────────────────────────────────────────────────────────────
+const Pill = ({
+    label,
+    active,
+    onClick,
+    color,
+}: {
+    label: string
+    active: boolean
+    onClick: () => void
+    color?: string
+}) => {
+    const ac = color ?? "#6366f1"
+    return (
+        <button
+            onClick={onClick}
+            style={{
+                padding: "3px 10px",
+                borderRadius: 20,
+                border: `1px solid ${active ? ac : "#e5e7eb"}`,
+                background: active ? ac : "#fff",
+                color: active ? "#fff" : "#6b7280",
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.15s",
+                whiteSpace: "nowrap" as const,
+                lineHeight: 1.4,
+            }}
+        >
+            {label}
+        </button>
     )
 }
 
@@ -143,9 +219,9 @@ const KpiCard = ({
 }) => (
     <div
         className={`relative rounded-xl p-5 border shadow-sm flex flex-col gap-2.5 overflow-hidden ${
-            alert 
-            ? "bg-ui-tag-orange-bg border-ui-tag-orange-border" 
-            : "bg-ui-bg-base border-ui-border-base"
+            alert
+                ? "bg-ui-tag-orange-bg border-ui-tag-orange-border"
+                : "bg-ui-bg-base border-ui-border-base"
         }`}
     >
         <div
@@ -178,9 +254,7 @@ const KpiCard = ({
                         {label}
                     </div>
                     {sub && (
-                        <div className="text-[10px] text-ui-fg-muted mt-0.5">
-                            {sub}
-                        </div>
+                        <div className="text-[10px] text-ui-fg-muted mt-0.5">{sub}</div>
                     )}
                 </>
             )}
@@ -194,19 +268,38 @@ const Card = ({
     sub,
     children,
     className = "",
+    filterSlot,
 }: {
     title: string
     sub?: string
     children: React.ReactNode
     className?: string
+    filterSlot?: React.ReactNode
 }) => (
     <div
         className={`bg-ui-bg-base rounded-xl p-5 border border-ui-border-base shadow-sm ${className}`}
     >
-        <div className="mb-3.5">
-            <div className="text-[13px] font-bold text-ui-fg-base">{title}</div>
-            {sub && (
-                <div className="text-[11px] text-ui-fg-muted mt-0.5">{sub}</div>
+        <div className="flex items-start justify-between gap-3 mb-3.5">
+            <div className="min-w-0">
+                <div className="text-[13px] font-bold text-ui-fg-base">{title}</div>
+                {sub && (
+                    <div className="text-[11px] text-ui-fg-muted mt-0.5">{sub}</div>
+                )}
+            </div>
+            {filterSlot && (
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        flexWrap: "wrap",
+                        justifyContent: "flex-end",
+                        flexShrink: 0,
+                        maxWidth: "55%",
+                    }}
+                >
+                    {filterSlot}
+                </div>
             )}
         </div>
         {children}
@@ -236,14 +329,10 @@ const ProgRow = ({
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ background: color }}
                     />
-                    <span className="text-xs text-ui-fg-subtle capitalize">
-                        {label}
-                    </span>
+                    <span className="text-xs text-ui-fg-subtle capitalize">{label}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-ui-fg-base">
-                        {num(count)}
-                    </span>
+                    <span className="text-xs font-bold text-ui-fg-base">{num(count)}</span>
                     {extra && (
                         <span className="text-[10px] text-ui-fg-muted">{extra}</span>
                     )}
@@ -255,10 +344,7 @@ const ProgRow = ({
             <div className="h-1 rounded-full bg-ui-bg-subtle overflow-hidden">
                 <div
                     className="h-full rounded-full transition-[width] duration-1000"
-                    style={{
-                        width: `${w}%`,
-                        background: color,
-                    }}
+                    style={{ width: `${w}%`, background: color }}
                 />
             </div>
         </div>
@@ -270,12 +356,10 @@ const BarChart = ({
     data,
     currency,
     highlightLast = false,
-    shortLabel = false,
 }: {
     data: { date?: string; day?: string; revenue: number; orders: number }[]
     currency: string
     highlightLast?: boolean
-    shortLabel?: boolean
 }) => {
     const maxRevenue = Math.max(...data.map((d) => d.revenue), 1)
     const maxIdx = data.reduce(
@@ -285,19 +369,17 @@ const BarChart = ({
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
     return (
-        <div
-            style={{ display: "flex", gap: 5, alignItems: "flex-end", height: 80 }}
-        >
+        <div style={{ display: "flex", gap: 5, alignItems: "flex-end", height: 80 }}>
             {data.map((d, i) => {
                 const h = Math.max((d.revenue / maxRevenue) * 100, 2)
                 const isHighlight = highlightLast ? i === data.length - 1 : i === maxIdx
 
                 let label = ""
                 if (d.day) {
-                    label = shortLabel ? d.day.slice(0, 3) : d.day.slice(0, 3)
+                    label = d.day.slice(0, 3)
                 } else if (d.date) {
                     const dt = new Date(d.date + "T00:00:00")
-                    label = days[dt.getDay()]
+                    label = data.length <= 14 ? days[dt.getDay()] : `${dt.getDate()}`
                 }
 
                 return (
@@ -310,13 +392,13 @@ const BarChart = ({
                             className={`w-full rounded-t-sm min-h-[3px] transition-[height] duration-700 ${
                                 isHighlight ? "bg-ui-button-inverted" : "bg-ui-bg-subtle"
                             }`}
-                            style={{
-                                height: `${h}%`,
-                            }}
+                            style={{ height: `${h}%` }}
                         />
                         <span
                             className={`text-[9px] ${
-                                isHighlight ? "text-ui-fg-base font-bold" : "text-ui-fg-muted"
+                                isHighlight
+                                    ? "text-ui-fg-base font-bold"
+                                    : "text-ui-fg-muted"
                             }`}
                         >
                             {label}
@@ -386,8 +468,28 @@ const AnalyticsDashboardPage = () => {
     const [error, setError] = useState<string | null>(null)
     const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date())
 
-    // Custom period state
+    // ── Global date filter ──────────────────────────────────────────────────
     const today = new Date().toISOString().split("T")[0]
+    const [activePreset, setActivePreset] = useState<Preset>("all")
+    const [filterStart, setFilterStart] = useState("")
+    const [filterEnd, setFilterEnd] = useState("")
+    const [showCustom, setShowCustom] = useState(false)
+    const [customTempStart, setCustomTempStart] = useState(() => {
+        const d = new Date()
+        d.setDate(d.getDate() - 29)
+        return d.toISOString().split("T")[0]
+    })
+    const [customTempEnd, setCustomTempEnd] = useState(today)
+
+    // ── Per-segment filters ─────────────────────────────────────────────────
+    const [trendDays, setTrendDays] = useState<7 | 14 | 30>(7)
+    const [productLimit, setProductLimit] = useState<5 | 10 | 20>(5)
+    const [pmSort, setPmSort] = useState<"count" | "revenue">("count")
+    const [dowMode, setDowMode] = useState<"total" | "avg">("total")
+    const [hiddenStatuses, setHiddenStatuses] = useState<Set<string>>(new Set())
+    const [hiddenPayStatuses, setHiddenPayStatuses] = useState<Set<string>>(new Set())
+
+    // ── Custom period (standalone calculator) ───────────────────────────────
     const firstOfMonth = new Date(
         new Date().getFullYear(),
         new Date().getMonth(),
@@ -401,11 +503,20 @@ const AnalyticsDashboardPage = () => {
     const [customLoading, setCustomLoading] = useState(false)
     const [customError, setCustomError] = useState<string | null>(null)
 
-    const fetchStats = async () => {
+    // ── Fetch main stats ────────────────────────────────────────────────────
+    const fetchStats = async (startDate = "", endDate = "") => {
         setLoading(true)
         setError(null)
         try {
-            const res = await fetch("/admin/stats", { credentials: "include" })
+            const params = new URLSearchParams()
+            if (startDate) params.set("start_date", startDate)
+            if (endDate) params.set("end_date", endDate)
+            params.set("trend_days", "30")
+            params.set("top_limit", "20")
+            const qs = params.toString()
+            const res = await fetch(`/admin/stats${qs ? `?${qs}` : ""}`, {
+                credentials: "include",
+            })
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
             setStats(await res.json())
             setLastRefreshed(new Date())
@@ -416,6 +527,28 @@ const AnalyticsDashboardPage = () => {
         }
     }
 
+    // ── Preset apply ────────────────────────────────────────────────────────
+    const applyPreset = (preset: Preset) => {
+        setActivePreset(preset)
+        if (preset === "custom") {
+            setShowCustom(true)
+            return
+        }
+        setShowCustom(false)
+        const { start, end } = getPresetRange(preset)
+        setFilterStart(start)
+        setFilterEnd(end)
+        fetchStats(start, end)
+    }
+
+    const applyCustomFilter = () => {
+        setFilterStart(customTempStart)
+        setFilterEnd(customTempEnd)
+        fetchStats(customTempStart, customTempEnd)
+        setShowCustom(false)
+    }
+
+    // ── Custom period calculator ────────────────────────────────────────────
     const fetchCustomPeriod = async () => {
         if (!customStart || !customEnd) return
         setCustomLoading(true)
@@ -442,6 +575,7 @@ const AnalyticsDashboardPage = () => {
         fetchStats()
     }, [])
 
+    // ── Derived / computed data ─────────────────────────────────────────────
     const currency = stats?.currency || "BDT"
     const revenueTrend = stats
         ? pct(stats.revenue.this_month, stats.revenue.prev_month)
@@ -450,44 +584,240 @@ const AnalyticsDashboardPage = () => {
     const statusBreakdown = stats?.orders.status_breakdown || {}
     const paymentBreakdown = stats?.orders.payment_status_breakdown || {}
 
-    // DOW: rotate so Monday is first
-    const dowData = stats?.revenue_by_dow
-        ? [
-            ...stats.revenue_by_dow.slice(1), // Mon–Sat
-            stats.revenue_by_dow[0], // Sun
-        ]
+    // Revenue trend sliced to trendDays
+    const trendData = stats?.revenue_trend?.slice(-trendDays) ?? []
+
+    // Top products sliced to productLimit
+    const topProductsData = stats?.top_products?.slice(0, productLimit) ?? []
+
+    // Payment method split sorted
+    const paymentMethodData = stats?.payment_method_split
+        ? [...stats.payment_method_split].sort((a, b) =>
+              pmSort === "revenue" ? b.revenue - a.revenue : b.count - a.count
+          )
         : []
 
+    // DoW: rotate Mon first, apply avg mode
+    const rawDow = stats?.revenue_by_dow
+        ? [...stats.revenue_by_dow.slice(1), stats.revenue_by_dow[0]]
+        : []
+    const dowChartData = rawDow.map((d) =>
+        dowMode === "avg"
+            ? { ...d, revenue: d.orders > 0 ? Math.round(d.revenue / d.orders) : 0 }
+            : d
+    )
+
+    // Status toggle helpers
+    const toggleStatus = (key: string) => {
+        setHiddenStatuses((prev) => {
+            const next = new Set(prev)
+            if (next.has(key)) next.delete(key)
+            else next.add(key)
+            return next
+        })
+    }
+    const togglePayStatus = (key: string) => {
+        setHiddenPayStatuses((prev) => {
+            const next = new Set(prev)
+            if (next.has(key)) next.delete(key)
+            else next.add(key)
+            return next
+        })
+    }
+
+    // Active filter label for header
+    const activeFilterLabel =
+        activePreset === "custom" && filterStart && filterEnd
+            ? `${filterStart} to ${filterEnd}`
+            : PRESETS.find((p) => p.key === activePreset)?.label ?? "All Time"
+
     return (
-        <div
-            style={{
-                padding: "24px",
-                fontFamily: "Inter, system-ui, sans-serif",
-            }}
-        >
+        <div style={{ padding: "24px", fontFamily: "Inter, system-ui, sans-serif" }}>
+
             {/* ── Header ── */}
-            <div className="flex justify-between items-center mb-5">
+            <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-9.5 h-9.5 rounded-xl bg-ui-bg-subtle flex items-center justify-center">
-                        <ChartBar className="text-ui-fg-interactive w-4.5 h-4.5" />
+                    <div className="w-9 h-9 rounded-xl bg-ui-bg-subtle flex items-center justify-center">
+                        <ChartBar className="text-ui-fg-interactive w-4 h-4" />
                     </div>
                     <div>
                         <h1 className="text-lg font-extrabold text-ui-fg-base m-0">
                             Company Analytics
                         </h1>
                         <p className="text-ui-fg-muted text-[11px] m-0 mt-0.5">
-                            Refreshed: {lastRefreshed.toLocaleTimeString()}
+                            Refreshed: {lastRefreshed.toLocaleTimeString()} &middot; Showing:{" "}
+                            <span className="font-semibold text-ui-fg-base">
+                                {activeFilterLabel}
+                            </span>
                         </p>
                     </div>
                 </div>
                 <button
-                    onClick={fetchStats}
+                    onClick={() => fetchStats(filterStart, filterEnd)}
                     disabled={loading}
-                    className="flex items-center gap-1 px-3.5 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer disabled:not-allowed disabled:opacity-70"
+                    className="flex items-center gap-1 px-3.5 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer disabled:opacity-70"
                 >
                     <ArrowPath className="w-3.5 h-3.5" />
-                    {loading ? "Refreshing…" : "Refresh"}
+                    {loading ? "Refreshing..." : "Refresh"}
                 </button>
+            </div>
+
+            {/* ── Global Filter Bar ── */}
+            <div
+                style={{
+                    background: "#fafafa",
+                    border: "1px solid #efefef",
+                    borderRadius: 12,
+                    padding: "12px 16px",
+                    marginBottom: 14,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                }}
+            >
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <span
+                        style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#999",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        Date Range
+                    </span>
+                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        {PRESETS.map((p) => (
+                            <Pill
+                                key={p.key}
+                                label={p.label}
+                                active={activePreset === p.key}
+                                onClick={() => applyPreset(p.key)}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {showCustom && (
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "flex-end",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            paddingTop: 8,
+                            borderTop: "1px dashed #e5e7eb",
+                        }}
+                    >
+                        {(["FROM", "TO"] as const).map((lbl, idx) => (
+                            <div
+                                key={lbl}
+                                style={{ display: "flex", flexDirection: "column", gap: 3 }}
+                            >
+                                <label style={{ fontSize: 10, color: "#888", fontWeight: 700 }}>
+                                    {lbl}
+                                </label>
+                                <input
+                                    type="date"
+                                    value={idx === 0 ? customTempStart : customTempEnd}
+                                    max={today}
+                                    onChange={(e) =>
+                                        idx === 0
+                                            ? setCustomTempStart(e.target.value)
+                                            : setCustomTempEnd(e.target.value)
+                                    }
+                                    style={{
+                                        padding: "6px 10px",
+                                        borderRadius: 8,
+                                        border: "1px solid #e5e7eb",
+                                        fontSize: 12,
+                                        color: "#374151",
+                                        background: "#fff",
+                                        outline: "none",
+                                    }}
+                                />
+                            </div>
+                        ))}
+                        <button
+                            onClick={applyCustomFilter}
+                            disabled={!customTempStart || !customTempEnd}
+                            style={{
+                                padding: "6px 18px",
+                                borderRadius: 8,
+                                border: "none",
+                                background: "#6366f1",
+                                color: "#fff",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                            }}
+                        >
+                            Apply
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowCustom(false)
+                                setActivePreset("all")
+                                setFilterStart("")
+                                setFilterEnd("")
+                                fetchStats()
+                            }}
+                            style={{
+                                padding: "6px 12px",
+                                borderRadius: 8,
+                                border: "1px solid #e5e7eb",
+                                background: "#fff",
+                                color: "#888",
+                                fontSize: 12,
+                                cursor: "pointer",
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+
+                {activePreset !== "all" && !showCustom && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                background: "#eef2ff",
+                                border: "1px solid #c7d2fe",
+                                borderRadius: 20,
+                                padding: "2px 10px 2px 8px",
+                                fontSize: 11,
+                                color: "#6366f1",
+                                fontWeight: 600,
+                            }}
+                        >
+                            {activeFilterLabel}
+                            <button
+                                onClick={() => applyPreset("all")}
+                                style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "#6366f1",
+                                    padding: 0,
+                                    lineHeight: 1,
+                                    fontSize: 16,
+                                    fontWeight: 700,
+                                }}
+                                title="Clear filter"
+                            >
+                                x
+                            </button>
+                        </span>
+                        <span style={{ fontSize: 10, color: "#bbb" }}>
+                            Click x to reset to All Time
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* ── Error banner ── */}
@@ -499,31 +829,28 @@ const AnalyticsDashboardPage = () => {
             )}
 
             {/* ── Unfulfilled Orders Alert ── */}
-            {!loading &&
-                stats &&
-                stats.unfulfilled_orders.count > 0 && (
-                    <div className="flex items-center gap-2.5 bg-ui-tag-orange-bg border border-ui-tag-orange-border rounded-lg px-4 py-2.5 mb-4">
-                        <ExclamationCircle className="w-4 h-4 text-ui-tag-orange-text shrink-0" />
-                        <div className="flex-1">
-                            <span className="text-[13px] font-bold text-ui-tag-orange-text">
-                                {stats.unfulfilled_orders.count} order
-                                {stats.unfulfilled_orders.count !== 1 ? "s" : ""} stuck
-                                in Pending &gt; 24 hours
-                            </span>
-                            <span className="text-[12px] text-ui-tag-orange-text opacity-80 ml-1.5">
-                                (oldest: {stats.unfulfilled_orders.oldest_hours}h ago)
-                            </span>
-                        </div>
-                        <a
-                            href="/app/orders-with-address"
-                            className="text-[12px] font-semibold text-ui-tag-orange-text no-underline whitespace-nowrap hover:underline"
-                        >
-                            View Orders →
-                        </a>
+            {!loading && stats && stats.unfulfilled_orders.count > 0 && (
+                <div className="flex items-center gap-2.5 bg-ui-tag-orange-bg border border-ui-tag-orange-border rounded-lg px-4 py-2.5 mb-4">
+                    <ExclamationCircle className="w-4 h-4 text-ui-tag-orange-text shrink-0" />
+                    <div className="flex-1">
+                        <span className="text-[13px] font-bold text-ui-tag-orange-text">
+                            {stats.unfulfilled_orders.count} order
+                            {stats.unfulfilled_orders.count !== 1 ? "s" : ""} stuck in Pending for more than 24 hours
+                        </span>
+                        <span className="text-[12px] text-ui-tag-orange-text opacity-80 ml-1.5">
+                            (oldest: {stats.unfulfilled_orders.oldest_hours}h ago)
+                        </span>
                     </div>
-                )}
+                    <a
+                        href="/app/orders-with-address"
+                        className="text-[12px] font-semibold text-ui-tag-orange-text no-underline whitespace-nowrap hover:underline"
+                    >
+                        View Orders
+                    </a>
+                </div>
+            )}
 
-            {/* ── Row 1: 8 KPI Cards ── */}
+            {/* ── Row 1: KPI Cards ── */}
             <div
                 style={{
                     display: "grid",
@@ -556,7 +883,7 @@ const AnalyticsDashboardPage = () => {
                     icon={<ShoppingCart style={{ width: 16, height: 16 }} />}
                     label="Total Orders"
                     value={num(stats?.orders.total ?? 0)}
-                    sub={`Today: ${num(stats?.orders.today ?? 0)} · Month: ${num(stats?.orders.this_month ?? 0)}`}
+                    sub={`Today: ${num(stats?.orders.today ?? 0)} / Month: ${num(stats?.orders.this_month ?? 0)}`}
                     accent="#3b82f6"
                     iconBg="#eff6ff"
                 />
@@ -593,12 +920,8 @@ const AnalyticsDashboardPage = () => {
                     label="Cancellation Rate"
                     value={`${stats?.cancellation_rate?.toFixed(1) ?? "0.0"}%`}
                     sub={`${num(statusBreakdown["canceled"] || 0)} cancelled orders`}
-                    accent={
-                        (stats?.cancellation_rate ?? 0) > 15 ? "#ef4444" : "#f97316"
-                    }
-                    iconBg={
-                        (stats?.cancellation_rate ?? 0) > 15 ? "#fef2f2" : "#fff7ed"
-                    }
+                    accent={(stats?.cancellation_rate ?? 0) > 15 ? "#ef4444" : "#f97316"}
+                    iconBg={(stats?.cancellation_rate ?? 0) > 15 ? "#fef2f2" : "#fff7ed"}
                     alert={(stats?.cancellation_rate ?? 0) > 15}
                 />
                 <KpiCard
@@ -612,7 +935,7 @@ const AnalyticsDashboardPage = () => {
                 />
             </div>
 
-            {/* ── Row 2: 7-day trend + Order Status + Payment Status ── */}
+            {/* ── Row 2: Revenue Trend + Order Status + Payment Status ── */}
             <div
                 style={{
                     display: "grid",
@@ -621,11 +944,31 @@ const AnalyticsDashboardPage = () => {
                     marginBottom: 16,
                 }}
             >
-                {/* 7-day Revenue */}
-                <Card title="Revenue — Last 7 Days" sub="Cancelled/refunded excluded · hover bars for details">
+                {/* Revenue Trend */}
+                <Card
+                    title="Revenue Trend"
+                    sub="Cancelled/refunded excluded - hover bars for details"
+                    filterSlot={
+                        <>
+                            {([7, 14, 30] as const).map((d) => (
+                                <Pill
+                                    key={d}
+                                    label={`${d}d`}
+                                    active={trendDays === d}
+                                    onClick={() => setTrendDays(d)}
+                                />
+                            ))}
+                        </>
+                    }
+                >
                     {loading ? (
                         <div
-                            style={{ display: "flex", gap: 5, alignItems: "flex-end", height: 80 }}
+                            style={{
+                                display: "flex",
+                                gap: 5,
+                                alignItems: "flex-end",
+                                height: 80,
+                            }}
                         >
                             {[40, 55, 30, 70, 45, 80, 60].map((h, i) => (
                                 <div
@@ -639,13 +982,9 @@ const AnalyticsDashboardPage = () => {
                                 />
                             ))}
                         </div>
-                    ) : stats?.revenue_trend ? (
+                    ) : trendData.length > 0 ? (
                         <>
-                            <BarChart
-                                data={stats.revenue_trend}
-                                currency={currency}
-                                highlightLast
-                            />
+                            <BarChart data={trendData} currency={currency} highlightLast />
                             <div
                                 style={{
                                     display: "flex",
@@ -657,23 +996,31 @@ const AnalyticsDashboardPage = () => {
                             >
                                 {[
                                     {
-                                        label: "Week Revenue",
-                                        val: fmt(stats.revenue.this_week, currency),
+                                        label: "Period Revenue",
+                                        val: fmt(
+                                            trendData.reduce((s, d) => s + d.revenue, 0),
+                                            currency
+                                        ),
                                     },
                                     {
-                                        label: "Orders (7d)",
-                                        val: num(stats.orders.this_week),
+                                        label: "Orders",
+                                        val: num(trendData.reduce((s, d) => s + d.orders, 0)),
                                     },
                                     {
-                                        label: "AOV (7d)",
-                                        val:
-                                            stats.orders.this_week > 0
-                                                ? fmt(
-                                                    stats.revenue.this_week /
-                                                    stats.orders.this_week,
-                                                    currency
-                                                )
-                                                : "—",
+                                        label: "AOV",
+                                        val: (() => {
+                                            const totalOrds = trendData.reduce(
+                                                (s, d) => s + d.orders,
+                                                0
+                                            )
+                                            const totalRev = trendData.reduce(
+                                                (s, d) => s + d.revenue,
+                                                0
+                                            )
+                                            return totalOrds > 0
+                                                ? fmt(totalRev / totalOrds, currency)
+                                                : "—"
+                                        })(),
                                     },
                                 ].map((item) => (
                                     <div key={item.label} style={{ textAlign: "center" }}>
@@ -699,21 +1046,61 @@ const AnalyticsDashboardPage = () => {
                 </Card>
 
                 {/* Order Status */}
-                <Card title="Order Status" sub="All orders by current status">
-                    {loading ? (
+                <Card
+                    title="Order Status"
+                    sub="Click pills to show or hide statuses"
+                    filterSlot={
                         <div
-                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 4,
+                                justifyContent: "flex-end",
+                            }}
                         >
+                            {Object.entries(ORDER_STATUS).map(([key, meta]) => {
+                                const count = statusBreakdown[key] || 0
+                                if (count === 0 && key !== "pending") return null
+                                return (
+                                    <button
+                                        key={key}
+                                        onClick={() => toggleStatus(key)}
+                                        title={`${hiddenStatuses.has(key) ? "Show" : "Hide"} ${meta.label}`}
+                                        style={{
+                                            padding: "2px 7px",
+                                            borderRadius: 20,
+                                            border: `1px solid ${meta.color}`,
+                                            background: hiddenStatuses.has(key)
+                                                ? "#fff"
+                                                : meta.color,
+                                            color: hiddenStatuses.has(key)
+                                                ? meta.color
+                                                : "#fff",
+                                            fontSize: 10,
+                                            fontWeight: 600,
+                                            cursor: "pointer",
+                                            opacity: hiddenStatuses.has(key) ? 0.55 : 1,
+                                            transition: "all 0.15s",
+                                        }}
+                                    >
+                                        {meta.label}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    }
+                >
+                    {loading ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             {Array.from({ length: 5 }).map((_, i) => (
                                 <Sk key={i} h={26} />
                             ))}
                         </div>
                     ) : (
-                        <div
-                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                        >
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             {Object.entries(ORDER_STATUS).map(([key, meta]) => {
                                 const count = statusBreakdown[key] || 0
+                                if (hiddenStatuses.has(key)) return null
                                 if (count === 0 && key !== "pending") return null
                                 return (
                                     <ProgRow
@@ -725,26 +1112,80 @@ const AnalyticsDashboardPage = () => {
                                     />
                                 )
                             })}
+                            {Object.keys(ORDER_STATUS).every((k) =>
+                                hiddenStatuses.has(k)
+                            ) && (
+                                <div
+                                    style={{
+                                        color: "#aaa",
+                                        fontSize: 12,
+                                        textAlign: "center",
+                                        padding: "16px 0",
+                                    }}
+                                >
+                                    All statuses hidden. Click a pill to show.
+                                </div>
+                            )}
                         </div>
                     )}
                 </Card>
 
                 {/* Payment Status */}
-                <Card title="Payment Status" sub="Payment collection status breakdown">
-                    {loading ? (
+                <Card
+                    title="Payment Status"
+                    sub="Click pills to show or hide payment statuses"
+                    filterSlot={
                         <div
-                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 4,
+                                justifyContent: "flex-end",
+                            }}
                         >
+                            {Object.entries(PAYMENT_STATUS).map(([key, meta]) => {
+                                const count = paymentBreakdown[key] || 0
+                                if (count === 0) return null
+                                return (
+                                    <button
+                                        key={key}
+                                        onClick={() => togglePayStatus(key)}
+                                        title={`${hiddenPayStatuses.has(key) ? "Show" : "Hide"} ${meta.label}`}
+                                        style={{
+                                            padding: "2px 7px",
+                                            borderRadius: 20,
+                                            border: `1px solid ${meta.color}`,
+                                            background: hiddenPayStatuses.has(key)
+                                                ? "#fff"
+                                                : meta.color,
+                                            color: hiddenPayStatuses.has(key)
+                                                ? meta.color
+                                                : "#fff",
+                                            fontSize: 10,
+                                            fontWeight: 600,
+                                            cursor: "pointer",
+                                            opacity: hiddenPayStatuses.has(key) ? 0.55 : 1,
+                                            transition: "all 0.15s",
+                                        }}
+                                    >
+                                        {meta.label.split(" ")[0]}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    }
+                >
+                    {loading ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <Sk key={i} h={26} />
                             ))}
                         </div>
                     ) : (
-                        <div
-                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                        >
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             {Object.entries(PAYMENT_STATUS).map(([key, meta]) => {
                                 const count = paymentBreakdown[key] || 0
+                                if (hiddenPayStatuses.has(key)) return null
                                 if (count === 0) return null
                                 return (
                                     <ProgRow
@@ -773,7 +1214,7 @@ const AnalyticsDashboardPage = () => {
                 </Card>
             </div>
 
-            {/* ── Row 3: Payment Method Split + Revenue by Day of Week ── */}
+            {/* ── Row 3: Payment Method Split + Revenue by DoW ── */}
             <div
                 style={{
                     display: "grid",
@@ -786,48 +1227,96 @@ const AnalyticsDashboardPage = () => {
                 <Card
                     title="Payment Method Split"
                     sub="Orders and revenue by payment provider"
+                    filterSlot={
+                        <>
+                            <Pill
+                                label="By Orders"
+                                active={pmSort === "count"}
+                                onClick={() => setPmSort("count")}
+                            />
+                            <Pill
+                                label="By Revenue"
+                                active={pmSort === "revenue"}
+                                onClick={() => setPmSort("revenue")}
+                            />
+                        </>
+                    }
                 >
                     {loading ? (
-                        <div
-                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                        >
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             {Array.from({ length: 3 }).map((_, i) => (
                                 <Sk key={i} h={28} />
                             ))}
                         </div>
-                    ) : stats?.payment_method_split &&
-                        stats.payment_method_split.length > 0 ? (
-                        <div
-                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                        >
-                            {stats.payment_method_split.map((pm, i) => (
+                    ) : paymentMethodData.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            {paymentMethodData.map((pm, i) => (
                                 <ProgRow
                                     key={pm.method}
                                     label={pm.method}
-                                    count={pm.count}
-                                    total={ordersTotal}
+                                    count={
+                                        pmSort === "revenue"
+                                            ? Math.round(pm.revenue)
+                                            : pm.count
+                                    }
+                                    total={
+                                        pmSort === "revenue"
+                                            ? paymentMethodData.reduce(
+                                                  (s, p) => s + p.revenue,
+                                                  0
+                                              )
+                                            : ordersTotal
+                                    }
                                     color={PM_COLORS[i % PM_COLORS.length]}
-                                    extra={fmt(pm.revenue, currency)}
+                                    extra={
+                                        pmSort === "count"
+                                            ? fmt(pm.revenue, currency)
+                                            : `${num(pm.count)} orders`
+                                    }
                                 />
                             ))}
                         </div>
                     ) : (
                         <div
-                            style={{ color: "#aaa", fontSize: 12, textAlign: "center", paddingTop: 16 }}
+                            style={{
+                                color: "#aaa",
+                                fontSize: 12,
+                                textAlign: "center",
+                                paddingTop: 16,
+                            }}
                         >
                             No payment data yet
                         </div>
                     )}
                 </Card>
 
-                {/* Revenue by Day of Week */}
+                {/* Revenue by DoW */}
                 <Card
                     title="Revenue by Day of Week"
-                    sub="All-time revenue averaged per weekday (Mon–Sun)"
+                    sub="All-time revenue per weekday (Mon-Sun)"
+                    filterSlot={
+                        <>
+                            <Pill
+                                label="Total"
+                                active={dowMode === "total"}
+                                onClick={() => setDowMode("total")}
+                            />
+                            <Pill
+                                label="Avg/Order"
+                                active={dowMode === "avg"}
+                                onClick={() => setDowMode("avg")}
+                            />
+                        </>
+                    }
                 >
                     {loading ? (
                         <div
-                            style={{ display: "flex", gap: 5, alignItems: "flex-end", height: 80 }}
+                            style={{
+                                display: "flex",
+                                gap: 5,
+                                alignItems: "flex-end",
+                                height: 80,
+                            }}
                         >
                             {Array.from({ length: 7 }).map((_, i) => (
                                 <div
@@ -841,9 +1330,9 @@ const AnalyticsDashboardPage = () => {
                                 />
                             ))}
                         </div>
-                    ) : dowData.length > 0 ? (
+                    ) : dowChartData.length > 0 ? (
                         <>
-                            <BarChart data={dowData} currency={currency} />
+                            <BarChart data={dowChartData} currency={currency} />
                             <div
                                 style={{
                                     marginTop: 8,
@@ -852,12 +1341,19 @@ const AnalyticsDashboardPage = () => {
                                     textAlign: "center",
                                 }}
                             >
-                                Indigo bar = highest revenue day
+                                {dowMode === "avg"
+                                    ? "Average revenue per order - Indigo = highest"
+                                    : "Total revenue by day - Indigo = highest"}
                             </div>
                         </>
                     ) : (
                         <div
-                            style={{ color: "#aaa", fontSize: 12, textAlign: "center", paddingTop: 16 }}
+                            style={{
+                                color: "#aaa",
+                                fontSize: 12,
+                                textAlign: "center",
+                                paddingTop: 16,
+                            }}
                         >
                             No data
                         </div>
@@ -867,9 +1363,21 @@ const AnalyticsDashboardPage = () => {
 
             {/* ── Row 4: Top Products ── */}
             <Card
-                title="Top 5 Products by Revenue"
-                sub="From paid/active orders only · requires order items to be available"
-                style={{ marginBottom: 16 }}
+                title="Top Products by Revenue"
+                sub="From paid/active orders only - requires order items to be available"
+                className="mb-4"
+                filterSlot={
+                    <>
+                        {([5, 10, 20] as const).map((n) => (
+                            <Pill
+                                key={n}
+                                label={`Top ${n}`}
+                                active={productLimit === n}
+                                onClick={() => setProductLimit(n)}
+                            />
+                        ))}
+                    </>
+                }
             >
                 {loading ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -877,7 +1385,7 @@ const AnalyticsDashboardPage = () => {
                             <Sk key={i} h={32} />
                         ))}
                     </div>
-                ) : stats?.top_products && stats.top_products.length > 0 ? (
+                ) : topProductsData.length > 0 ? (
                     <div style={{ overflowX: "auto" }}>
                         <table
                             style={{
@@ -893,7 +1401,13 @@ const AnalyticsDashboardPage = () => {
                                             <th
                                                 key={h}
                                                 style={{
-                                                    textAlign: h === "#" || h === "Units Sold" || h === "Orders" || h === "Revenue" ? "right" : "left",
+                                                    textAlign:
+                                                        h === "#" ||
+                                                        h === "Units Sold" ||
+                                                        h === "Orders" ||
+                                                        h === "Revenue"
+                                                            ? "right"
+                                                            : "left",
                                                     padding: "6px 10px",
                                                     fontWeight: 600,
                                                     color: "#888",
@@ -909,7 +1423,7 @@ const AnalyticsDashboardPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {stats.top_products.map((p, i) => (
+                                {topProductsData.map((p, i) => (
                                     <tr
                                         key={i}
                                         style={{
@@ -976,18 +1490,23 @@ const AnalyticsDashboardPage = () => {
                     </div>
                 ) : (
                     <div
-                        style={{ color: "#aaa", fontSize: 12, textAlign: "center", padding: "20px 0" }}
+                        style={{
+                            color: "#aaa",
+                            fontSize: 12,
+                            textAlign: "center",
+                            padding: "20px 0",
+                        }}
                     >
-                        No product data available — order items may not be loaded with relations.
+                        No product data available - order items may not be loaded with relations.
                     </div>
                 )}
             </Card>
 
-            {/* ── Row 5: Custom Period Revenue Calculator ── */}
+            {/* ── Custom Period Revenue Calculator ── */}
             <Card
                 title="Custom Period Revenue"
                 sub="Calculate revenue for any specific date range"
-                style={{ marginBottom: 16 }}
+                className="mb-4"
             >
                 <div
                     style={{
@@ -998,9 +1517,7 @@ const AnalyticsDashboardPage = () => {
                     }}
                 >
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <label
-                            style={{ fontSize: 10, color: "#888", fontWeight: 600 }}
-                        >
+                        <label style={{ fontSize: 10, color: "#888", fontWeight: 600 }}>
                             START DATE
                         </label>
                         <input
@@ -1020,9 +1537,7 @@ const AnalyticsDashboardPage = () => {
                         />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <label
-                            style={{ fontSize: 10, color: "#888", fontWeight: 600 }}
-                        >
+                        <label style={{ fontSize: 10, color: "#888", fontWeight: 600 }}>
                             END DATE
                         </label>
                         <input
@@ -1051,8 +1566,7 @@ const AnalyticsDashboardPage = () => {
                             padding: "7px 16px",
                             borderRadius: 8,
                             border: "none",
-                            background:
-                                customLoading ? "#c7d2fe" : "#6366f1",
+                            background: customLoading ? "#c7d2fe" : "#6366f1",
                             color: "#fff",
                             fontSize: 12,
                             fontWeight: 600,
@@ -1060,7 +1574,7 @@ const AnalyticsDashboardPage = () => {
                         }}
                     >
                         <ChartPie style={{ width: 13, height: 13 }} />
-                        {customLoading ? "Calculating…" : "Calculate Revenue"}
+                        {customLoading ? "Calculating..." : "Calculate Revenue"}
                     </button>
                 </div>
 
@@ -1082,7 +1596,6 @@ const AnalyticsDashboardPage = () => {
 
                 {customResult && (
                     <div style={{ marginTop: 16 }}>
-                        {/* Summary Cards */}
                         <div
                             style={{
                                 display: "grid",
@@ -1114,7 +1627,10 @@ const AnalyticsDashboardPage = () => {
                                 },
                                 {
                                     label: "Avg Order Value",
-                                    value: fmt(customResult.avg_order_value, customResult.currency),
+                                    value: fmt(
+                                        customResult.avg_order_value,
+                                        customResult.currency
+                                    ),
                                     color: "#ec4899",
                                 },
                             ].map((item) => (
@@ -1138,7 +1654,11 @@ const AnalyticsDashboardPage = () => {
                                         {item.value}
                                     </div>
                                     <div
-                                        style={{ fontSize: 10, color: "#888", marginTop: 2 }}
+                                        style={{
+                                            fontSize: 10,
+                                            color: "#888",
+                                            marginTop: 2,
+                                        }}
                                     >
                                         {item.label}
                                     </div>
@@ -1146,7 +1666,6 @@ const AnalyticsDashboardPage = () => {
                             ))}
                         </div>
 
-                        {/* Daily breakdown chart */}
                         {customResult.daily_breakdown &&
                             customResult.daily_breakdown.length > 1 && (
                                 <div>
@@ -1158,8 +1677,8 @@ const AnalyticsDashboardPage = () => {
                                             marginBottom: 8,
                                         }}
                                     >
-                                        DAILY REVENUE —{" "}
-                                        {customResult.start_date} → {customResult.end_date}
+                                        DAILY REVENUE - {customResult.start_date} to{" "}
+                                        {customResult.end_date}
                                     </div>
                                     <div
                                         style={{
@@ -1194,7 +1713,7 @@ const AnalyticsDashboardPage = () => {
                                                         minHeight: 2,
                                                         transition: "height 0.5s ease",
                                                     }}
-                                                    title={`${d.date}\n${fmt(d.revenue, customResult.currency)}\n${d.orders} orders`}
+                                                    title={`${d.date} - ${fmt(d.revenue, customResult.currency)} - ${d.orders} orders`}
                                                 />
                                             )
                                         })}
@@ -1228,7 +1747,7 @@ const AnalyticsDashboardPage = () => {
                     marginTop: 12,
                 }}
             >
-                Alariya Admin · Analytics Dashboard
+                Alariya Admin - Analytics Dashboard
             </div>
         </div>
     )

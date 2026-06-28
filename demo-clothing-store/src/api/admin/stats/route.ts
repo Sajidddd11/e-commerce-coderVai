@@ -17,6 +17,11 @@ const getProviderLabel = (providerId: string | null | undefined): string => {
 }
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
+    // ── Query params ─────────────────────────────────────────────────────────
+    const startDateParam = req.query.start_date as string | undefined
+    const endDateParam   = req.query.end_date   as string | undefined
+    const trendDaysCount = Math.min(Math.max(parseInt((req.query.trend_days as string) || "30", 10), 1), 90)
+    const topLimit       = Math.min(Math.max(parseInt((req.query.top_limit  as string) || "10", 10), 1), 50)
     try {
         const orderModuleService = req.scope.resolve(Modules.ORDER)
         const customerModuleService = req.scope.resolve(Modules.CUSTOMER)
@@ -55,6 +60,18 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
                 )
                 allOrders = orders
             }
+        }
+
+        // ── 1b. Apply date-range filter if provided ───────────────────────────
+        if (startDateParam || endDateParam) {
+            const rangeStart = startDateParam ? new Date(startDateParam + "T00:00:00") : null
+            const rangeEnd   = endDateParam   ? new Date(endDateParam   + "T23:59:59") : null
+            allOrders = allOrders.filter((o) => {
+                const d = new Date(o.created_at)
+                if (rangeStart && d < rangeStart) return false
+                if (rangeEnd   && d > rangeEnd)   return false
+                return true
+            })
         }
 
         // ── 2. Fetch payment status + provider per order ───────────────────────
@@ -229,7 +246,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
                 order_count: p.orders.size,
             }))
             .sort((a, b) => b.revenue - a.revenue)
-            .slice(0, 5)
+            .slice(0, topLimit)
 
         // ── 11. Cancellation rate ─────────────────────────────────────────────
         const cancelledCount = allOrders.filter((o) => {
@@ -310,9 +327,9 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             totalAdmins = adminCount
         } catch (_) { }
 
-        // ── 17. Revenue trend (last 7 days) ───────────────────────────────────
+        // ── 17. Revenue trend (last N days per trend_days param) ──────────
         const revenueTrend: { date: string; revenue: number; orders: number }[] = []
-        for (let i = 6; i >= 0; i--) {
+        for (let i = trendDaysCount - 1; i >= 0; i--) {
             const d = new Date()
             d.setDate(d.getDate() - i)
             const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate())
