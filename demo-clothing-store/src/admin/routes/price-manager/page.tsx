@@ -620,7 +620,12 @@ const PriceEditor = ({
                         if (rawAmount === null) {
                             del.push(existing.id)
                         } else if (existing.amount !== rawAmount) {
-                            update.push({ id: existing.id, amount: rawAmount })
+                            update.push({
+                                id: existing.id,
+                                variant_id: variantId,
+                                currency_code: lowerCur,
+                                amount: rawAmount,
+                            })
                         }
                     } else if (rawAmount !== null) {
                         create.push({
