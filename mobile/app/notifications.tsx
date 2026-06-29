@@ -231,13 +231,12 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   unreadCard: {
-    backgroundColor: colors.brand.tealMuted,
-    borderColor: "rgba(86, 174, 191, 0.15)",
+    backgroundColor: "rgba(86, 174, 191, 0.05)",
+    borderColor: "rgba(86, 174, 191, 0.2)",
   },
   readCard: {
-    backgroundColor: colors.grey[5],
-    borderColor: colors.grey[10],
-    shadowOpacity: 0.02,
+    backgroundColor: colors.grey[0],
+    borderColor: colors.grey[20],
   },
   iconContainer: {
     width: 40,
