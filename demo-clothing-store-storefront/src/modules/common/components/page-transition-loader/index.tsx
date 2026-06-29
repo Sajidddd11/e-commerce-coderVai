@@ -1,17 +1,19 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import LoadingLogo from "@modules/common/components/loading-logo"
 
 export default function PageTransitionLoader() {
   const [isVisible, setIsVisible] = useState(false)
   const [progress, setProgress] = useState(0)
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const timeoutRef = useRef<NodeJS.Timeout>()
   const intervalRef = useRef<NodeJS.Timeout>()
   const isLoadingRef = useRef(false)
   const prevPathnameRef = useRef(pathname)
+  const prevSearchParamsRef = useRef(searchParams.toString())
   const loaderTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Show loader when route changes are detected
@@ -113,21 +115,33 @@ export default function PageTransitionLoader() {
     }
   }, [isVisible])
 
-  // Handle route completion and detect any route changes (including router.push)
+  // Listen to custom page-transition-start events to show loader instantly
   useEffect(() => {
-    // Check if route actually changed
-    const routeChanged = pathname !== prevPathnameRef.current
+    const handleStart = () => {
+      showLoader()
+    }
+    window.addEventListener("page-transition-start", handleStart)
+    return () => {
+      window.removeEventListener("page-transition-start", handleStart)
+    }
+  }, [])
+
+  // Handle route completion and detect any route changes (including router.push and searchParams changes)
+  useEffect(() => {
+    // Check if route or query actually changed
+    const routeChanged = pathname !== prevPathnameRef.current || searchParams.toString() !== prevSearchParamsRef.current
 
     if (routeChanged) {
       // Clear the safety timeout since route actually changed
       if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
 
-      // If loader wasn't already shown by link click, show it now (for router.push cases)
+      // If loader wasn't already shown by link click, show it now
       if (!isLoadingRef.current) {
         showLoader()
       }
 
       prevPathnameRef.current = pathname
+      prevSearchParamsRef.current = searchParams.toString()
 
       // Complete the loading animation
       setProgress(100)
@@ -150,7 +164,7 @@ export default function PageTransitionLoader() {
         }
       }, 400)
     }
-  }, [pathname])
+  }, [pathname, searchParams])
 
   if (!isVisible && progress === 0) return null
 

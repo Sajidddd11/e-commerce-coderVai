@@ -25,7 +25,8 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
     ? searchParams.get("category")!.split(",").filter(Boolean)
     : []
   
-  // Local state for price inputs
+  // Local state for selected categories and price inputs
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(activeCategories)
   const [minPriceInput, setMinPriceInput] = useState(searchParams.get("priceMin") || "")
   const [maxPriceInput, setMaxPriceInput] = useState(searchParams.get("priceMax") || "")
 
@@ -33,6 +34,11 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
   useEffect(() => {
     setMinPriceInput(searchParams.get("priceMin") || "")
     setMaxPriceInput(searchParams.get("priceMax") || "")
+    setSelectedCategories(
+      searchParams.get("category")
+        ? searchParams.get("category")!.split(",").filter(Boolean)
+        : []
+    )
   }, [searchParams])
 
   // Update query params helper
@@ -53,31 +59,42 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
     router.replace(`${pathname}?${params.toString()}`)
   }, [searchParams, pathname, router])
 
-  // Category Selection
+  const startLoading = () => {
+    window.dispatchEvent(new Event("page-transition-start"))
+  }
+
+  // Category Selection (Local state update only)
   const handleCategoryToggle = (categoryId: string) => {
-    let newCategories: string[]
-    if (activeCategories.includes(categoryId)) {
-      newCategories = activeCategories.filter((id) => id !== categoryId)
-    } else {
-      newCategories = [...activeCategories, categoryId]
-    }
-    updateQuery({ category: newCategories.length > 0 ? newCategories.join(",") : null })
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    )
+  }
+
+  // Apply all filters (both category and price range)
+  const handleApplyFilters = () => {
+    startLoading()
+    updateQuery({
+      category: selectedCategories.length > 0 ? selectedCategories.join(",") : null,
+      priceMin: minPriceInput || null,
+      priceMax: maxPriceInput || null,
+    })
   }
 
   // Clear all filters
   const handleClearAll = () => {
+    startLoading()
     setMinPriceInput("")
     setMaxPriceInput("")
+    setSelectedCategories([])
     router.replace(pathname)
   }
 
-  // Price submit
-  const handlePriceApply = (e?: React.FormEvent) => {
+  // Form submit for filters
+  const handleFormSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault()
-    updateQuery({
-      priceMin: minPriceInput || null,
-      priceMax: maxPriceInput || null,
-    })
+    handleApplyFilters()
   }
 
   return (
@@ -109,7 +126,10 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
                 name="sortBy"
                 value={option.value}
                 checked={activeSort === option.value}
-                onChange={() => updateQuery({ sortBy: option.value })}
+                onChange={() => {
+                  startLoading()
+                  updateQuery({ sortBy: option.value })
+                }}
                 className="w-4.5 h-4.5 rounded-full border-slate-200 text-black accent-black focus:ring-black cursor-pointer transition-all"
               />
               <span className={activeSort === option.value ? "font-semibold text-slate-900" : ""}>
@@ -128,7 +148,7 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
         ) : (
           <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
             {categories.map((category) => {
-              const isChecked = activeCategories.includes(category.id)
+              const isChecked = selectedCategories.includes(category.id)
               return (
                 <label
                   key={category.id}
@@ -160,7 +180,7 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
       {/* Price Range Section */}
       <div className="flex flex-col gap-3 pt-5">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Price Range (BDT)</h3>
-        <form onSubmit={handlePriceApply} className="flex flex-col gap-4">
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <input
@@ -186,7 +206,7 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
             type="submit"
             className="w-full py-2 bg-slate-950 hover:bg-slate-900 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm uppercase tracking-wider"
           >
-            Apply Price
+            Apply Filter
           </button>
         </form>
       </div>
