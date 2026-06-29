@@ -7,11 +7,15 @@ async function run() {
   
   await client.connect();
 
-  console.log("--- Orders ---");
-  const orders = await client.query(`SELECT id, customer_id, metadata, created_at FROM "order" ORDER BY created_at DESC LIMIT 5`);
-  console.log(orders.rows);
+    console.log("--- Notifications Count ---");
+    const countRes = await client.query(`SELECT COUNT(*) FROM "customer_notification"`);
+    console.log(countRes.rows);
 
-  await client.end();
+    console.log("--- Notifications ---");
+    const notifications = await client.query(`SELECT id, customer_id, title, status, created_at FROM "customer_notification" ORDER BY created_at DESC LIMIT 10`);
+    console.log(notifications.rows);
+
+    await client.end();
 }
 
 run().catch(console.error);
