@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import AppHeroModuleService from "../../../modules/app-hero/service"
-import { APP_HERO_MODULE } from "../../../modules/app-hero"
+import AppHeroModuleService from "../../../modules/app_hero/service"
+import { APP_HERO_MODULE } from "../../../modules/app_hero"
 
 /**
  * GET /store/app-hero-slides

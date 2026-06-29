@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import AppHeroModuleService from "../../../../../modules/app-hero/service"
-import { APP_HERO_MODULE } from "../../../../../modules/app-hero"
+import AppHeroModuleService from "../../../../modules/app_hero/service"
+import { APP_HERO_MODULE } from "../../../../modules/app_hero"
 
 type LinkType = "none" | "shop" | "new_arrivals" | "best_selling" | "recommended" | "category" | "collection" | "product" | "search"
 
