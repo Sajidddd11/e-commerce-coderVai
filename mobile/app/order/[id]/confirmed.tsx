@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { View, ScrollView, StyleSheet, ActivityIndicator } from "react-native"
+import { View, ScrollView, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { Image } from "expo-image"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { CheckCircle2, MessageCircle } from "lucide-react-native"
@@ -80,35 +80,49 @@ export default function OrderConfirmedScreen() {
               <ThemedText variant="subheading" color={colors.grey[90]}>
                 Items
               </ThemedText>
-              {order.items?.map((item) => (
-                <View key={item.id} style={styles.itemRow}>
-                  {item.thumbnail ? (
-                    <Image
-                      source={item.thumbnail}
-                      style={styles.thumb}
-                      contentFit="cover"
-                    />
-                  ) : null}
-                  <View style={styles.flex}>
-                    <ThemedText
-                      variant="body"
-                      color={colors.grey[90]}
-                      numberOfLines={2}
-                    >
-                      {item.product_title || item.title}
+              {order.items?.map((item) => {
+                const handle = item.product?.handle || item.variant?.product?.handle
+                const navigateToProduct = () => {
+                  if (handle) {
+                    router.push(`/product/${handle}`)
+                  }
+                }
+
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={({ pressed }) => [styles.itemRow, pressed && handle && { opacity: 0.7 }]}
+                    disabled={!handle}
+                    onPress={navigateToProduct}
+                  >
+                    {item.thumbnail ? (
+                      <Image
+                        source={item.thumbnail}
+                        style={styles.thumb}
+                        contentFit="cover"
+                      />
+                    ) : null}
+                    <View style={styles.flex}>
+                      <ThemedText
+                        variant="body"
+                        color={colors.grey[90]}
+                        numberOfLines={2}
+                      >
+                        {item.product_title || item.title}
+                      </ThemedText>
+                      <ThemedText variant="bodySmall" color={colors.grey[50]}>
+                        Qty {item.quantity}
+                      </ThemedText>
+                    </View>
+                    <ThemedText variant="bodyMedium" color={colors.grey[90]}>
+                      {convertToLocale({
+                        amount: item.total ?? 0,
+                        currency_code: currency,
+                      })}
                     </ThemedText>
-                    <ThemedText variant="bodySmall" color={colors.grey[50]}>
-                      Qty {item.quantity}
-                    </ThemedText>
-                  </View>
-                  <ThemedText variant="bodyMedium" color={colors.grey[90]}>
-                    {convertToLocale({
-                      amount: item.total ?? 0,
-                      currency_code: currency,
-                    })}
-                  </ThemedText>
-                </View>
-              ))}
+                  </Pressable>
+                )
+              })}
             </View>
 
             <View style={styles.card}>

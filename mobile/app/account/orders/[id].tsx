@@ -217,24 +217,38 @@ export default function OrderDetailScreen() {
             <ThemedText variant="subheading" color={colors.grey[90]}>
               Items
             </ThemedText>
-            {order.items?.map((item) => (
-              <View key={item.id} style={styles.itemRow}>
-                {item.thumbnail ? (
-                  <Image source={item.thumbnail} style={styles.thumb} contentFit="cover" />
-                ) : null}
-                <View style={styles.flex}>
-                  <ThemedText variant="body" color={colors.grey[90]} numberOfLines={2}>
-                    {item.product_title || item.title}
+            {order.items?.map((item) => {
+              const handle = item.product?.handle || item.variant?.product?.handle
+              const navigateToProduct = () => {
+                if (handle) {
+                  router.push(`/product/${handle}`)
+                }
+              }
+
+              return (
+                <Pressable
+                  key={item.id}
+                  style={({ pressed }) => [styles.itemRow, pressed && handle && { opacity: 0.7 }]}
+                  disabled={!handle}
+                  onPress={navigateToProduct}
+                >
+                  {item.thumbnail ? (
+                    <Image source={item.thumbnail} style={styles.thumb} contentFit="cover" />
+                  ) : null}
+                  <View style={styles.flex}>
+                    <ThemedText variant="body" color={colors.grey[90]} numberOfLines={2}>
+                      {item.product_title || item.title}
+                    </ThemedText>
+                    <ThemedText variant="bodySmall" color={colors.grey[50]}>
+                      Qty {item.quantity}
+                    </ThemedText>
+                  </View>
+                  <ThemedText variant="bodyMedium" color={colors.grey[90]}>
+                    {convertToLocale({ amount: item.total ?? 0, currency_code: currency })}
                   </ThemedText>
-                  <ThemedText variant="bodySmall" color={colors.grey[50]}>
-                    Qty {item.quantity}
-                  </ThemedText>
-                </View>
-                <ThemedText variant="bodyMedium" color={colors.grey[90]}>
-                  {convertToLocale({ amount: item.total ?? 0, currency_code: currency })}
-                </ThemedText>
-              </View>
-            ))}
+                </Pressable>
+              )
+            })}
           </View>
 
           {/* ── Summary card ── */}

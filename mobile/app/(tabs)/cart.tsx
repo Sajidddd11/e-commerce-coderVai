@@ -147,24 +147,38 @@ export default function CartScreen() {
             .sort((a, b) =>
               (a.created_at ?? "") > (b.created_at ?? "") ? 1 : -1
             )
-            .map((item, index) => (
-              <View key={item.id} style={[styles.item, index === items.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={styles.thumbWrap}>
-                  <Image
-                    source={item.thumbnail}
-                    style={styles.thumb}
-                    contentFit="cover"
-                  />
-                </View>
-                <View style={styles.itemBody}>
-                  <Text style={styles.itemTitle} numberOfLines={2}>
-                    {item.product_title || item.title}
-                  </Text>
-                  {item.variant_title ? (
-                    <Text style={styles.itemVariant}>
-                      {item.variant_title}
-                    </Text>
-                  ) : null}
+            .map((item, index) => {
+              const handle = item.product?.handle || item.variant?.product?.handle
+              const navigateToProduct = () => {
+                if (handle) {
+                  router.push(`/product/${handle}`)
+                }
+              }
+
+              return (
+                <View key={item.id} style={[styles.item, index === items.length - 1 && { borderBottomWidth: 0 }]}>
+                  <Pressable
+                    onPress={navigateToProduct}
+                    disabled={!handle}
+                    style={({ pressed }) => [styles.thumbWrap, pressed && { opacity: 0.8 }]}
+                  >
+                    <Image
+                      source={item.thumbnail}
+                      style={styles.thumb}
+                      contentFit="cover"
+                    />
+                  </Pressable>
+                  <View style={styles.itemBody}>
+                    <Pressable onPress={navigateToProduct} disabled={!handle} style={({ pressed }) => pressed && { opacity: 0.8 }}>
+                      <Text style={styles.itemTitle} numberOfLines={2}>
+                        {item.product_title || item.title}
+                      </Text>
+                      {item.variant_title ? (
+                        <Text style={styles.itemVariant}>
+                          {item.variant_title}
+                        </Text>
+                      ) : null}
+                    </Pressable>
 
                   <View style={styles.stepper}>
                     <Pressable
@@ -224,7 +238,8 @@ export default function CartScreen() {
                   </View>
                 </View>
               </View>
-            ))}
+              )
+            })}
         </View>
 
         <View style={styles.promoBlock}>
