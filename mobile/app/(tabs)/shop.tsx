@@ -9,6 +9,7 @@ import { ProductSearchBar } from "@components/search/ProductSearchBar"
 import { SearchSuggestionsPanel } from "@components/search/SearchSuggestionsPanel"
 import { FilterBottomSheet } from "@components/search/FilterBottomSheet"
 import { ThemedText } from "@components/ui/ThemedText"
+import { ZahanSpinner } from "@components/ui/ZahanSpinner"
 import { useSearchSuggestions } from "@hooks/useSearchSuggestions"
 import { useRegionStore } from "@stores/region-store"
 import { listProductsWithSort } from "@api/products"
@@ -97,6 +98,7 @@ export default function ShopScreen() {
     setSearchInput("")
     setQuery("")
     setShowSuggestions(false)
+    router.setParams({ q: undefined })
   }
 
   useEffect(() => {
@@ -178,6 +180,7 @@ export default function ShopScreen() {
     setSortBy("created_at")
     setPriceMin(null)
     setPriceMax(null)
+    router.setParams({ category: undefined, sortBy: undefined, q: undefined })
   }
 
   const getProductsPriceRange = () => {
@@ -268,7 +271,10 @@ export default function ShopScreen() {
                 <View key={cat.id} style={styles.activeChip}>
                   <Text style={styles.activeChipText}>Category: {cat.name}</Text>
                   <Pressable
-                    onPress={() => setActiveCategories(activeCategories.filter((id) => id !== cat.id))}
+                    onPress={() => {
+                      setActiveCategories(activeCategories.filter((id) => id !== cat.id))
+                      router.setParams({ category: undefined })
+                    }}
                     style={styles.chipRemoveBtn}
                     hitSlop={6}
                   >
@@ -302,7 +308,14 @@ export default function ShopScreen() {
                   <Text style={styles.activeChipText}>
                     Sort: {sortBy === "best_selling" ? "Best Selling" : sortBy === "price_asc" ? "Price ↑" : "Price ↓"}
                   </Text>
-                  <Pressable onPress={() => setSortBy("created_at")} style={styles.chipRemoveBtn} hitSlop={6}>
+                  <Pressable
+                    onPress={() => {
+                      setSortBy("created_at")
+                      router.setParams({ sortBy: undefined })
+                    }}
+                    style={styles.chipRemoveBtn}
+                    hitSlop={6}
+                  >
                     <Text style={styles.chipRemoveText}>✕</Text>
                   </Pressable>
                 </View>
@@ -317,33 +330,29 @@ export default function ShopScreen() {
       </View>
 
       <View style={styles.grid}>
-        {products.length > 0 && priceRange && (
-          <View style={styles.priceRangeBar}>
-            <Text style={styles.priceRangeLabel}>
-              Price Range: <Text style={styles.priceRangeValue}>{getFormattedPriceRange()}</Text>
-            </Text>
-            <Text style={styles.productCountText}>
-              {products.length} {products.length === 1 ? "item" : "items"}
-            </Text>
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ZahanSpinner size={48} />
           </View>
+        ) : (
+          <ProductGrid
+            products={products}
+            loading={loading}
+            loadingMore={loadingMore}
+            onEndReached={onEndReached}
+            ListEmptyComponent={
+              !loading ? (
+                <View style={styles.empty}>
+                  <ThemedText variant="body" color={colors.grey[50]}>
+                    {query
+                      ? `No products found for "${query}".`
+                      : "No products found."}
+                  </ThemedText>
+                </View>
+              ) : null
+            }
+          />
         )}
-        <ProductGrid
-          products={products}
-          loading={loading}
-          loadingMore={loadingMore}
-          onEndReached={onEndReached}
-          ListEmptyComponent={
-            !loading ? (
-              <View style={styles.empty}>
-                <ThemedText variant="body" color={colors.grey[50]}>
-                  {query
-                    ? `No products found for "${query}".`
-                    : "No products found."}
-                </ThemedText>
-              </View>
-            ) : null
-          }
-        />
       </View>
 
       <FilterBottomSheet
@@ -359,6 +368,13 @@ export default function ShopScreen() {
           setActiveCategories(categoriesList || [])
           setPriceMin(minPrice)
           setPriceMax(maxPrice)
+
+          const firstCatId = categoriesList?.[0]
+          const catObj = categories.find((c) => c.id === firstCatId)
+          router.setParams({
+            category: catObj ? catObj.handle : undefined,
+            sortBy: newSortBy !== "created_at" ? newSortBy : undefined,
+          })
         }}
       />
     </Screen>
@@ -427,6 +443,7 @@ const styles = StyleSheet.create({
   grid: {
     flex: 1,
     backgroundColor: "white", // overflow-y-auto bg-white flex-1
+    paddingTop: spacing.md,
   },
   empty: {
     alignItems: "center",
