@@ -37,7 +37,8 @@ export default async function orderStatusNotifierSubscriber({
         let title = ""
         let message = ""
 
-        const status = order.status
+        const customStatus = order.metadata?.custom_status as string | undefined
+        const status = customStatus || order.status
         const fulfillmentStatus = order.fulfillment_status
         const paymentStatus = order.payment_status
 
@@ -45,16 +46,16 @@ export default async function orderStatusNotifierSubscriber({
         if (status === "canceled") {
             title = "Order Cancelled"
             message = `Your order #${order.display_id} has been cancelled.`
-        } else if (paymentStatus === "refunded") {
+        } else if (status === "refunded" || paymentStatus === "refunded") {
             title = "Order Refunded"
             message = `Your payment for order #${order.display_id} has been refunded.`
-        } else if (fulfillmentStatus === "shipped" || fulfillmentStatus === "partially_shipped") {
+        } else if (status === "shipped" || fulfillmentStatus === "shipped" || fulfillmentStatus === "partially_shipped") {
             title = "Order Shipped"
             message = `Your order #${order.display_id} has been shipped and is on the way!`
-        } else if (status === "completed" || fulfillmentStatus === "delivered") {
+        } else if (status === "delivered" || status === "completed" || fulfillmentStatus === "delivered") {
             title = "Order Delivered"
             message = `Your order #${order.display_id} has been delivered successfully. Thank you!`
-        } else if (fulfillmentStatus === "fulfilled" || fulfillmentStatus === "partially_fulfilled") {
+        } else if (status === "processing" || fulfillmentStatus === "fulfilled" || fulfillmentStatus === "partially_fulfilled") {
             title = "Order Preparing"
             message = `Your order #${order.display_id} is now being prepared.`
         } else if (status === "pending" || name === "order.placed") {
