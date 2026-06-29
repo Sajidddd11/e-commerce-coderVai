@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { View, Pressable, StyleSheet, ActivityIndicator, FlatList } from "react-native"
+import { View, Pressable, StyleSheet, ActivityIndicator, FlatList, Platform } from "react-native"
 import { useRouter } from "expo-router"
 import {
   ChevronLeft,
@@ -18,7 +18,7 @@ import { ThemedText } from "@components/ui/ThemedText"
 import { Button } from "@components/ui/Button"
 import { useNotificationStore } from "@stores/notification-store"
 import { useAuthStore } from "@stores/auth-store"
-import { colors, spacing, borderRadius, shadows } from "@design/theme"
+import { colors, spacing, borderRadius } from "@design/theme"
 import { fontFamily } from "@design/typography"
 import { DbNotification } from "@api/notifications"
 
@@ -228,7 +228,19 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.rounded,
     marginBottom: spacing.sm,
     borderWidth: 1,
-    ...shadows.sm,
+    // Android's elevation creates a harsh grey box-shadow that ignores shadowColor/shadowOpacity.
+    // Use Platform.select: subtle iOS shadow, zero elevation on Android (border does the job).
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 0,
+      },
+    }),
   },
   unreadCard: {
     backgroundColor: "rgba(86, 174, 191, 0.05)",

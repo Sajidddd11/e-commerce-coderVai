@@ -65,6 +65,10 @@ export async function markNotificationAsRead(id: string): Promise<boolean> {
       {
         method: "POST",
         headers,
+        // Explicit empty body required: Android's OkHttp sends a null byte (\u0000)
+        // for POST requests with no body, which body-parser crashes on with
+        // "Unexpected token '\u0000', is not valid JSON" → HTTP 500.
+        body: JSON.stringify({}),
       }
     )
 
@@ -92,6 +96,10 @@ export async function markAllNotificationsAsRead(): Promise<boolean> {
     const res = await fetch(`${MEDUSA_BACKEND}/store/notifications/read-all`, {
       method: "POST",
       headers,
+      // Explicit empty body required: Android's OkHttp sends a null byte (\u0000)
+      // for POST requests with no body, which body-parser crashes on with
+      // "Unexpected token '\u0000', is not valid JSON" → HTTP 500.
+      body: JSON.stringify({}),
     })
 
     if (!res.ok) {
