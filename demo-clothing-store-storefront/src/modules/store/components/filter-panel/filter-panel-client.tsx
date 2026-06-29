@@ -162,25 +162,23 @@ export default function FilterPanelClient({ categories }: FilterPanelClientProps
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Price Range (BDT)</h3>
         <form onSubmit={handlePriceApply} className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <div className="flex-1 relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">Min</span>
+            <div className="flex-1">
               <input
                 type="number"
-                placeholder="0"
+                placeholder="Min"
                 value={minPriceInput}
                 onChange={(e) => setMinPriceInput(e.target.value)}
-                className="w-full pl-10 pr-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-900 focus:ring-0 text-slate-800"
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-900 focus:ring-0 text-slate-800"
               />
             </div>
             <span className="text-slate-300 text-sm font-medium">—</span>
-            <div className="flex-1 relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">Max</span>
+            <div className="flex-1">
               <input
                 type="number"
-                placeholder="Any"
+                placeholder="Max"
                 value={maxPriceInput}
                 onChange={(e) => setMaxPriceInput(e.target.value)}
-                className="w-full pl-10 pr-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-900 focus:ring-0 text-slate-800"
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-900 focus:ring-0 text-slate-800"
               />
             </div>
           </div>
