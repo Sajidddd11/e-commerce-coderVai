@@ -7,7 +7,6 @@ import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import { Header } from "@components/layout/Header"
 import { AnnouncementBar } from "@components/layout/AnnouncementBar"
-import { HeroBanner } from "@components/home/HeroBanner"
 import { HeroCarousel } from "@components/home/HeroCarousel"
 import { SectionHeader } from "@components/home/SectionHeader"
 import { CategoryTiles } from "@components/home/CategoryTiles"
@@ -16,10 +15,11 @@ import { ProductRail } from "@components/product/ProductRail"
 import { CustomRefreshIndicator } from "@components/ui/CustomRefreshIndicator"
 import { FilterBottomSheet } from "@components/search/FilterBottomSheet"
 import { useRegionStore } from "@stores/region-store"
+import { useHeroStore } from "@stores/hero-store"
 import { listProducts } from "@api/products"
 import { listCategories, filterCategoriesWithProducts } from "@api/categories"
 import { listCollections } from "@api/collections"
-import { getHeroSlides, getBestSelling, HeroSlide } from "@api/enhancements"
+import { getBestSelling } from "@api/enhancements"
 import { colors, spacing } from "@design/theme"
 
 interface FeaturedCollection {
@@ -35,7 +35,11 @@ export default function HomeScreen() {
   const countryCode = useRegionStore((s) => s.countryCode)
   const isReady = useRegionStore((s) => s.isReady)
 
-  const [slides, setSlides] = useState<HeroSlide[]>([])
+  // Hero — SWR cache store (shows instantly from AsyncStorage, revalidates in background)
+  const heroSlides = useHeroStore((s) => s.slides)
+  const heroInit = useHeroStore((s) => s.init)
+  const heroRefresh = useHeroStore((s) => s.refresh)
+
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([])
   const [bestSelling, setBestSelling] = useState<HttpTypes.StoreProduct[]>([])
   const [categories, setCategories] = useState<HttpTypes.StoreProductCategory[]>([])
@@ -57,17 +61,15 @@ export default function HomeScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [prodRes, cats, slideRes, best, collectionsRes] = await Promise.all([
+      const [prodRes, cats, best, collectionsRes] = await Promise.all([
         listProducts({ countryCode, queryParams: { limit: 10 } }),
         listCategories({ limit: 12 }),
-        getHeroSlides(),
         region?.id ? getBestSelling(region.id, 10) : Promise.resolve([]),
         listCollections({ limit: "3" }),
       ])
 
       setProducts(prodRes.response.products)
       setCategories(filterCategoriesWithProducts(cats).slice(0, 10))
-      setSlides(slideRes ?? [])
       setBestSelling(best)
 
       // Featured collections: first 3 collections, 4 products each
@@ -90,9 +92,9 @@ export default function HomeScreen() {
 
   const startRefresh = useCallback(async () => {
     setRefreshing(true)
-    await load()
+    await Promise.all([load(), heroRefresh()])
     setRefreshing(false)
-  }, [load])
+  }, [load, heroRefresh])
 
   const handleRefreshControlTrigger = useCallback(() => {
     if (isDragging.value) {
@@ -127,8 +129,11 @@ export default function HomeScreen() {
   })
 
   useEffect(() => {
-    if (isReady) load()
-  }, [isReady, load])
+    if (isReady) {
+      load()
+      heroInit()
+    }
+  }, [isReady, load, heroInit])
 
 
   const handleSearchSubmit = (term: string) => {
@@ -149,29 +154,6 @@ export default function HomeScreen() {
       params,
     })
   }
-
-  const localSlides: HeroSlide[] = [
-    {
-      image: require("../../Hero/1.jpeg"),
-      title: "New Season\nArrivals",
-      subtitle: "2026 COLLECTION",
-      link: "/(tabs)/shop" as any,
-    },
-    {
-      image: require("../../Hero/2.jpeg"),
-      title: "Summer\nEssentials",
-      subtitle: "TRENDING NOW",
-      link: "/(tabs)/shop" as any,
-    },
-    {
-      image: require("../../Hero/3.jpeg"),
-      title: "Everyday\nComfort",
-      subtitle: "MUST HAVES",
-      link: "/(tabs)/shop" as any,
-    }
-  ]
-
-  const carouselSlides = slides.length > 0 ? slides : localSlides
 
   return (
     <Screen edges={["bottom", "left", "right"]} background={colors.grey[0]}>
@@ -196,7 +178,7 @@ export default function HomeScreen() {
         <CustomRefreshIndicator scrollY={scrollY} isRefreshing={localRefreshing} initialOffset={-(140 + insets.top)} isDragging={isDragging} />
         <AnnouncementBar scrollY={scrollY} />
 
-        <HeroCarousel slides={carouselSlides} />
+        <HeroCarousel slides={heroSlides} />
 
         {categories.length > 0 || loading ? (
           <View>

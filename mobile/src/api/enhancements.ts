@@ -8,57 +8,75 @@ import { getAuthHeaders } from "@utils/storage"
  * See MOBILE_BUILD_GUIDE.md §15.
  */
 
+/**
+ * A single hero slide as returned by /store/app-hero-slides.
+ * link_type + link_value drive in-app navigation directly — no URL-remapping heuristics.
+ */
 export interface HeroSlide {
   id?: string
   image: string | any
   title?: string
   subtitle?: string
+  /** Resolved mobile route string, e.g. "/(tabs)/shop?category=t-shirts" */
   link?: string
 }
 
-function mapWebLinkToMobile(webLink?: string): string | undefined {
-  if (!webLink) return undefined
-  
-  if (webLink === "/store" || webLink === "/") {
-    return "/(tabs)/shop"
+/** link_type → Expo Router path builder */
+function buildAppRoute(link_type: string, link_value?: string | null): string | undefined {
+  switch (link_type) {
+    case "shop":         return "/(tabs)/shop"
+    case "new_arrivals": return "/(tabs)/shop"
+    case "best_selling": return "/(tabs)/shop?sortBy=best_selling"
+    case "recommended":  return "/(tabs)/shop?sortBy=recommended"
+    case "category":     return link_value ? `/(tabs)/shop?category=${link_value}` : "/(tabs)/shop"
+    case "collection":   return link_value ? `/(tabs)/shop?collection=${link_value}` : "/(tabs)/shop"
+    case "product":      return link_value ? `/products/${link_value}` : undefined
+    case "search":       return link_value ? `/(tabs)/shop?q=${encodeURIComponent(link_value)}` : "/(tabs)/shop"
+    case "none":
+    default:             return undefined
   }
-  
-  const catMatch = webLink.match(/\/categories\/([^/]+)/)
-  if (catMatch) {
-    return `/(tabs)/shop?category=${catMatch[1]}`
-  }
-
-  const collMatch = webLink.match(/\/collections\/([^/]+)/)
-  if (collMatch) {
-    return `/(tabs)/shop?collection=${collMatch[1]}`
-  }
-
-  return webLink
 }
 
-function resolveImageSource(img: string | any): string | any {
-  if (typeof img !== "string") return img
-  if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("data:")) {
-    return img
-  }
-  const storefrontUrl = process.env.EXPO_PUBLIC_STOREFRONT_URL || "https://zahan.com.bd"
-  return `${storefrontUrl}${img.startsWith("/") ? "" : "/"}${img}`
+export interface AppHeroSlidesResult {
+  version: string
+  slides: HeroSlide[]
 }
 
-export async function getHeroSlides(): Promise<HeroSlide[] | null> {
+/**
+ * Fetches app hero slides from the dedicated mobile endpoint.
+ * Pass `currentVersion` (the cached version string) to enable conditional GET:
+ *   - Server returns `{ changed: false }` → returns null (use cached data)
+ *   - Server returns `{ version, slides }` → returns parsed result
+ */
+export async function getAppHeroSlides(
+  currentVersion?: string | null
+): Promise<AppHeroSlidesResult | null> {
+  const query: Record<string, string> = {}
+  if (currentVersion) query.version = currentVersion
+
   return sdk.client
-    .fetch<{ slides: any[] }>("/store/hero-slides", { method: "GET" })
-    .then(({ slides }) => {
-      if (!slides) return []
-      return slides.map((s) => ({
+    .fetch<any>("/store/app-hero-slides", { method: "GET", query })
+    .then((data) => {
+      // Server confirmed nothing changed → caller keeps its cache
+      if (data?.changed === false) return null
+
+      const raw: any[] = data?.slides ?? []
+      const slides: HeroSlide[] = raw.map((s) => ({
         id: s.id,
-        image: resolveImageSource(s.background_image || s.side_image),
-        title: s.title || undefined,
-        subtitle: s.description || undefined,
-        link: mapWebLinkToMobile(s.button_link),
+        image: s.image,
+        title: s.title ?? undefined,
+        subtitle: s.subtitle ?? undefined,
+        link: buildAppRoute(s.link_type, s.link_value),
       }))
+      return { version: data.version ?? new Date(0).toISOString(), slides }
     })
     .catch(() => null)
+}
+
+// Legacy alias — kept so HeroCarousel and any other existing consumer compiles
+export async function getHeroSlides(): Promise<HeroSlide[] | null> {
+  const result = await getAppHeroSlides()
+  return result?.slides ?? null
 }
 
 export async function getBestSelling(
