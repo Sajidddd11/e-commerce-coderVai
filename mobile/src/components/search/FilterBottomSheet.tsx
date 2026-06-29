@@ -129,6 +129,32 @@ export function FilterBottomSheet({
               })}
             </View>
 
+            {/* Price Range Section */}
+            <Text style={styles.sectionTitle}>Price Range (BDT)</Text>
+            <View style={styles.priceRow}>
+              <View style={styles.priceInputContainer}>
+                <Input
+                  placeholder="Min"
+                  value={priceMin}
+                  onChangeText={setPriceMin}
+                  keyboardType="numeric"
+                  containerStyle={{ width: "100%" }}
+                  style={styles.priceInput}
+                />
+              </View>
+              <Text style={styles.priceSeparator}>—</Text>
+              <View style={styles.priceInputContainer}>
+                <Input
+                  placeholder="Max"
+                  value={priceMax}
+                  onChangeText={setPriceMax}
+                  keyboardType="numeric"
+                  containerStyle={{ width: "100%" }}
+                  style={styles.priceInput}
+                />
+              </View>
+            </View>
+
             {/* Category Section */}
             {categories.length > 0 && (
               <>
@@ -157,32 +183,6 @@ export function FilterBottomSheet({
                 </View>
               </>
             )}
-
-            {/* Price Range Section */}
-            <Text style={styles.sectionTitle}>Price Range (BDT)</Text>
-            <View style={styles.priceRow}>
-              <View style={styles.priceInputContainer}>
-                <Input
-                  placeholder="Min"
-                  value={priceMin}
-                  onChangeText={setPriceMin}
-                  keyboardType="numeric"
-                  containerStyle={{ width: "100%" }}
-                  style={styles.priceInput}
-                />
-              </View>
-              <Text style={styles.priceSeparator}>—</Text>
-              <View style={styles.priceInputContainer}>
-                <Input
-                  placeholder="Max"
-                  value={priceMax}
-                  onChangeText={setPriceMax}
-                  keyboardType="numeric"
-                  containerStyle={{ width: "100%" }}
-                  style={styles.priceInput}
-                />
-              </View>
-            </View>
           </ScrollView>
 
           <View style={styles.footer}>

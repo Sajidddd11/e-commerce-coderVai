@@ -14,6 +14,7 @@ import { useRegionStore } from "@stores/region-store"
 import { listProductsWithSort } from "@api/products"
 import { listCategories, filterCategoriesWithProducts } from "@api/categories"
 import { SortOptions } from "@utils/sort-products"
+import { convertToLocale } from "@utils/money"
 import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 
@@ -179,6 +180,33 @@ export default function ShopScreen() {
     setPriceMax(null)
   }
 
+  const getProductsPriceRange = () => {
+    if (!products || products.length === 0) return null
+    let min = Infinity
+    let max = -Infinity
+    products.forEach((p) => {
+      p.variants?.forEach((v) => {
+        const amount = v.calculated_price?.calculated_amount
+        if (typeof amount === "number") {
+          if (amount < min) min = amount
+          if (amount > max) max = amount
+        }
+      })
+    })
+    if (min === Infinity || max === -Infinity) return null
+    return { min, max }
+  }
+
+  const priceRange = getProductsPriceRange()
+
+  const getFormattedPriceRange = () => {
+    if (!priceRange) return ""
+    const currency = products[0]?.variants?.[0]?.calculated_price?.currency_code || "bdt"
+    const minFormatted = convertToLocale({ amount: priceRange.min, currency_code: currency })
+    const maxFormatted = convertToLocale({ amount: priceRange.max, currency_code: currency })
+    return `${minFormatted} - ${maxFormatted}`
+  }
+
   return (
     <Screen background="white">
       <View style={styles.headerArea}>
@@ -289,6 +317,16 @@ export default function ShopScreen() {
       </View>
 
       <View style={styles.grid}>
+        {products.length > 0 && priceRange && (
+          <View style={styles.priceRangeBar}>
+            <Text style={styles.priceRangeLabel}>
+              Price Range: <Text style={styles.priceRangeValue}>{getFormattedPriceRange()}</Text>
+            </Text>
+            <Text style={styles.productCountText}>
+              {products.length} {products.length === 1 ? "item" : "items"}
+            </Text>
+          </View>
+        )}
         <ProductGrid
           products={products}
           loading={loading}
@@ -448,5 +486,29 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.interSemiBold,
     fontSize: fontSize.xs,
     color: colors.brand.teal,
+  },
+  priceRangeBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.grey[5],
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey[20],
+  },
+  priceRangeLabel: {
+    fontFamily: fontFamily.interMedium,
+    fontSize: fontSize.xs,
+    color: colors.grey[60],
+  },
+  priceRangeValue: {
+    fontFamily: fontFamily.interSemiBold,
+    color: colors.brand.teal,
+  },
+  productCountText: {
+    fontFamily: fontFamily.interMedium,
+    fontSize: fontSize.xs,
+    color: colors.grey[50],
   },
 })
