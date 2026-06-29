@@ -1,5 +1,7 @@
 import { Metadata } from "next"
 
+export const dynamic = 'force-dynamic'
+
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import StoreTemplate from "@modules/store/templates"
 

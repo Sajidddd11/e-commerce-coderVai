@@ -64,8 +64,8 @@ export default function CartScreen() {
   const remainingForFree = freeShippingActive
     ? freeShipping!.threshold - subtotalAmount
     : 0
-  const appliedPromos = (cart?.promotions ?? []).filter((p) => p.code)
-  const visiblePromos = appliedPromos.filter((p) => p.code && !p.code.startsWith("LOYALTY-"))
+  const appliedPromos = (cart?.promotions ?? []).filter((p) => p && p.code)
+  const visiblePromos = appliedPromos.filter((p) => p && p.code && !p.code.startsWith("LOYALTY-"))
 
   const onApplyPromo = async () => {
     const code = promoInput.trim()
@@ -77,7 +77,7 @@ export default function CartScreen() {
       await applyPromo([...existing, code])
       const updated = useCartStore.getState().cart
       const added = (updated?.promotions ?? []).some(
-        (p) => p.code?.toLowerCase() === code.toLowerCase()
+        (p) => p && p.code?.toLowerCase() === code.toLowerCase()
       )
       if (!added) {
         setPromoError("That code is invalid or expired.")

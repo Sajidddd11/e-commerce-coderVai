@@ -3,58 +3,103 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { HeroSlide } from "@lib/data/hero"
 
-interface Slide {
-  image: string
-  alt: string
-  link: string
+interface HomeHeroProps {
+  slides?: HeroSlide[]
 }
 
-export default function HomeHero() {
+export default function HomeHero({ slides }: HomeHeroProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlay, setIsAutoPlay] = useState(true)
 
-  const slides: Slide[] = [
-    {
-      image: "/banners/all.png",
-      alt: "Shop All Categories",
-      link: "/store",
-    },
-    {
-      image: "/banners/headphone.jpg",
-      alt: "Headphones Collection",
-      link: "/categories/headphones",
-    },
-    {
-      image: "/banners/snicker.jpg",
-      alt: "Sneakers Collection",
-      link: "/categories/sneakers",
-    },
-    {
-      image: "/banners/watch.jpg",
-      alt: "Watches Collection",
-      link: "/categories/watches",
-    },
-  ]
+  const activeSlides: HeroSlide[] = slides && slides.length > 0
+    ? slides
+    : [
+        {
+          id: "default-1",
+          slide_type: "static_image",
+          title: "Shop All Categories",
+          description: "Explore our full range of premium apparel and accessories. Direct from our curated collections.",
+          button_text: "Shop Now",
+          button_link: "/store",
+          background_image: "/banners/all.png",
+          side_image: null,
+          video_url: null,
+          overlay_color: "rgba(0, 0, 0, 0.3)",
+          sort_order: 1,
+          is_active: true,
+          created_at: "",
+          updated_at: ""
+        },
+        {
+          id: "default-2",
+          slide_type: "side_image_left",
+          title: "Premium Audio Collection",
+          description: "Elevate your listening experience with high-fidelity sound, deep bass, and comfortable fit.",
+          button_text: "Discover Audio",
+          button_link: "/categories/headphones",
+          background_image: null,
+          side_image: "/banners/headphone.jpg",
+          video_url: null,
+          overlay_color: "linear-gradient(135deg, #1e293b, #0f172a)",
+          sort_order: 2,
+          is_active: true,
+          created_at: "",
+          updated_at: ""
+        },
+        {
+          id: "default-3",
+          slide_type: "side_image_right",
+          title: "Step into Comfort",
+          description: "Performance and style combined in our latest sneakers. Designed for everyday lifestyle and motion.",
+          button_text: "Shop Sneakers",
+          button_link: "/categories/sneakers",
+          background_image: null,
+          side_image: "/banners/snicker.jpg",
+          video_url: null,
+          overlay_color: "linear-gradient(135deg, #111827, #1f2937)",
+          sort_order: 3,
+          is_active: true,
+          created_at: "",
+          updated_at: ""
+        },
+        {
+          id: "default-4",
+          slide_type: "center_text",
+          title: "Luxury Timepieces",
+          description: "Exquisite designs crafting timeless sophistication. Explore watches that define who you are.",
+          button_text: "Explore Watches",
+          button_link: "/categories/watches",
+          background_image: "/banners/watch.jpg",
+          side_image: null,
+          video_url: null,
+          overlay_color: "rgba(0, 0, 0, 0.4)",
+          sort_order: 4,
+          is_active: true,
+          created_at: "",
+          updated_at: ""
+        }
+      ]
 
   useEffect(() => {
     if (!isAutoPlay) return
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
+      setCurrentSlide((prev) => (prev + 1) % activeSlides.length)
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [isAutoPlay, slides.length])
+  }, [isAutoPlay, activeSlides.length])
 
   const goToPrevious = () => {
     setIsAutoPlay(false)
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+    setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length)
   }
 
   const goToNext = () => {
     setIsAutoPlay(false)
-    setCurrentSlide((prev) => (prev + 1) % slides.length)
+    setCurrentSlide((prev) => (prev + 1) % activeSlides.length)
   }
 
   const goToSlide = (index: number) => {
@@ -63,34 +108,144 @@ export default function HomeHero() {
   }
 
   return (
-    <section className="relative w-full bg-grey-0 overflow-hidden">
+    <section className="relative w-full bg-grey-90 overflow-hidden" role="banner">
       {/* Carousel Container */}
-      <div className="relative w-full h-[180px] xsmall:h-[220px] small:h-[280px] medium:h-[330px] large:h-[370px]">
+      <div className="relative w-full h-[400px] xsmall:h-[450px] small:h-[500px] medium:h-[550px]">
         {/* Slides */}
-        {slides.map((slide, index) => (
-          <div
-            key={`slide-${index}`}
-            className={`absolute inset-0 transition-opacity transition-2000 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${index === currentSlide
-                ? "opacity-100 pointer-events-auto"
-                : "opacity-0 pointer-events-none"
-              }`}
-          >
-            <LocalizedClientLink
-              href={slide.link}
-              className="block w-full h-full relative"
+        {activeSlides.map((slide, index) => {
+          const isActive = index === currentSlide
+
+          return (
+            <div
+              key={slide.id || `slide-${index}`}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide
+                ? "opacity-100 z-10 pointer-events-auto"
+                : "opacity-0 z-0 pointer-events-none"
+                }`}
             >
-              <Image
-                src={slide.image}
-                alt={slide.alt}
-                fill
-                className="object-cover cursor-pointer hover:scale-105 transition-transform duration-700"
-                quality={85}
-                priority={index === 0}
-                sizes="100vw"
-              />
-            </LocalizedClientLink>
-          </div>
-        ))}
+              <div className="relative w-full h-full overflow-hidden">
+                {/* Background Layer for Static Image or Center Text or Video Poster */}
+                {slide.background_image && (slide.slide_type === "static_image" || slide.slide_type === "center_text" || slide.slide_type === "video") && (
+                  <Image
+                    src={slide.background_image}
+                    alt={slide.title || "Background"}
+                    fill
+                    className={`object-cover transition-transform duration-10000 ease-linear ${
+                      isActive ? "scale-105" : "scale-100"
+                    }`}
+                    priority={index === 0}
+                    sizes="100vw"
+                  />
+                )}
+
+                {/* Video Background */}
+                {slide.slide_type === "video" && slide.video_url && (
+                  <video
+                    src={slide.video_url}
+                    poster={slide.background_image || undefined}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
+
+                {/* Background Overlay (Solid/Gradient) */}
+                {slide.overlay_color && (slide.slide_type === "static_image" || slide.slide_type === "center_text" || slide.slide_type === "video") && (
+                  <div
+                    className="absolute inset-0 z-10"
+                    style={{ background: slide.overlay_color }}
+                  />
+                )}
+
+                {/* Layout Content */}
+                {/* 1. Split Layouts (side_image_left, side_image_right) */}
+                {(slide.slide_type === "side_image_left" || slide.slide_type === "side_image_right") ? (
+                  <div className={`relative z-20 w-full h-full flex flex-col ${
+                    slide.slide_type === "side_image_right" ? "medium:flex-row-reverse" : "medium:flex-row"
+                  }`}>
+                    {/* Text/Content Column */}
+                    <div 
+                      className="w-full medium:w-1/2 h-1/2 medium:h-full flex flex-col justify-center px-6 xsmall:px-12 small:px-16 medium:px-20 py-8 medium:py-12 text-white"
+                      style={slide.overlay_color ? { background: slide.overlay_color } : { background: "linear-gradient(135deg, #111827, #1f2937)" }}
+                    >
+                      <div className={`max-w-xl transition-all duration-700 delay-300 transform ${
+                        isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+                      }`}>
+                        {slide.title && (
+                          <h1 className="typography-hero text-white mb-3 small:mb-4 leading-tight">
+                            {slide.title}
+                          </h1>
+                        )}
+                        {slide.description && (
+                          <p className="typography-body-lg text-grey-20 mb-5 small:mb-6 max-w-md">
+                            {slide.description}
+                          </p>
+                        )}
+                        {slide.button_text && slide.button_link && (
+                          <div>
+                            <LocalizedClientLink
+                              href={slide.button_link}
+                              className="typography-button inline-flex items-center justify-center px-6 py-3 bg-white text-grey-90 rounded-md hover:bg-grey-10 transition-all duration-200 hover:shadow-lg active:scale-95 whitespace-nowrap"
+                            >
+                              {slide.button_text}
+                            </LocalizedClientLink>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Image Column */}
+                    <div className="w-full medium:w-1/2 h-1/2 medium:h-full relative overflow-hidden bg-grey-90">
+                      {slide.side_image && (
+                        <Image
+                          src={slide.side_image}
+                          alt={slide.title || "Side Image"}
+                          fill
+                          className={`object-cover transition-transform duration-7000 ease-out ${
+                            isActive ? "scale-105" : "scale-100"
+                          }`}
+                          sizes="(max-width: 1280px) 100vw, 50vw"
+                        />
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* 2. Full Overlay Layouts (center_text, static_image, video) */
+                  <div className={`relative z-20 w-full h-full flex flex-col justify-center px-6 xsmall:px-12 small:px-16 medium:px-20 text-white ${
+                    slide.slide_type === "center_text" ? "items-center text-center" : "items-start text-left"
+                  }`}>
+                    <div className={`max-w-2xl transition-all duration-700 delay-300 transform ${
+                      isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+                    }`}>
+                      {slide.title && (
+                        <h1 className="typography-hero text-white mb-3 small:mb-4 leading-tight">
+                          {slide.title}
+                        </h1>
+                      )}
+                      {slide.description && (
+                        <p className="typography-body-lg text-grey-10 mb-6 small:mb-8 max-w-xl mx-auto">
+                          {slide.description}
+                        </p>
+                      )}
+                      {slide.button_text && slide.button_link && (
+                        <div>
+                          <LocalizedClientLink
+                            href={slide.button_link}
+                            className="typography-button inline-flex items-center justify-center px-6 py-3 bg-white text-grey-90 rounded-md hover:bg-grey-10 transition-all duration-200 hover:shadow-lg active:scale-95 whitespace-nowrap"
+                          >
+                            {slide.button_text}
+                          </LocalizedClientLink>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
 
         {/* Previous Button */}
         <button
@@ -140,7 +295,7 @@ export default function HomeHero() {
 
         {/* Dot Indicators */}
         <div className="absolute bottom-2 xsmall:bottom-3 small:bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 small:gap-2">
-          {slides.map((_, index) => (
+          {activeSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
@@ -164,3 +319,4 @@ export default function HomeHero() {
     </section>
   )
 }
+

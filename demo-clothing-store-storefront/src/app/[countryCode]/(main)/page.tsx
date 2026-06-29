@@ -10,6 +10,7 @@ import { listCollections } from "@lib/data/collections"
 import { listCategories, filterCategoriesWithProducts } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
 import { retrieveCustomer } from "@lib/data/customer"
+import { listHeroSlides } from "@lib/data/hero"
 
 // No static revalidate — this page reads auth cookies so Next.js makes it
 // dynamic automatically. Each request gets the correct customer context.
@@ -33,6 +34,7 @@ export default async function Home(props: {
   })
   const allCategories = await listCategories()
   const categories = filterCategoriesWithProducts(allCategories)
+  const heroSlides = await listHeroSlides()
 
   if (!collections || !region || !categories || categories.length === 0) {
     return null
@@ -49,7 +51,7 @@ export default async function Home(props: {
         <Announcement />
       </section>
       <section data-testid="section-hero">
-        <HomeHero />
+        <HomeHero slides={heroSlides} />
       </section>
       <section data-testid="section-categories">
         <CategoryShowcase 
