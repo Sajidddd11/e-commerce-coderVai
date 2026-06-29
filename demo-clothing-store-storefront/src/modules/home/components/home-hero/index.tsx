@@ -107,10 +107,18 @@ export default function HomeHero({ slides }: HomeHeroProps) {
     setCurrentSlide(index)
   }
 
+  const hasSplitLayout = activeSlides.some(
+    (slide) => slide.slide_type === "side_image_left" || slide.slide_type === "side_image_right"
+  )
+
   return (
     <section className="relative w-full bg-grey-90 overflow-hidden" role="banner">
       {/* Carousel Container */}
-      <div className="relative w-full h-[400px] xsmall:h-[450px] small:h-[500px] medium:h-[550px]">
+      <div className={`relative w-full transition-all duration-300 ${
+        hasSplitLayout
+          ? "h-[450px] xsmall:h-[500px] small:h-[550px] medium:h-[600px]"
+          : "h-[180px] xsmall:h-[220px] small:h-[280px] medium:h-[350px] large:h-[400px]"
+      }`}>
         {/* Slides */}
         {activeSlides.map((slide, index) => {
           const isActive = index === currentSlide
@@ -174,12 +182,12 @@ export default function HomeHero({ slides }: HomeHeroProps) {
                         isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                       }`}>
                         {slide.title && (
-                          <h1 className="typography-hero text-white mb-3 small:mb-4 leading-tight">
+                          <h1 className="text-xl xsmall:text-2xl small:typography-hero text-white mb-2 small:mb-4 leading-tight">
                             {slide.title}
                           </h1>
                         )}
                         {slide.description && (
-                          <p className="typography-body-lg text-grey-20 mb-5 small:mb-6 max-w-md">
+                          <p className="text-xs xsmall:text-sm small:typography-body-lg text-grey-20 mb-3 small:mb-6 max-w-md">
                             {slide.description}
                           </p>
                         )}
@@ -187,7 +195,7 @@ export default function HomeHero({ slides }: HomeHeroProps) {
                           <div>
                             <LocalizedClientLink
                               href={slide.button_link}
-                              className="typography-button inline-flex items-center justify-center px-6 py-3 bg-white text-grey-90 rounded-md hover:bg-grey-10 transition-all duration-200 hover:shadow-lg active:scale-95 whitespace-nowrap"
+                              className="text-xs xsmall:text-sm small:typography-button inline-flex items-center justify-center px-4 py-2 small:px-6 small:py-3 bg-white text-grey-90 rounded-md hover:bg-grey-10 transition-all duration-200 hover:shadow-lg active:scale-95 whitespace-nowrap"
                             >
                               {slide.button_text}
                             </LocalizedClientLink>
@@ -220,12 +228,12 @@ export default function HomeHero({ slides }: HomeHeroProps) {
                       isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                     }`}>
                       {slide.title && (
-                        <h1 className="typography-hero text-white mb-3 small:mb-4 leading-tight">
+                        <h1 className="text-xl xsmall:text-2xl small:typography-hero text-white mb-2 small:mb-4 leading-tight">
                           {slide.title}
                         </h1>
                       )}
                       {slide.description && (
-                        <p className="typography-body-lg text-grey-10 mb-6 small:mb-8 max-w-xl mx-auto">
+                        <p className="text-xs xsmall:text-sm small:typography-body-lg text-grey-10 mb-3 small:mb-8 max-w-xl mx-auto">
                           {slide.description}
                         </p>
                       )}
@@ -233,7 +241,7 @@ export default function HomeHero({ slides }: HomeHeroProps) {
                         <div>
                           <LocalizedClientLink
                             href={slide.button_link}
-                            className="typography-button inline-flex items-center justify-center px-6 py-3 bg-white text-grey-90 rounded-md hover:bg-grey-10 transition-all duration-200 hover:shadow-lg active:scale-95 whitespace-nowrap"
+                            className="text-xs xsmall:text-sm small:typography-button inline-flex items-center justify-center px-4 py-2 small:px-6 small:py-3 bg-white text-grey-90 rounded-md hover:bg-grey-10 transition-all duration-200 hover:shadow-lg active:scale-95 whitespace-nowrap"
                           >
                             {slide.button_text}
                           </LocalizedClientLink>

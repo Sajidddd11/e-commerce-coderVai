@@ -69,7 +69,20 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
           {validSlides.map((item, i) => {
             const toLink = () => {
               if (!item.link) return
-              router.push(item.link as Href)
+              if (item.link.includes("?")) {
+                const [path, query] = item.link.split("?")
+                const params: any = {}
+                query.split("&").forEach((part) => {
+                  const [k, v] = part.split("=")
+                  if (k && v) params[k] = decodeURIComponent(v)
+                })
+                router.push({
+                  pathname: path,
+                  params,
+                } as any)
+              } else {
+                router.push(item.link as any)
+              }
             }
             return (
               <Pressable

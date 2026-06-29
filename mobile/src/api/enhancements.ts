@@ -16,10 +16,48 @@ export interface HeroSlide {
   link?: string
 }
 
+function mapWebLinkToMobile(webLink?: string): string | undefined {
+  if (!webLink) return undefined
+  
+  if (webLink === "/store" || webLink === "/") {
+    return "/(tabs)/shop"
+  }
+  
+  const catMatch = webLink.match(/\/categories\/([^/]+)/)
+  if (catMatch) {
+    return `/(tabs)/shop?category=${catMatch[1]}`
+  }
+
+  const collMatch = webLink.match(/\/collections\/([^/]+)/)
+  if (collMatch) {
+    return `/(tabs)/shop?collection=${collMatch[1]}`
+  }
+
+  return webLink
+}
+
+function resolveImageSource(img: string | any): string | any {
+  if (typeof img !== "string") return img
+  if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("data:")) {
+    return img
+  }
+  const storefrontUrl = process.env.EXPO_PUBLIC_STOREFRONT_URL || "https://zahan.com.bd"
+  return `${storefrontUrl}${img.startsWith("/") ? "" : "/"}${img}`
+}
+
 export async function getHeroSlides(): Promise<HeroSlide[] | null> {
   return sdk.client
-    .fetch<{ hero_slides: HeroSlide[] }>("/store/hero-slides", { method: "GET" })
-    .then(({ hero_slides }) => hero_slides ?? [])
+    .fetch<{ slides: any[] }>("/store/hero-slides", { method: "GET" })
+    .then(({ slides }) => {
+      if (!slides) return []
+      return slides.map((s) => ({
+        id: s.id,
+        image: resolveImageSource(s.background_image || s.side_image),
+        title: s.title || undefined,
+        subtitle: s.description || undefined,
+        link: mapWebLinkToMobile(s.button_link),
+      }))
+    })
     .catch(() => null)
 }
 
