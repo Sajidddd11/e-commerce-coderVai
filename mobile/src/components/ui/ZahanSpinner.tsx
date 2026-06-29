@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 interface ZahanSpinnerProps {
   size?: number;
@@ -18,7 +18,7 @@ export function ZahanSpinner({ size = 48 }: ZahanSpinnerProps) {
 
   useEffect(() => {
     rotation.value = withRepeat(
-      withTiming(360, { duration: 1000, easing: Easing.linear }),
+      withTiming(360, { duration: 500, easing: Easing.linear }),
       -1,
       false
     );
@@ -46,13 +46,22 @@ export function ZahanSpinner({ size = 48 }: ZahanSpinnerProps) {
       {/* Rotating White Dash border around the black circle */}
       <Animated.View style={spinnerStyle}>
         <Svg viewBox="0 0 478.7 478.7" width={size} height={size}>
-          <Circle 
-            cx="239.35" cy="239.35" r="215" 
-            stroke="#fff" 
-            strokeWidth="24" 
-            fill="transparent" 
-            strokeDasharray="200 1000" 
-            strokeLinecap="round" 
+          <Defs>
+            <LinearGradient
+              id="spinnerGrad"
+              x1="239.35"
+              y1="10"
+              x2="25.35"
+              y2="239.35"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0%" stopColor="#fff" stopOpacity={1} />
+              <Stop offset="100%" stopColor="#fff" stopOpacity={0.1} />
+            </LinearGradient>
+          </Defs>
+          <Path
+            d="M 239.35,10.35 A 224.5,224.5 0 1,1 19.35,239.35 A 3,3 0 0,1 25.35,239.35 A 209.5,209.5 0 1,0 239.35,34.35 A 12,12 0 0,1 239.35,10.35 Z"
+            fill="url(#spinnerGrad)"
           />
         </Svg>
       </Animated.View>

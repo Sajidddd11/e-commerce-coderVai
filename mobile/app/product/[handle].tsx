@@ -69,6 +69,8 @@ export default function ProductScreen() {
   const [options, setOptions] = useState<Record<string, string>>({})
   const [rating, setRating] = useState<number | null>(null)
   const [reviewCount, setReviewCount] = useState<number>(0)
+  const [isAdding, setIsAdding] = useState(false)
+  const [isBuying, setIsBuying] = useState(false)
 
   useEffect(() => {
     if (!region?.id || !handle) return
@@ -217,6 +219,7 @@ export default function ProductScreen() {
       Alert.alert("Select options", "Please choose your preferred options first.")
       return
     }
+    setIsAdding(true)
     try {
       await addChosen(chosen)
 
@@ -226,6 +229,8 @@ export default function ProductScreen() {
       ])
     } catch {
       Alert.alert("Error", "Could not add to cart. Please try again.")
+    } finally {
+      setIsAdding(false)
     }
   }
 
@@ -236,6 +241,7 @@ export default function ProductScreen() {
       Alert.alert("Select options", "Please choose your preferred options first.")
       return
     }
+    setIsBuying(true)
     try {
       await clearCart()
       await addChosen(chosen)
@@ -243,6 +249,8 @@ export default function ProductScreen() {
       router.push("/checkout")
     } catch {
       Alert.alert("Error", "Could not process your request. Please try again.")
+    } finally {
+      setIsBuying(false)
     }
   }
 
@@ -389,7 +397,7 @@ export default function ProductScreen() {
           <ChevronLeft size={20} color={colors.slate[900]} />
         </Pressable>
         <View style={styles.loadingContainer}>
-          <ZahanSpinner size={64} />
+          <ZahanSpinner size={48} />
         </View>
       </Screen>
     )
@@ -538,27 +546,29 @@ export default function ProductScreen() {
           </Pressable>
 
           <Pressable
-            style={[styles.addBtn, isMutating && { opacity: 0.7 }]}
-            disabled={isMutating}
+            style={styles.addBtn}
+            disabled={isMutating || isAdding || isBuying}
             onPress={onAdd}
           >
             <ShoppingCart size={20} color={colors.brand.teal} />
-            <Text style={styles.addBtnText}>
-              {isMutating ? "Adding..." : "Add to Cart"}
-            </Text>
+            <Text style={styles.addBtnText}>Add to Cart</Text>
           </Pressable>
 
           <Pressable
-            style={[styles.buyNowBtn, isMutating && { opacity: 0.7 }]}
-            disabled={isMutating}
+            style={styles.buyNowBtn}
+            disabled={isMutating || isAdding || isBuying}
             onPress={onBuyNow}
           >
-            <Text style={styles.buyNowText}>
-              {isMutating ? "Processing..." : "Buy Now"}
-            </Text>
+            <Text style={styles.buyNowText}>Buy Now</Text>
           </Pressable>
         </View>
       ) : null}
+
+      {(isAdding || isBuying) && (
+        <View style={styles.overlayContainer}>
+          <ZahanSpinner size={48} />
+        </View>
+      )}
     </Screen>
   )
 }
@@ -572,6 +582,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
+  },
+  overlayContainer: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
   },
   imageOverlay: {
     ...StyleSheet.absoluteFill,
