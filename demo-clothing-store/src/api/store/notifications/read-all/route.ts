@@ -26,10 +26,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         if (notifications.length > 0) {
             await Promise.all(
                 notifications.map((n) =>
-                    notificationService.updateCustomerNotifications(
-                        n.id,
-                        { status: "read" as const }
-                    )
+                    notificationService.updateCustomerNotifications({
+                        id: n.id,
+                        status: "read" as const,
+                    })
                 )
             )
         }
