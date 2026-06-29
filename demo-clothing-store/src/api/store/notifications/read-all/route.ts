@@ -14,10 +14,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         return res.status(401).json({ message: "Unauthorized" })
     }
 
-    const notificationService: CustomerNotificationModuleService =
-        req.scope.resolve(CUSTOMER_NOTIFICATION_MODULE)
-
     try {
+        // Keep resolve inside try-catch — if the module isn't registered it throws
+        // a non-MedusaError which would otherwise escape to Medusa's global handler
+        // and return {"code":"unknown_error","type":"unknown_error","message":"An unknown error occurred."}
+        const notificationService: CustomerNotificationModuleService =
+            req.scope.resolve(CUSTOMER_NOTIFICATION_MODULE)
+
         const notifications = await notificationService.listCustomerNotifications({
             customer_id: customerId,
             status: "unread",
@@ -36,9 +39,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
         res.json({ success: true, count: notifications.length })
     } catch (error: any) {
+        console.error("[Notifications] markAllAsRead error:", error)
         res.status(500).json({
             message: "Error marking all notifications as read",
-            error: error.message,
+            error: error.message ?? String(error),
         })
     }
 }

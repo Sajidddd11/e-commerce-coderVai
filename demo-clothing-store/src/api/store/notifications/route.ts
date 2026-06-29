@@ -9,9 +9,9 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         return res.status(401).json({ message: "Unauthorized" })
     }
 
-    const notificationService: CustomerNotificationModuleService = req.scope.resolve(CUSTOMER_NOTIFICATION_MODULE)
-
     try {
+        const notificationService: CustomerNotificationModuleService = req.scope.resolve(CUSTOMER_NOTIFICATION_MODULE)
+
         const notifications = await notificationService.listCustomerNotifications(
             { customer_id: customerId },
             {
@@ -22,12 +22,14 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
         res.json({ notifications })
     } catch (error: any) {
+        console.error("[Notifications] list error:", error)
         res.status(500).json({
             message: "Error fetching notifications",
-            error: error.message,
+            error: error.message ?? String(error),
         })
     }
 }
+
 
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const customerId = (req as any).auth_context?.actor_id
@@ -36,9 +38,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         return res.status(401).json({ message: "Unauthorized" })
     }
 
-    const notificationService: CustomerNotificationModuleService = req.scope.resolve(CUSTOMER_NOTIFICATION_MODULE)
-
     try {
+        const notificationService: CustomerNotificationModuleService = req.scope.resolve(CUSTOMER_NOTIFICATION_MODULE)
+
         const notifications = await notificationService.listCustomerNotifications({
             customer_id: customerId,
             status: "unread",
@@ -57,9 +59,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
         res.json({ success: true, count: notifications.length })
     } catch (error: any) {
+        console.error("[Notifications] markAllAsRead error:", error)
         res.status(500).json({
             message: "Error marking all notifications as read",
-            error: error.message,
+            error: error.message ?? String(error),
         })
     }
 }
+
