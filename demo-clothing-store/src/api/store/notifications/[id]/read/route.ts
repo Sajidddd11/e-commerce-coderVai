@@ -19,10 +19,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             return res.status(404).json({ message: "Notification not found" })
         }
 
-        const updated = await notificationService.updateCustomerNotifications({
+        const updated = await notificationService.updateCustomerNotifications(
             id,
-            status: "read" as const,
-        })
+            { status: "read" as const }
+        )
 
         res.json({ success: true, notification: updated })
     } catch (error: any) {
