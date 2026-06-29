@@ -14,6 +14,7 @@ import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@utils/sort-products"
 import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
+import { Input } from "@components/ui/Input"
 
 const SORT_OPTIONS: { key: SortOptions; label: string }[] = [
   { key: "created_at", label: "Latest" },
@@ -27,8 +28,17 @@ interface FilterBottomSheetProps {
   onClose: () => void
   categories: HttpTypes.StoreProductCategory[]
   initialSortBy: SortOptions
-  initialCategory: string | null
-  onApply: (sortBy: SortOptions, category: string | null) => void
+  initialCategory?: string | null
+  initialCategories?: string[]
+  initialPriceMin?: number | null
+  initialPriceMax?: number | null
+  onApply: (
+    sortBy: SortOptions,
+    category: string | null,
+    priceMin: number | null,
+    priceMax: number | null,
+    categories?: string[]
+  ) => void
 }
 
 export function FilterBottomSheet({
@@ -36,27 +46,47 @@ export function FilterBottomSheet({
   onClose,
   categories,
   initialSortBy,
-  initialCategory,
+  initialCategory = null,
+  initialCategories = [],
+  initialPriceMin = null,
+  initialPriceMax = null,
   onApply,
 }: FilterBottomSheetProps) {
   const [sortBy, setSortBy] = useState<SortOptions>(initialSortBy)
-  const [category, setCategory] = useState<string | null>(initialCategory)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [priceMin, setPriceMin] = useState<string>("")
+  const [priceMax, setPriceMax] = useState<string>("")
 
   useEffect(() => {
     if (visible) {
       setSortBy(initialSortBy)
-      setCategory(initialCategory)
+      
+      if (initialCategories && initialCategories.length > 0) {
+        setSelectedCategories(initialCategories)
+      } else if (initialCategory) {
+        setSelectedCategories([initialCategory])
+      } else {
+        setSelectedCategories([])
+      }
+
+      setPriceMin(initialPriceMin !== null ? String(initialPriceMin) : "")
+      setPriceMax(initialPriceMax !== null ? String(initialPriceMax) : "")
     }
-  }, [visible, initialSortBy, initialCategory])
+  }, [visible, initialSortBy, initialCategory, initialCategories, initialPriceMin, initialPriceMax])
 
   const handleApply = () => {
-    onApply(sortBy, category)
+    const minVal = priceMin.trim() ? parseFloat(priceMin) : null
+    const maxVal = priceMax.trim() ? parseFloat(priceMax) : null
+    const singleCategory = selectedCategories.length > 0 ? selectedCategories[0] : null
+    onApply(sortBy, singleCategory, minVal, maxVal, selectedCategories)
     onClose()
   }
 
   const handleReset = () => {
     setSortBy("created_at")
-    setCategory(null)
+    setSelectedCategories([])
+    setPriceMin("")
+    setPriceMax("")
   }
 
   return (
@@ -105,11 +135,17 @@ export function FilterBottomSheet({
                 <Text style={styles.sectionTitle}>Category</Text>
                 <View style={styles.optionsGrid}>
                   {categories.map((cat) => {
-                    const active = category === cat.id
+                    const active = selectedCategories.includes(cat.id)
                     return (
                       <Pressable
                         key={cat.id}
-                        onPress={() => setCategory(active ? null : cat.id)}
+                        onPress={() => {
+                          if (active) {
+                            setSelectedCategories(selectedCategories.filter((id) => id !== cat.id))
+                          } else {
+                            setSelectedCategories([...selectedCategories, cat.id])
+                          }
+                        }}
                         style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
                       >
                         <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>
@@ -121,6 +157,32 @@ export function FilterBottomSheet({
                 </View>
               </>
             )}
+
+            {/* Price Range Section */}
+            <Text style={styles.sectionTitle}>Price Range (BDT)</Text>
+            <View style={styles.priceRow}>
+              <View style={styles.priceInputContainer}>
+                <Input
+                  placeholder="Min"
+                  value={priceMin}
+                  onChangeText={setPriceMin}
+                  keyboardType="numeric"
+                  containerStyle={{ width: "100%" }}
+                  style={styles.priceInput}
+                />
+              </View>
+              <Text style={styles.priceSeparator}>—</Text>
+              <View style={styles.priceInputContainer}>
+                <Input
+                  placeholder="Max"
+                  value={priceMax}
+                  onChangeText={setPriceMax}
+                  keyboardType="numeric"
+                  containerStyle={{ width: "100%" }}
+                  style={styles.priceInput}
+                />
+              </View>
+            </View>
           </ScrollView>
 
           <View style={styles.footer}>
@@ -177,7 +239,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.base,
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
   sectionTitle: {
     fontFamily: fontFamily.interMedium,
@@ -214,6 +276,23 @@ const styles = StyleSheet.create({
   },
   chipTextInactive: {
     color: colors.grey[60],
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  priceInputContainer: {
+    flex: 1,
+  },
+  priceInput: {
+    minHeight: 40,
+    paddingVertical: 8,
+  },
+  priceSeparator: {
+    color: colors.grey[40],
+    fontSize: fontSize.sm,
+    fontFamily: fontFamily.interMedium,
   },
   footer: {
     flexDirection: "row",

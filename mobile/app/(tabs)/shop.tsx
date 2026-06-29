@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, Text } from "react-native"
+import { View, Pressable, StyleSheet, Text, ScrollView } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
@@ -40,7 +40,7 @@ export default function ShopScreen() {
   const [categories, setCategories] = useState<
     HttpTypes.StoreProductCategory[]
   >([])
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [activeCategories, setActiveCategories] = useState<string[]>([])
   
   // Initialize state directly from sortParam if present on mount
   const [sortBy, setSortBy] = useState<SortOptions>(() => {
@@ -49,6 +49,9 @@ export default function ShopScreen() {
     }
     return "created_at"
   })
+
+  const [priceMin, setPriceMin] = useState<number | null>(null)
+  const [priceMax, setPriceMax] = useState<number | null>(null)
 
   const [searchInput, setSearchInput] = useState("")
   const [query, setQuery] = useState("")
@@ -104,11 +107,11 @@ export default function ShopScreen() {
 
   useEffect(() => {
     if (categoryParam && categories.length > 0) {
-      const match = categories.find(
-        (c) => c.handle === categoryParam || c.id === categoryParam
-      )
-      if (match) {
-        setActiveCategory(match.id)
+      const matches = categories
+        .filter((c) => c.handle === categoryParam || c.id === categoryParam)
+        .map((c) => c.id)
+      if (matches.length > 0) {
+        setActiveCategories(matches)
       }
     }
   }, [categoryParam, categories])
@@ -118,13 +121,17 @@ export default function ShopScreen() {
       const requestId = ++requestCountRef.current
       const queryParams: Record<string, unknown> = { limit: PAGE_SIZE }
       if (query) queryParams.q = query
-      if (activeCategory) queryParams.category_id = [activeCategory]
+      if (activeCategories.length > 0) {
+        queryParams.category_id = activeCategories
+      }
 
       const { response, nextPage } = await listProductsWithSort({
         page: pageToLoad,
         countryCode,
         sortBy,
         queryParams,
+        priceMin: priceMin !== null ? priceMin : undefined,
+        priceMax: priceMax !== null ? priceMax : undefined,
       })
 
       // If a newer request has been started since this one resolved, ignore this response
@@ -137,7 +144,7 @@ export default function ShopScreen() {
         replace ? response.products : [...prev, ...response.products]
       )
     },
-    [countryCode, sortBy, query, activeCategory]
+    [countryCode, sortBy, query, activeCategories, priceMin, priceMax]
   )
 
   useEffect(() => {
@@ -161,6 +168,16 @@ export default function ShopScreen() {
       setLoadingMore(false)
     })
   }, [hasMore, loading, page, fetchPage])
+
+  const activeCategoryObjects = categories.filter((c) => activeCategories.includes(c.id))
+  const hasActiveFilters = activeCategories.length > 0 || priceMin !== null || priceMax !== null || sortBy !== "created_at"
+
+  const clearAllFilters = () => {
+    setActiveCategories([])
+    setSortBy("created_at")
+    setPriceMin(null)
+    setPriceMax(null)
+  }
 
   return (
     <Screen background="white">
@@ -193,7 +210,7 @@ export default function ShopScreen() {
                   setShowSuggestions(false)
                   const match = categories.find((c) => c.handle === handle)
                   if (match) {
-                    setActiveCategory(match.id)
+                    setActiveCategories([match.id])
                   }
                 }}
                 onSelectCollection={(title) => runSearch(title)}
@@ -209,6 +226,64 @@ export default function ShopScreen() {
             <ThemedText variant="sectionHeading" color={colors.grey[90]}>
               Results for "{query}"
             </ThemedText>
+          </View>
+        ) : null}
+
+        {/* Active Filters Row */}
+        {hasActiveFilters ? (
+          <View style={styles.activeFiltersRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.activeFiltersScroll}>
+              <Text style={styles.activeFiltersLabel}>Filters:</Text>
+              
+              {/* Category chips */}
+              {activeCategoryObjects.map((cat) => (
+                <View key={cat.id} style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>Category: {cat.name}</Text>
+                  <Pressable
+                    onPress={() => setActiveCategories(activeCategories.filter((id) => id !== cat.id))}
+                    style={styles.chipRemoveBtn}
+                    hitSlop={6}
+                  >
+                    <Text style={styles.chipRemoveText}>✕</Text>
+                  </Pressable>
+                </View>
+              ))}
+
+              {/* Price range chip */}
+              {(priceMin !== null || priceMax !== null) && (
+                <View style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>
+                    Price: {priceMin !== null ? `${priceMin} BDT` : "0 BDT"} — {priceMax !== null ? `${priceMax} BDT` : "Any"}
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      setPriceMin(null)
+                      setPriceMax(null)
+                    }}
+                    style={styles.chipRemoveBtn}
+                    hitSlop={6}
+                  >
+                    <Text style={styles.chipRemoveText}>✕</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              {/* Sort chip */}
+              {sortBy !== "created_at" && (
+                <View style={styles.activeChip}>
+                  <Text style={styles.activeChipText}>
+                    Sort: {sortBy === "best_selling" ? "Best Selling" : sortBy === "price_asc" ? "Price ↑" : "Price ↓"}
+                  </Text>
+                  <Pressable onPress={() => setSortBy("created_at")} style={styles.chipRemoveBtn} hitSlop={6}>
+                    <Text style={styles.chipRemoveText}>✕</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              <Pressable onPress={clearAllFilters} style={styles.clearAllBtn} hitSlop={8}>
+                <Text style={styles.clearAllText}>Clear All</Text>
+              </Pressable>
+            </ScrollView>
           </View>
         ) : null}
       </View>
@@ -238,10 +313,14 @@ export default function ShopScreen() {
         onClose={() => setFilterVisible(false)}
         categories={categories}
         initialSortBy={sortBy}
-        initialCategory={activeCategory}
-        onApply={(newSortBy, newCategory) => {
+        initialCategories={activeCategories}
+        initialPriceMin={priceMin}
+        initialPriceMax={priceMax}
+        onApply={(newSortBy, newCategory, minPrice, maxPrice, categoriesList) => {
           setSortBy(newSortBy)
-          setActiveCategory(newCategory)
+          setActiveCategories(categoriesList || [])
+          setPriceMin(minPrice)
+          setPriceMax(maxPrice)
         }}
       />
     </Screen>
@@ -314,5 +393,60 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: "center",
     paddingVertical: 64, // py-16
+  },
+  activeFiltersRow: {
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  activeFiltersScroll: {
+    paddingHorizontal: spacing.md,
+    alignItems: "center",
+    gap: 8,
+  },
+  activeFiltersLabel: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.xs,
+    color: colors.grey[50],
+    marginRight: 4,
+  },
+  activeChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.grey[10],
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 9999,
+    paddingLeft: 10,
+    paddingRight: 6,
+    paddingVertical: 4,
+    gap: 6,
+  },
+  activeChipText: {
+    fontFamily: fontFamily.interMedium,
+    fontSize: fontSize.xs,
+    color: colors.grey[80],
+  },
+  chipRemoveBtn: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.grey[30],
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  chipRemoveText: {
+    fontSize: 8,
+    color: colors.grey[70],
+    fontWeight: "bold",
+  },
+  clearAllBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  clearAllText: {
+    fontFamily: fontFamily.interSemiBold,
+    fontSize: fontSize.xs,
+    color: colors.brand.teal,
   },
 })

@@ -18,6 +18,7 @@ import { HttpTypes } from "@medusajs/types"
 import Markdown from "react-native-markdown-display"
 import { Screen } from "@components/layout/Screen"
 import { Skeleton } from "@components/ui/Skeleton"
+import { ZahanSpinner } from "@components/ui/ZahanSpinner"
 import { ProductPrice } from "@components/product/ProductPrice"
 import { ProductReviews } from "@components/product/ProductReviews"
 import { ProductRail } from "@components/product/ProductRail"
@@ -72,6 +73,7 @@ export default function ProductScreen() {
   useEffect(() => {
     if (!region?.id || !handle) return
     setLoading(true)
+    setProduct(null)
     setRelatedRows([])
     getProductByHandle(handle, region.id)
       .then((p) => {
@@ -380,6 +382,19 @@ export default function ProductScreen() {
     )
   }
 
+  if (loading || !product) {
+    return (
+      <Screen edges={["top"]} background="white">
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <ChevronLeft size={20} color={colors.slate[900]} />
+        </Pressable>
+        <View style={styles.loadingContainer}>
+          <ZahanSpinner size={64} />
+        </View>
+      </Screen>
+    )
+  }
+
   return (
     <Screen edges={["top"]} background="white">
       <ScrollView
@@ -551,6 +566,12 @@ export default function ProductScreen() {
 const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 140, // pb-35
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
   },
   imageOverlay: {
     ...StyleSheet.absoluteFill,
