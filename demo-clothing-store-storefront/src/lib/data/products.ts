@@ -12,11 +12,13 @@ export const listProducts = async ({
   queryParams,
   countryCode,
   regionId,
+  sortBy,
 }: {
   pageParam?: number
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductListParams
   countryCode?: string
   regionId?: string
+  sortBy?: string
 }): Promise<{
   response: { products: HttpTypes.StoreProduct[]; count: number }
   nextPage: number | null
@@ -54,9 +56,12 @@ export const listProducts = async ({
     revalidate: 60, // Revalidate every 60 seconds
   }
 
+  const isBestSelling = sortBy === "best_selling" || sortBy === "popularity"
+  const endpoint = isBestSelling ? "/store/best-selling" : "/store/products"
+
   return sdk.client
     .fetch<{ products: HttpTypes.StoreProduct[]; count: number }>(
-      `/store/products`,
+      endpoint,
       {
         method: "GET",
         query: {
@@ -94,11 +99,15 @@ export const listProductsWithSort = async ({
   queryParams,
   sortBy = "created_at",
   countryCode,
+  priceMin,
+  priceMax,
 }: {
   page?: number
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
   sortBy?: SortOptions
   countryCode: string
+  priceMin?: number
+  priceMax?: number
 }): Promise<{
   response: { products: HttpTypes.StoreProduct[]; count: number }
   nextPage: number | null
@@ -107,7 +116,7 @@ export const listProductsWithSort = async ({
   const limit = queryParams?.limit || 12
 
   const {
-    response: { products, count },
+    response: { products },
   } = await listProducts({
     pageParam: 0,
     queryParams: {
@@ -115,9 +124,29 @@ export const listProductsWithSort = async ({
       limit: 100,
     },
     countryCode,
+    sortBy,
   })
 
-  const sortedProducts = sortProducts(products, sortBy)
+  // Filter products by price client-side
+  let filteredProducts = products
+  if (priceMin !== undefined || priceMax !== undefined) {
+    filteredProducts = products.filter((product) => {
+      const minPrice = product.variants && product.variants.length > 0
+        ? Math.min(
+            ...product.variants.map(
+              (variant) => variant?.calculated_price?.calculated_amount || 0
+            )
+          )
+        : 0
+      
+      if (priceMin !== undefined && minPrice < priceMin) return false
+      if (priceMax !== undefined && minPrice > priceMax) return false
+      return true
+    })
+  }
+
+  const count = filteredProducts.length
+  const sortedProducts = sortProducts(filteredProducts, sortBy)
 
   const pageParam = (page - 1) * limit
 

@@ -1,25 +1,31 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
+import { listCategories } from "@lib/data/categories"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
-import RefinementList from "@modules/store/components/refinement-list"
+import FilterPanelClient from "@modules/store/components/filter-panel/filter-panel-client"
+import ActiveFilters from "@modules/store/components/active-filters"
 import MobileFilterDropdown from "@modules/store/components/mobile-filter-dropdown"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 
-export default function CategoryTemplate({
+export default async function CategoryTemplate({
   category,
   sortBy,
   page,
   countryCode,
+  priceMin,
+  priceMax,
 }: {
   category: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  priceMin?: number
+  priceMax?: number
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
@@ -36,6 +42,17 @@ export default function CategoryTemplate({
   }
 
   getParents(category)
+
+  // Fetch all categories for the filter panel
+  let categories: any[] = []
+  try {
+    const allCategories = await listCategories({ limit: 100 })
+    categories = allCategories
+      .filter((cat) => cat.products && cat.products.length > 0)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+  } catch (e) {
+    // Ignore
+  }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-white to-grey-5">
@@ -106,13 +123,16 @@ export default function CategoryTemplate({
         <div className="flex flex-col small:flex-row gap-8">
           {/* Sidebar - Filters - Desktop only */}
           <div className="hidden small:block w-full small:w-64 flex-shrink-0">
-            <div className="sticky top-20 bg-white rounded-lg p-6 border border-grey-20">
-              <RefinementList sortBy={sort} data-testid="sort-by-container" />
+            <div className="sticky top-20 bg-white rounded-xl p-6 border border-grey-20 shadow-sm">
+              <FilterPanelClient categories={categories} />
             </div>
           </div>
 
           {/* Main Content - Products */}
           <div className="flex-1">
+            {/* Active Filters chip bar */}
+            <ActiveFilters categories={categories} />
+
             <Suspense
               fallback={
                 <SkeletonProductGrid
@@ -125,6 +145,8 @@ export default function CategoryTemplate({
                 page={pageNumber}
                 categoryId={category.id}
                 countryCode={countryCode}
+                priceMin={priceMin}
+                priceMax={priceMax}
               />
             </Suspense>
           </div>

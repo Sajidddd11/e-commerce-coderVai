@@ -15,7 +15,9 @@ type Params = {
     sortBy?: SortOptions
     page?: string
     search?: string
-    category?: string
+    category?: string // comma-separated category IDs
+    priceMin?: string
+    priceMax?: string
   }>
   params: Promise<{
     countryCode: string
@@ -25,7 +27,10 @@ type Params = {
 export default async function StorePage(props: Params) {
   const params = await props.params;
   const searchParams = await props.searchParams;
-  const { sortBy, page, search, category } = searchParams
+  const { sortBy, page, search, category, priceMin, priceMax } = searchParams
+
+  // Parse comma-separated category IDs
+  const categoryIds = category ? category.split(",").filter(Boolean) : undefined
 
   return (
     <StoreTemplate
@@ -33,7 +38,9 @@ export default async function StorePage(props: Params) {
       page={page}
       countryCode={params.countryCode}
       search={search}
-      categoryId={category}
+      categoryIds={categoryIds}
+      priceMin={priceMin ? parseFloat(priceMin) : undefined}
+      priceMax={priceMax ? parseFloat(priceMax) : undefined}
     />
   )
 }
