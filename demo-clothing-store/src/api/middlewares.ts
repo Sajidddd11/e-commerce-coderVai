@@ -72,6 +72,13 @@ export default defineMiddlewares({
         authenticate("customer", ["session", "bearer"]),
       ],
     },
+    // Authenticate storefront notifications endpoints
+    {
+      matcher: "/store/notifications*",
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+      ],
+    },
     // Add publishable key for SSLCommerz callbacks
     {
       matcher: /^\/store\/sslcommerz\/(success|fail|cancel|ipn)/,

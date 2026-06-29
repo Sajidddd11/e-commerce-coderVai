@@ -55,6 +55,10 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/blog",
     },
+    // Customer Notification Module - Custom module for managing in-app notifications
+    {
+      resolve: "./src/modules/customer-notification",
+    },
     // Loyalty Module - Custom reward points system
     {
       resolve: "./src/modules/loyalty",

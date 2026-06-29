@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { colors, spacing } from "@design/theme"
 import { fontFamily, fontSize } from "@design/typography"
 import { ProductSearchBar } from "@components/search/ProductSearchBar"
+import { useNotificationStore } from "@stores/notification-store"
+import { useAuthStore } from "@stores/auth-store"
 
 interface HeaderProps {
   showSearch?: boolean
@@ -29,6 +31,19 @@ export function Header({
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const [locationName, setLocationName] = useState("Locating...")
+
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const { unreadCount, fetchNotifications } = useNotificationStore()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchNotifications()
+      const interval = setInterval(() => {
+        fetchNotifications().catch(() => {})
+      }, 60000)
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated])
 
   useEffect(() => {
     (async () => {
@@ -119,9 +134,16 @@ export function Header({
           </View>
         </View>
 
-        <Pressable style={styles.notificationBtn}>
+        <Pressable 
+          style={styles.notificationBtn}
+          onPress={() => router.push("/notifications")}
+        >
           <Bell size={20} color="white" />
-          <View style={styles.notificationBadge} />
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.badgeText}>{unreadCount > 9 ? "9+" : unreadCount}</Text>
+            </View>
+          )}
         </Pressable>
       </Animated.View>
 
@@ -179,13 +201,22 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -2,
+    right: -2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: colors.sale,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 2,
     borderWidth: 1,
     borderColor: colors.brand.teal,
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 9,
+    fontFamily: fontFamily.interBold,
+    textAlign: "center",
   },
 })
