@@ -23,7 +23,7 @@
       }
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 7,
       "userInterfaceStyle": "light",
       "package": "com.zahan.store",
       "intentFilters": [

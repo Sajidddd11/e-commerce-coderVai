@@ -6,34 +6,42 @@
   const LOGO_URL = 'assets/zahan-logo.png'; // Logo in admin assets folder
 
   function replaceMedusaText() {
-    // Find all text nodes and headings
-    const walker = document.createTreeWalker(
-      document.body,
-      NodeFilter.SHOW_TEXT,
-      null,
-      false
-    );
+    // Only search and replace text nodes on the login page to avoid massive performance penalty
+    if (/\/login\/?$/.test(window.location.pathname)) {
+      // Find all text nodes and headings
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
 
-    const textNodes = [];
-    let node;
-    while (node = walker.nextNode()) {
-      if (node.nodeValue && node.nodeValue.includes('Medusa')) {
-        textNodes.push(node);
+      const textNodes = [];
+      let node;
+      while (node = walker.nextNode()) {
+        if (node.nodeValue && node.nodeValue.includes('Medusa')) {
+          textNodes.push(node);
+        }
       }
+
+      // Replace text in all found nodes
+      textNodes.forEach(textNode => {
+        textNode.nodeValue = textNode.nodeValue.replace(/Medusa/g, BRAND_NAME);
+      });
     }
 
-    // Replace text in all found nodes
-    textNodes.forEach(textNode => {
-      textNode.nodeValue = textNode.nodeValue.replace(/Medusa/g, BRAND_NAME);
-    });
-
-    // Also update page title if it contains Medusa
+    // Also update page title if it contains Medusa (safe to run on all pages)
     if (document.title.includes('Medusa')) {
       document.title = document.title.replace(/Medusa/g, BRAND_NAME);
     }
   }
 
   function replaceLogo() {
+    // Only replace logo on the login page to avoid replacing custom/other SVGs in dashboard pages (like Courier Settings)
+    if (!/\/login\/?$/.test(window.location.pathname)) {
+      return;
+    }
+
     // Find the Medusa logo (SVG icon on login page)
     const svgIcons = document.querySelectorAll('svg');
 
