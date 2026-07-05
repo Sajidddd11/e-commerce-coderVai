@@ -147,6 +147,8 @@ const DeleteHistoryPage = () => {
     const [page, setPage] = useState(0)
     const [filter, setFilter] = useState("all")
     const [actionFilter, setActionFilter] = useState("all")
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
     const [search, setSearch] = useState("")
     const limit = 30
 
@@ -159,6 +161,8 @@ const DeleteHistoryPage = () => {
             })
             if (filter !== "all") params.set("entity_type", filter)
             if (actionFilter !== "all") params.set("action", actionFilter)
+            if (startDate) params.set("start_date", startDate)
+            if (endDate) params.set("end_date", endDate)
 
             const res = await fetch(`/admin/delete-history?${params}`, { credentials: "include" })
             const data = await res.json()
@@ -169,10 +173,10 @@ const DeleteHistoryPage = () => {
         } finally {
             setLoading(false)
         }
-    }, [page, filter, actionFilter])
+    }, [page, filter, actionFilter, startDate, endDate])
 
     useEffect(() => { fetchLogs() }, [fetchLogs])
-    useEffect(() => { setPage(0) }, [filter, actionFilter])
+    useEffect(() => { setPage(0) }, [filter, actionFilter, startDate, endDate])
 
     // Client-side search
     const visible = search.trim()
@@ -206,7 +210,7 @@ const DeleteHistoryPage = () => {
             </div>
 
             {/* ── Filters ── */}
-            <div className="flex gap-2.5 mb-4 flex-wrap">
+            <div className="flex gap-2.5 mb-4 flex-wrap items-center">
                 <input
                     type="text"
                     placeholder="Search by name, email, ID…"
@@ -236,6 +240,38 @@ const DeleteHistoryPage = () => {
                     <option value="update">Edit / Update</option>
                     <option value="delete">Delete</option>
                 </select>
+
+                <div className="flex items-center gap-1.5 px-3 py-1.5 border border-ui-border-base rounded-lg bg-ui-bg-base">
+                    <span className="text-[11px] font-medium text-ui-fg-muted">From</span>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="text-[12px] text-ui-fg-base outline-none bg-transparent border-0 cursor-pointer p-0"
+                    />
+                </div>
+
+                <div className="flex items-center gap-1.5 px-3 py-1.5 border border-ui-border-base rounded-lg bg-ui-bg-base">
+                    <span className="text-[11px] font-medium text-ui-fg-muted">To</span>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="text-[12px] text-ui-fg-base outline-none bg-transparent border-0 cursor-pointer p-0"
+                    />
+                </div>
+
+                {(startDate || endDate) && (
+                    <button
+                        onClick={() => {
+                            setStartDate("")
+                            setEndDate("")
+                        }}
+                        className="px-2 py-1.5 text-[12px] font-semibold text-ui-fg-muted hover:text-ui-fg-base transition-colors duration-150 cursor-pointer"
+                    >
+                        Clear Date
+                    </button>
+                )}
 
                 <button
                     onClick={fetchLogs}
