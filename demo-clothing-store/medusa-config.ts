@@ -75,10 +75,6 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/hero",
     },
-    // App Hero Module - Separate hero slider for the mobile app with app-specific link types
-    {
-      resolve: "./src/modules/app_hero",
-    },
     // Bulk Order Module - Custom module for managing bulk-available products
     {
       resolve: "./src/modules/bulk",

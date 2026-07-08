@@ -12,11 +12,50 @@ const SLIDE_TYPES = [
     { value: "static_image", label: "Static Image (Full Width)" },
 ]
 
+const LINK_TYPES = [
+    { value: "none",         label: "None (Decorative)",     needsValue: false, valueLabel: "",            loadKey: "" },
+    { value: "shop",         label: "Shop — All Products",   needsValue: false, valueLabel: "",            loadKey: "" },
+    { value: "new_arrivals", label: "Shop — New Arrivals",   needsValue: false, valueLabel: "",            loadKey: "" },
+    { value: "best_selling", label: "Shop — Best Selling",   needsValue: false, valueLabel: "",            loadKey: "" },
+    { value: "recommended",  label: "Recommended For You",   needsValue: false, valueLabel: "",            loadKey: "" },
+    { value: "category",     label: "Category Page",         needsValue: true,  valueLabel: "Category",    loadKey: "categories" },
+    { value: "collection",   label: "Collection Page",       needsValue: true,  valueLabel: "Collection",  loadKey: "collections" },
+    { value: "product",      label: "Product Page",          needsValue: true,  valueLabel: "Product",     loadKey: "products" },
+    { value: "search",       label: "Search Results",        needsValue: true,  valueLabel: "Search Query",loadKey: "search" },
+] as const
+
+const LINK_DESCRIPTIONS: Record<string, string> = {
+    none: "This slide has no tap destination. Good for brand awareness banners.",
+    shop: "Opens the main shop screen showing all products.",
+    new_arrivals: "Opens the shop screen sorted by newest arrivals.",
+    best_selling: "Opens the shop screen sorted by best-selling products.",
+    recommended: "Opens the shop screen filtered to personalised recommendations.",
+    category: "Opens the shop screen pre-filtered to the selected category.",
+    collection: "Opens the shop screen pre-filtered to the selected collection.",
+    product: "Goes directly to the selected product's detail page.",
+    search: "Opens shop with a pre-filled search query.",
+}
+
+const LINK_MAP = Object.fromEntries(LINK_TYPES.map((t) => [t.value, t]))
+
+interface LiveOption { value: string; label: string }
+
 const EditHeroSlidePage = () => {
     const { id } = useParams()
+
+    const [platforms, setPlatforms] = useState({
+        web: true,
+        app: false,
+    })
+
     const [formData, setFormData] = useState({
-        slide_type: "side_image_left",
+        // Shared fields
         title: "",
+        sort_order: 0,
+        is_active: true,
+
+        // Web fields
+        slide_type: "side_image_left",
         description: "",
         button_text: "",
         button_link: "",
@@ -24,18 +63,64 @@ const EditHeroSlidePage = () => {
         side_image: "",
         video_url: "",
         overlay_color: "",
-        sort_order: 0,
-        is_active: true,
+
+        // App fields
+        subtitle: "",
+        image: "",
+        link_type: "none",
+        link_value: "",
+        link_label: "",
     })
+
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploadingBg, setUploadingBg] = useState(false)
     const [uploadingSide, setUploadingSide] = useState(false)
     const [uploadingVideo, setUploadingVideo] = useState(false)
+    const [uploadingAppImage, setUploadingAppImage] = useState(false)
+
+    const [liveOptions, setLiveOptions] = useState<LiveOption[]>([])
+    const [loadingLive, setLoadingLive] = useState(false)
 
     useEffect(() => {
         fetchSlide()
     }, [id])
+
+    // Load live options for App Link Value picker
+    useEffect(() => {
+        if (!platforms.app) return
+
+        const def = LINK_MAP[formData.link_type]
+        if (!def || !def.needsValue || def.loadKey === "search" || def.loadKey === "") {
+            setLiveOptions([])
+            return
+        }
+        setLoadingLive(true)
+        ;(async () => {
+            try {
+                let options: LiveOption[] = []
+                if (def.loadKey === "categories") {
+                    const res = await fetch("/admin/product-categories?limit=200&fields=id,name,handle", { credentials: "include" })
+                    const data = await res.json()
+                    options = (data.product_categories || data.categories || []).map((c: any) => ({ value: c.handle, label: c.name }))
+                } else if (def.loadKey === "collections") {
+                    const res = await fetch("/admin/collections?limit=200&fields=id,title,handle", { credentials: "include" })
+                    const data = await res.json()
+                    options = (data.collections || []).map((c: any) => ({ value: c.handle, label: c.title }))
+                } else if (def.loadKey === "products") {
+                    const res = await fetch("/admin/products?limit=200&fields=id,title,handle&status=published", { credentials: "include" })
+                    const data = await res.json()
+                    options = (data.products || []).map((p: any) => ({ value: p.handle, label: p.title }))
+                }
+                setLiveOptions(options)
+            } catch (err) {
+                console.error("Failed to load live options", err)
+                setLiveOptions([])
+            } finally {
+                setLoadingLive(false)
+            }
+        })()
+    }, [formData.link_type, platforms.app])
 
     const fetchSlide = async () => {
         try {
@@ -44,9 +129,16 @@ const EditHeroSlidePage = () => {
             })
             const data = await response.json()
             if (data.slide) {
+                setPlatforms({
+                    web: data.slide.is_web ?? true,
+                    app: data.slide.is_app ?? false,
+                })
+
                 setFormData({
-                    slide_type: data.slide.slide_type || "side_image_left",
                     title: data.slide.title || "",
+                    sort_order: data.slide.sort_order ?? 0,
+                    is_active: data.slide.is_active ?? true,
+                    slide_type: data.slide.slide_type || "side_image_left",
                     description: data.slide.description || "",
                     button_text: data.slide.button_text || "",
                     button_link: data.slide.button_link || "",
@@ -54,8 +146,11 @@ const EditHeroSlidePage = () => {
                     side_image: data.slide.side_image || "",
                     video_url: data.slide.video_url || "",
                     overlay_color: data.slide.overlay_color || "",
-                    sort_order: data.slide.sort_order ?? 0,
-                    is_active: data.slide.is_active ?? true,
+                    subtitle: data.slide.subtitle || "",
+                    image: data.slide.image || "",
+                    link_type: data.slide.link_type || "none",
+                    link_value: data.slide.link_value || "",
+                    link_label: data.slide.link_label || "",
                 })
             }
         } catch (error) {
@@ -66,19 +161,19 @@ const EditHeroSlidePage = () => {
         }
     }
 
-    const MAX_IMAGE_SIZE = 500 * 1024        // 500 KB
-    const MAX_VIDEO_SIZE = 10 * 1024 * 1024  // 10 MB
+    const MAX_IMAGE_SIZE = 1 * 1024 * 1024 // 1 MB
+    const MAX_VIDEO_SIZE = 10 * 1024 * 1024 // 10 MB
 
     const handleFileUpload = async (
         file: File,
-        field: "background_image" | "side_image" | "video_url",
+        field: "background_image" | "side_image" | "video_url" | "image",
         setUploading: (v: boolean) => void
     ) => {
         const isVideo = field === "video_url"
         const limit = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
-        const limitLabel = isVideo ? "10 MB" : "500 KB"
+        const limitLabel = isVideo ? "10 MB" : "1 MB"
         if (file.size > limit) {
-            alert(`❌ File too large!\n\n"${file.name}" is ${(file.size / 1024).toFixed(1)} KB.\nMaximum allowed size is ${limitLabel}.\n\nPlease compress the file and try again.`)
+            alert(`❌ File too large!\n\n"${file.name}" is ${(file.size / 1024).toFixed(1)} KB.\nMaximum allowed size is ${limitLabel}.`)
             return
         }
 
@@ -108,16 +203,72 @@ const EditHeroSlidePage = () => {
         }
     }
 
+    const handleLinkTypeChange = (val: string) => {
+        setFormData((p) => ({ ...p, link_type: val, link_value: "", link_label: "" }))
+    }
+
+    const handleLiveSelect = (val: string) => {
+        const found = liveOptions.find((o) => o.value === val)
+        setFormData((p) => ({ ...p, link_value: val, link_label: found?.label ?? val }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!platforms.web && !platforms.app) {
+            alert("❌ Please select at least one platform (Web or Mobile App).")
+            return
+        }
+
+        if (platforms.web) {
+            if (formData.slide_type === "video" && !formData.video_url) {
+                alert("❌ Please upload a background video for the web storefront banner.")
+                return
+            }
+            if (formData.slide_type !== "video" && !formData.background_image) {
+                alert("❌ Please upload a background image for the web storefront banner.")
+                return
+            }
+        }
+
+        if (platforms.app && !formData.image.trim()) {
+            alert("❌ Please upload a mobile hero image for the app banner.")
+            return
+        }
+
         setSaving(true)
 
         try {
+            const payload = {
+                is_web: platforms.web,
+                is_app: platforms.app,
+                title: formData.title,
+                sort_order: formData.sort_order,
+                is_active: formData.is_active,
+
+                // Web fields (only if is_web is checked, else null/empty)
+                slide_type: platforms.web ? formData.slide_type : null,
+                description: platforms.web ? formData.description : null,
+                button_text: platforms.web ? formData.button_text : null,
+                button_link: platforms.web ? formData.button_link : null,
+                background_image: platforms.web ? formData.background_image : null,
+                side_image: platforms.web ? formData.side_image : null,
+                video_url: platforms.web ? formData.video_url : null,
+                overlay_color: platforms.web ? formData.overlay_color : null,
+
+                // App fields (only if is_app is checked, else null/empty)
+                subtitle: platforms.app ? formData.subtitle : null,
+                image: platforms.app ? formData.image : null,
+                link_type: platforms.app ? formData.link_type : "none",
+                link_value: platforms.app ? formData.link_value : null,
+                link_label: platforms.app ? formData.link_label : null,
+            }
+
             const response = await fetch(`/admin/hero-slides/${id}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             })
 
             if (response.ok) {
@@ -160,8 +311,8 @@ const EditHeroSlidePage = () => {
     if (loading) {
         return (
             <Container>
-                <div className="flex items-center justify-center h-64">
-                    <p>Loading...</p>
+                <div className="flex items-center justify-center h-64 bg-ui-bg-subtle rounded-xl border border-ui-border-base">
+                    <p className="text-ui-fg-muted font-medium animate-pulse">Loading...</p>
                 </div>
             </Container>
         )
@@ -175,6 +326,10 @@ const EditHeroSlidePage = () => {
     const showButton = formData.slide_type !== "static_image"
     const showOverlay = formData.slide_type === "video" || formData.slide_type === "center_text"
 
+    const activeAppDef = LINK_MAP[formData.link_type]
+    const appNeedsValue = activeAppDef?.needsValue
+    const appIsSearch = activeAppDef?.loadKey === "search"
+
     return (
         <Container>
             <div className="mb-6">
@@ -184,10 +339,15 @@ const EditHeroSlidePage = () => {
                     className="mb-4"
                 >
                     <ArrowLeft />
-                    Back to Hero Slides
+                    Back to Hero Banners
                 </Button>
                 <div className="flex items-center justify-between">
-                    <Heading level="h1">Edit Hero Slide</Heading>
+                    <div>
+                        <Heading level="h1">Edit Hero Slide</Heading>
+                        <p className="text-sm text-ui-fg-subtle mt-1">
+                            Modify slide platforms, styling, deep links, and display options.
+                        </p>
+                    </div>
                     <Button variant="danger" onClick={handleDelete}>
                         <Trash />
                         Delete Slide
@@ -195,102 +355,121 @@ const EditHeroSlidePage = () => {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Slide Type */}
+            <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Platform Toggles */}
                 <div>
-                    <Label htmlFor="slide_type" className="mb-2 block">
-                        Slide Type *
-                    </Label>
-                    <Select
-                        value={formData.slide_type}
-                        onValueChange={(value) =>
-                            setFormData((prev) => ({ ...prev, slide_type: value }))
-                        }
-                    >
-                        <Select.Trigger>
-                            <Select.Value placeholder="Select a slide type" />
-                        </Select.Trigger>
-                        <Select.Content>
-                            {SLIDE_TYPES.map((type) => (
-                                <Select.Item key={type.value} value={type.value}>
-                                    {type.label}
-                                </Select.Item>
-                            ))}
-                        </Select.Content>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">
-                        {formData.slide_type === "side_image_left" &&
-                            "Product/bottle image on the left, text on the right"}
-                        {formData.slide_type === "side_image_right" &&
-                            "Text on the left, product/bottle image on the right"}
-                        {formData.slide_type === "center_text" &&
-                            "Full background image with centered text overlay"}
-                        {formData.slide_type === "video" &&
-                            "Auto-playing background video with optional text overlay"}
-                        {formData.slide_type === "static_image" &&
-                            "Full-width image only, no text — great for promotional banners"}
-                    </p>
-                </div>
-
-                {/* Sort Order & Active */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="sort_order" className="mb-2 block">
-                            Sort Order
-                        </Label>
-                        <Input
-                            id="sort_order"
-                            type="number"
-                            value={formData.sort_order}
-                            onChange={(e) =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    sort_order: parseInt(e.target.value) || 0,
-                                }))
-                            }
-                            placeholder="0"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Lower numbers appear first</p>
-                    </div>
-                    <div className="flex items-end pb-1">
+                    <Label className="mb-2 block font-semibold text-ui-fg-base">Target Platforms</Label>
+                    <div className="flex flex-col sm:flex-row gap-4 p-4 bg-ui-bg-subtle rounded-xl border border-ui-border-base">
                         <div className="flex items-center gap-3">
                             <Switch
-                                id="is_active"
-                                checked={formData.is_active}
+                                id="platform-web"
+                                checked={platforms.web}
                                 onCheckedChange={(checked) =>
-                                    setFormData((prev) => ({ ...prev, is_active: checked }))
+                                    setPlatforms((prev) => ({ ...prev, web: checked }))
                                 }
                             />
-                            <Label htmlFor="is_active">Active (visible on storefront)</Label>
+                            <Label htmlFor="platform-web" className="font-medium cursor-pointer">💻 Show on Web Storefront</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Switch
+                                id="platform-app"
+                                checked={platforms.app}
+                                onCheckedChange={(checked) =>
+                                    setPlatforms((prev) => ({ ...prev, app: checked }))
+                                }
+                            />
+                            <Label htmlFor="platform-app" className="font-medium cursor-pointer">📱 Show on Mobile App</Label>
                         </div>
                     </div>
                 </div>
 
-                {/* Text Fields */}
-                {showTextField && (
-                    <div className="border-t pt-6">
-                        <Heading level="h2" className="mb-4">
-                            Text Content
-                        </Heading>
+                {/* Shared Config */}
+                <section className="bg-ui-bg-base p-6 rounded-2xl border border-ui-border-base space-y-4">
+                    <Heading level="h2">General Settings</Heading>
+                    <div>
+                        <Label htmlFor="title" className="mb-2 block">
+                            Title
+                        </Label>
+                        <Input
+                            id="title"
+                            value={formData.title}
+                            onChange={(e) =>
+                                setFormData((prev) => ({ ...prev, title: e.target.value }))
+                            }
+                            placeholder="e.g. New Season Arrivals"
+                        />
+                    </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="title" className="mb-2 block">
-                                    Title
-                                </Label>
-                                <Input
-                                    id="title"
-                                    value={formData.title}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({ ...prev, title: e.target.value }))
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="sort_order" className="mb-2 block">
+                                Sort Order
+                            </Label>
+                            <Input
+                                id="sort_order"
+                                type="number"
+                                value={formData.sort_order}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        sort_order: parseInt(e.target.value) || 0,
+                                    }))
+                                }
+                                placeholder="0"
+                            />
+                            <p className="text-xs text-ui-fg-subtle mt-1">Lower numbers appear first</p>
+                        </div>
+                        <div className="flex items-end pb-1">
+                            <div className="flex items-center gap-3">
+                                <Switch
+                                    id="is_active"
+                                    checked={formData.is_active}
+                                    onCheckedChange={(checked) =>
+                                        setFormData((prev) => ({ ...prev, is_active: checked }))
                                     }
-                                    placeholder="e.g. A Little Surprise"
                                 />
+                                <Label htmlFor="is_active">Active (Visible to users)</Label>
                             </div>
+                        </div>
+                    </div>
+                </section>
 
+                {/* Web Options */}
+                {platforms.web && (
+                    <section className="bg-ui-bg-base p-6 rounded-2xl border border-ui-border-base space-y-6">
+                        <div className="border-b pb-4 flex items-center gap-2">
+                            <Heading level="h2">💻 Web Storefront Configuration</Heading>
+                        </div>
+
+                        {/* Slide Type */}
+                        <div>
+                            <Label htmlFor="slide_type" className="mb-2 block">
+                                Slide Type *
+                            </Label>
+                            <Select
+                                value={formData.slide_type}
+                                onValueChange={(value) =>
+                                    setFormData((prev) => ({ ...prev, slide_type: value }))
+                                }
+                            >
+                                <Select.Trigger>
+                                    <Select.Value placeholder="Select a slide type" />
+                                </Select.Trigger>
+                                <Select.Content>
+                                    {SLIDE_TYPES.map((type) => (
+                                        <Select.Item key={type.value} value={type.value}>
+                                            {type.label}
+                                        </Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select>
+                        </div>
+
+                        {/* Description */}
+                        {showTextField && (
                             <div>
                                 <Label htmlFor="description" className="mb-2 block">
-                                    Description
+                                    Web Description
                                 </Label>
                                 <Textarea
                                     id="description"
@@ -301,264 +480,385 @@ const EditHeroSlidePage = () => {
                                             description: e.target.value,
                                         }))
                                     }
-                                    placeholder="A short description shown below the title"
+                                    placeholder="A short description shown below the title on web"
                                     rows={3}
                                 />
                             </div>
-                        </div>
-                    </div>
-                )}
+                        )}
 
-                {/* Button / Link */}
-                <div className="border-t pt-6">
-                    <Heading level="h2" className="mb-4">
-                        {showButton ? "Button" : "Link"}
-                    </Heading>
-                    {formData.slide_type === "static_image" && (
-                        <p className="text-sm text-gray-500 mb-3">
-                            Clicking the slide will navigate to this link
-                        </p>
-                    )}
-
-                    <div className={showButton ? "grid grid-cols-2 gap-4" : ""}>
+                        {/* Button Link / Text */}
                         {showButton && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="button_text" className="mb-2 block">
+                                        Button Text
+                                    </Label>
+                                    <Input
+                                        id="button_text"
+                                        value={formData.button_text}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                button_text: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="e.g. SHOP NOW"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="button_link" className="mb-2 block">
+                                        Button Link
+                                    </Label>
+                                    <Input
+                                        id="button_link"
+                                        value={formData.button_link}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                button_link: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="e.g. /collections/summer"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Static Image Destination link */}
+                        {!showButton && (
                             <div>
-                                <Label htmlFor="button_text" className="mb-2 block">
-                                    Button Text
+                                <Label htmlFor="button_link" className="mb-2 block">
+                                    Click Destination Link
                                 </Label>
                                 <Input
-                                    id="button_text"
-                                    value={formData.button_text}
+                                    id="button_link"
+                                    value={formData.button_link}
                                     onChange={(e) =>
                                         setFormData((prev) => ({
                                             ...prev,
-                                            button_text: e.target.value,
+                                            button_link: e.target.value,
                                         }))
                                     }
-                                    placeholder="e.g. DISCOVER"
+                                    placeholder="e.g. /store"
                                 />
                             </div>
                         )}
+
+                        {/* Background Image */}
+                        {showBackgroundImage && (
+                            <div>
+                                <Label className="mb-1 block font-medium">Background Image *</Label>
+                                <p className="text-xs text-ui-fg-subtle mb-3">Recommended size: <strong>1920×800 px</strong>, max 1 MB.</p>
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="background_image"
+                                        value={formData.background_image}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                background_image: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="Image URL or upload →"
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        disabled={uploadingBg}
+                                        onClick={() =>
+                                            document.getElementById("bg-upload-edit")?.click()
+                                        }
+                                    >
+                                        {uploadingBg ? "Uploading..." : "Upload"}
+                                    </Button>
+                                    <input
+                                        id="bg-upload-edit"
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: "none" }}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file)
+                                                handleFileUpload(file, "background_image", setUploadingBg)
+                                        }}
+                                    />
+                                </div>
+                                {formData.background_image && (
+                                    <div className="mt-3">
+                                        <img
+                                            src={formData.background_image}
+                                            alt="Background Preview"
+                                            className="h-32 object-cover rounded-lg border border-ui-border-base shadow-sm"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Side Image */}
+                        {showSideImage && (
+                            <div>
+                                <Label className="mb-1 block font-medium">Side Image (Product/Bottle)</Label>
+                                <p className="text-xs text-ui-fg-subtle mb-3">Transparent background PNG works best here.</p>
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="side_image"
+                                        value={formData.side_image}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                side_image: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="Side image URL or upload →"
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        disabled={uploadingSide}
+                                        onClick={() =>
+                                            document.getElementById("side-upload-edit")?.click()
+                                        }
+                                    >
+                                        {uploadingSide ? "Uploading..." : "Upload"}
+                                    </Button>
+                                    <input
+                                        id="side-upload-edit"
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: "none" }}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file)
+                                                handleFileUpload(file, "side_image", setUploadingSide)
+                                        }}
+                                    />
+                                </div>
+                                {formData.side_image && (
+                                    <div className="mt-3">
+                                        <img
+                                            src={formData.side_image}
+                                            alt="Side Preview"
+                                            className="h-32 object-contain bg-ui-bg-subtle rounded-lg border border-ui-border-base"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Video */}
+                        {showVideo && (
+                            <div>
+                                <Label className="mb-1 block font-medium">Video URL *</Label>
+                                <p className="text-xs text-ui-fg-subtle mb-3">Upload an MP4 or WebM video.</p>
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="video_url"
+                                        value={formData.video_url}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                video_url: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="Video URL or upload →"
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        disabled={uploadingVideo}
+                                        onClick={() =>
+                                            document.getElementById("video-upload-edit")?.click()
+                                        }
+                                    >
+                                        {uploadingVideo ? "Uploading..." : "Upload"}
+                                    </Button>
+                                    <input
+                                        id="video-upload-edit"
+                                        type="file"
+                                        accept="video/mp4,video/webm"
+                                        style={{ display: "none" }}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file)
+                                                handleFileUpload(file, "video_url", setUploadingVideo)
+                                        }}
+                                    />
+                                </div>
+                                {formData.video_url && (
+                                    <div className="mt-3">
+                                        <video
+                                            src={formData.video_url}
+                                            className="h-32 rounded-lg border border-ui-border-base"
+                                            muted
+                                            loop
+                                            controls
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Overlay Color */}
+                        {showOverlay && (
+                            <div>
+                                <Label htmlFor="overlay_color" className="mb-2 block">
+                                    Overlay Color (CSS color or gradient)
+                                </Label>
+                                <Input
+                                    id="overlay_color"
+                                    value={formData.overlay_color}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            overlay_color: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="e.g. rgba(0, 0, 0, 0.45) or linear-gradient(135deg, #1e293b, #0f172a)"
+                                />
+                            </div>
+                        )}
+                    </section>
+                )}
+
+                {/* App Options */}
+                {platforms.app && (
+                    <section className="bg-ui-bg-base p-6 rounded-2xl border border-ui-border-base space-y-6">
+                        <div className="border-b pb-4 flex items-center gap-2">
+                            <Heading level="h2">📱 Mobile App Configuration</Heading>
+                        </div>
+
+                        {/* Subtitle */}
                         <div>
-                            <Label htmlFor="button_link" className="mb-2 block">
-                                {showButton ? "Button Link" : "Destination Link"}
+                            <Label htmlFor="subtitle" className="mb-2 block">
+                                App Subtitle / Tagline
                             </Label>
                             <Input
-                                id="button_link"
-                                value={formData.button_link}
+                                id="subtitle"
+                                value={formData.subtitle}
                                 onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        button_link: e.target.value,
-                                    }))
+                                    setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
                                 }
-                                placeholder="e.g. /store"
+                                placeholder="e.g. 2026 EXCLUSIVE COLLECTION"
                             />
                         </div>
-                    </div>
-                </div>
 
-                {/* Background Image */}
-                {showBackgroundImage && (
-                    <div className="border-t pt-6">
-                        <Heading level="h2" className="mb-4">
-                            {formData.slide_type === "static_image"
-                                ? "Image"
-                                : "Background Image"}
-                        </Heading>
-
-                        <div className="flex gap-2">
-                            <Input
-                                id="background_image"
-                                value={formData.background_image}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        background_image: e.target.value,
-                                    }))
-                                }
-                                placeholder="Image URL or upload"
-                            />
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                disabled={uploadingBg}
-                                onClick={() =>
-                                    document.getElementById("bg-upload-edit")?.click()
-                                }
-                            >
-                                {uploadingBg ? "Uploading..." : "Upload"}
-                            </Button>
-                            <input
-                                id="bg-upload-edit"
-                                type="file"
-                                accept="image/*"
-                                style={{ display: "none" }}
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0]
-                                    if (file)
-                                        handleFileUpload(file, "background_image", setUploadingBg)
-                                }}
-                            />
-                        </div>
-                        {formData.background_image && (
-                            <div className="mt-2">
-                                <img
-                                    src={formData.background_image}
-                                    alt="Background Preview"
-                                    className="h-32 w-auto object-cover rounded border"
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Side Image */}
-                {showSideImage && (
-                    <div className="border-t pt-6">
-                        <Heading level="h2" className="mb-4">
-                            Side Image (Product / Bottle)
-                        </Heading>
-                        <p className="text-sm text-gray-500 mb-3">
-                            This image appears on the{" "}
-                            {formData.slide_type === "side_image_left" ? "left" : "right"} side.
-                            Use a PNG with transparent background for best results.
-                        </p>
-
-                        <div className="flex gap-2">
-                            <Input
-                                id="side_image"
-                                value={formData.side_image}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        side_image: e.target.value,
-                                    }))
-                                }
-                                placeholder="Image URL or upload"
-                            />
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                disabled={uploadingSide}
-                                onClick={() =>
-                                    document.getElementById("side-upload-edit")?.click()
-                                }
-                            >
-                                {uploadingSide ? "Uploading..." : "Upload"}
-                            </Button>
-                            <input
-                                id="side-upload-edit"
-                                type="file"
-                                accept="image/*"
-                                style={{ display: "none" }}
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0]
-                                    if (file)
-                                        handleFileUpload(file, "side_image", setUploadingSide)
-                                }}
-                            />
-                        </div>
-                        {formData.side_image && (
-                            <div className="mt-2">
-                                <img
-                                    src={formData.side_image}
-                                    alt="Side Image Preview"
-                                    className="h-32 w-auto object-contain rounded border bg-gray-50"
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Video */}
-                {showVideo && (
-                    <div className="border-t pt-6">
-                        <Heading level="h2" className="mb-4">
-                            Video
-                        </Heading>
-                        <p className="text-sm text-gray-500 mb-3">
-                            Upload an MP4 video. It will auto-play, loop, and be muted on the storefront.
-                        </p>
-
-                        <div className="flex gap-2">
-                            <Input
-                                id="video_url"
-                                value={formData.video_url}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        video_url: e.target.value,
-                                    }))
-                                }
-                                placeholder="Video URL or upload"
-                            />
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                disabled={uploadingVideo}
-                                onClick={() =>
-                                    document.getElementById("video-upload-edit")?.click()
-                                }
-                            >
-                                {uploadingVideo ? "Uploading..." : "Upload"}
-                            </Button>
-                            <input
-                                id="video-upload-edit"
-                                type="file"
-                                accept="video/mp4,video/webm"
-                                style={{ display: "none" }}
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0]
-                                    if (file)
-                                        handleFileUpload(file, "video_url", setUploadingVideo)
-                                }}
-                            />
-                        </div>
-                        {formData.video_url && (
-                            <div className="mt-2">
-                                <video
-                                    src={formData.video_url}
-                                    className="h-32 rounded border"
-                                    muted
-                                    loop
-                                    controls
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Overlay Color */}
-                {showOverlay && (
-                    <div className="border-t pt-6">
-                        <Heading level="h2" className="mb-4">
-                            Overlay
-                        </Heading>
-
+                        {/* App Image */}
                         <div>
-                            <Label htmlFor="overlay_color" className="mb-2 block">
-                                Overlay Color (CSS gradient or rgba)
-                            </Label>
-                            <Input
-                                id="overlay_color"
-                                value={formData.overlay_color}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        overlay_color: e.target.value,
-                                    }))
-                                }
-                                placeholder="e.g. linear-gradient(135deg, rgba(212,97,122,0.3), rgba(188,148,235,0.3))"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Leave empty for the default pink-purple gradient overlay
-                            </p>
+                            <Label className="mb-1 block font-medium">Mobile Hero Image *</Label>
+                            <p className="text-xs text-ui-fg-subtle mb-3">Recommended size: <strong>800×400 px</strong> (2:1 aspect ratio), max 1 MB.</p>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="app_image"
+                                    value={formData.image}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({ ...prev, image: e.target.value }))
+                                    }
+                                    placeholder="Image URL or upload →"
+                                    className="flex-1"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    disabled={uploadingAppImage}
+                                    onClick={() =>
+                                        document.getElementById("app-image-upload-edit")?.click()
+                                    }
+                                >
+                                    {uploadingAppImage ? "Uploading..." : "Upload"}
+                                </Button>
+                                <input
+                                    id="app-image-upload-edit"
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file)
+                                            handleFileUpload(file, "image", setUploadingAppImage)
+                                    }}
+                                />
+                            </div>
+                            {formData.image && (
+                                <div className="mt-3">
+                                    <img
+                                        src={formData.image}
+                                        alt="App Preview"
+                                        className="h-32 object-cover rounded-lg border border-ui-border-base shadow-sm"
+                                        style={{ aspectRatio: "2/1" }}
+                                    />
+                                    <p className="text-xs text-ui-fg-muted mt-1">Mobile device display preview ratio</p>
+                                </div>
+                            )}
                         </div>
-                    </div>
+
+                        {/* Tap Destination link type */}
+                        <div>
+                            <Label className="mb-2 block">Tap Destination</Label>
+                            <Select value={formData.link_type} onValueChange={handleLinkTypeChange}>
+                                <Select.Trigger><Select.Value placeholder="Choose destination…" /></Select.Trigger>
+                                <Select.Content>
+                                    {LINK_TYPES.map((t) => (
+                                        <Select.Item key={t.value} value={t.value}>{t.label}</Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select>
+                            {LINK_DESCRIPTIONS[formData.link_type] && (
+                                <p className="text-xs text-ui-fg-subtle mt-1.5 font-medium">ℹ️ {LINK_DESCRIPTIONS[formData.link_type]}</p>
+                            )}
+                        </div>
+
+                        {/* Live Picker option */}
+                        {appNeedsValue && !appIsSearch && (
+                            <div>
+                                <Label className="mb-2 block">
+                                    {activeAppDef?.valueLabel}
+                                    {loadingLive && <span className="ml-2 text-ui-fg-muted text-xs animate-pulse">Loading live options…</span>}
+                                </Label>
+                                {liveOptions.length > 0 ? (
+                                    <Select value={formData.link_value} onValueChange={handleLiveSelect}>
+                                        <Select.Trigger>
+                                            <Select.Value placeholder={`Select a ${activeAppDef?.valueLabel.toLowerCase()}…`} />
+                                        </Select.Trigger>
+                                        <Select.Content>
+                                            {liveOptions.map((o) => (
+                                                <Select.Item key={o.value} value={o.value}>{o.label}</Select.Item>
+                                            ))}
+                                        </Select.Content>
+                                    </Select>
+                                ) : !loadingLive ? (
+                                    <div className="text-sm text-ui-fg-subtle bg-ui-bg-subtle rounded-lg border border-ui-border-base px-4 py-3">
+                                        No active {activeAppDef?.loadKey} found in Medusa.
+                                    </div>
+                                ) : null}
+                            </div>
+                        )}
+
+                        {/* Search value */}
+                        {appNeedsValue && appIsSearch && (
+                            <div>
+                                <Label htmlFor="search-val" className="mb-2 block">Search Query</Label>
+                                <Input
+                                    id="search-val"
+                                    value={formData.link_value}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            link_value: e.target.value,
+                                            link_label: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="e.g. sneakers"
+                                />
+                            </div>
+                        )}
+                    </section>
                 )}
 
-                {/* Actions */}
+                {/* Submit / Cancel Actions */}
                 <div className="flex gap-3 pt-6 border-t">
                     <Button type="submit" variant="primary" disabled={saving}>
                         {saving ? "Saving..." : "Save Changes"}

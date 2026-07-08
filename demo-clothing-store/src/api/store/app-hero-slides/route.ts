@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import AppHeroModuleService from "../../../modules/app_hero/service"
-import { APP_HERO_MODULE } from "../../../modules/app_hero"
+import HeroModuleService from "../../../modules/hero/service"
+import { HERO_MODULE } from "../../../modules/hero"
 
 /**
  * GET /store/app-hero-slides
@@ -14,11 +14,11 @@ import { APP_HERO_MODULE } from "../../../modules/app_hero"
  * On first load, client sends no version → always gets full data.
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
-    const service: AppHeroModuleService = req.scope.resolve(APP_HERO_MODULE)
+    const heroService: HeroModuleService = req.scope.resolve(HERO_MODULE)
 
     try {
-        const slides = await service.listAppHeroSlides(
-            { is_active: true },
+        const slides = await heroService.listHeroSlides(
+            { is_active: true, is_app: true },
             { order: { sort_order: "ASC" } }
         )
 
@@ -37,7 +37,22 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             return res.json({ changed: false })
         }
 
-        res.json({ version, slides })
+        // Map fields to match mobile app expectations perfectly
+        const formattedSlides = slides.map((s: any) => ({
+            id: s.id,
+            title: s.title,
+            subtitle: s.subtitle,
+            image: s.image,
+            link_type: s.link_type,
+            link_value: s.link_value,
+            link_label: s.link_label,
+            sort_order: s.sort_order,
+            is_active: s.is_active,
+            created_at: s.created_at,
+            updated_at: s.updated_at,
+        }))
+
+        res.json({ version, slides: formattedSlides })
     } catch (error: any) {
         res.status(500).json({
             message: "Error fetching app hero slides",

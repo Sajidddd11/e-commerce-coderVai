@@ -1,7 +1,8 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Button, Input, Textarea, Label, Switch, Select } from "@medusajs/ui"
-import { ArrowLeft } from "@medusajs/icons"
+import { ArrowLeft, Trash } from "@medusajs/icons"
 import { useState, useEffect } from "react"
+import { useParams } from "react-router-dom"
 
 const SLIDE_TYPES = [
     { value: "side_image_left", label: "Side Image (Image Left, Text Right)" },
@@ -39,11 +40,13 @@ const LINK_MAP = Object.fromEntries(LINK_TYPES.map((t) => [t.value, t]))
 
 interface LiveOption { value: string; label: string }
 
-const NewHeroSlidePage = () => {
-    const [platforms, setPlatforms] = useState({
-        web: true,
-        app: false,
-    })
+const EditHeroSlidePage = () => {
+    const { id } = useParams()
+    
+    // Parse platform query param (e.g. ?platform=web or ?platform=app)
+    const searchParams = new URLSearchParams(window.location.search)
+    const platform = searchParams.get("platform") || "web"
+    const isWebPlatform = platform === "web"
 
     const [formData, setFormData] = useState({
         // Shared fields
@@ -69,6 +72,7 @@ const NewHeroSlidePage = () => {
         link_label: "",
     })
 
+    const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploadingBg, setUploadingBg] = useState(false)
     const [uploadingSide, setUploadingSide] = useState(false)
@@ -78,12 +82,16 @@ const NewHeroSlidePage = () => {
     const [liveOptions, setLiveOptions] = useState<LiveOption[]>([])
     const [loadingLive, setLoadingLive] = useState(false)
 
-    // Load live options for App Tap Destination
     useEffect(() => {
-        if (!platforms.app) return
+        fetchSlide()
+    }, [id])
+
+    // Load live options for App Link Value picker
+    useEffect(() => {
+        if (isWebPlatform) return
 
         const def = LINK_MAP[formData.link_type]
-        if (!def || !def.needsValue || def.loadKey === "search") {
+        if (!def || !def.needsValue || def.loadKey === "search" || def.loadKey === "") {
             setLiveOptions([])
             return
         }
@@ -112,7 +120,52 @@ const NewHeroSlidePage = () => {
                 setLoadingLive(false)
             }
         })()
-    }, [formData.link_type, platforms.app])
+    }, [formData.link_type, isWebPlatform])
+
+    const fetchSlide = async () => {
+        try {
+            const endpoint = isWebPlatform ? `/admin/hero-slides/${id}` : `/admin/app-hero-slides/${id}`
+            const response = await fetch(endpoint, {
+                credentials: "include",
+            })
+            const data = await response.json()
+            if (data.slide) {
+                if (isWebPlatform) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        title: data.slide.title || "",
+                        sort_order: data.slide.sort_order ?? 0,
+                        is_active: data.slide.is_active ?? true,
+                        slide_type: data.slide.slide_type || "side_image_left",
+                        description: data.slide.description || "",
+                        button_text: data.slide.button_text || "",
+                        button_link: data.slide.button_link || "",
+                        background_image: data.slide.background_image || "",
+                        side_image: data.slide.side_image || "",
+                        video_url: data.slide.video_url || "",
+                        overlay_color: data.slide.overlay_color || "",
+                    }))
+                } else {
+                    setFormData((prev) => ({
+                        ...prev,
+                        title: data.slide.title || "",
+                        sort_order: data.slide.sort_order ?? 0,
+                        is_active: data.slide.is_active ?? true,
+                        subtitle: data.slide.subtitle || "",
+                        image: data.slide.image || "",
+                        link_type: data.slide.link_type || "none",
+                        link_value: data.slide.link_value || "",
+                        link_label: data.slide.link_label || "",
+                    }))
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching slide:", error)
+            alert("Failed to load hero slide")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const MAX_IMAGE_SIZE = 1 * 1024 * 1024 // 1 MB
     const MAX_VIDEO_SIZE = 10 * 1024 * 1024 // 10 MB
@@ -168,12 +221,7 @@ const NewHeroSlidePage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!platforms.web && !platforms.app) {
-            alert("❌ Please select at least one platform (Web or Mobile App).")
-            return
-        }
-
-        if (platforms.web) {
+        if (isWebPlatform) {
             if (formData.slide_type === "video" && !formData.video_url) {
                 alert("❌ Please upload a background video for the web storefront banner.")
                 return
@@ -182,42 +230,43 @@ const NewHeroSlidePage = () => {
                 alert("❌ Please upload a background image for the web storefront banner.")
                 return
             }
-        }
-
-        if (platforms.app && !formData.image.trim()) {
-            alert("❌ Please upload a mobile hero image for the app banner.")
-            return
+        } else {
+            if (!formData.image.trim()) {
+                alert("❌ Please upload a mobile hero image for the app banner.")
+                return
+            }
         }
 
         setSaving(true)
 
         try {
-            const payload = {
-                is_web: platforms.web,
-                is_app: platforms.app,
-                title: formData.title,
-                sort_order: formData.sort_order,
-                is_active: formData.is_active,
+            const endpoint = isWebPlatform ? `/admin/hero-slides/${id}` : `/admin/app-hero-slides/${id}`
+            const payload = isWebPlatform
+                ? {
+                      slide_type: formData.slide_type,
+                      title: formData.title,
+                      description: formData.description,
+                      button_text: formData.button_text,
+                      button_link: formData.button_link,
+                      background_image: formData.background_image,
+                      side_image: formData.side_image,
+                      video_url: formData.video_url,
+                      overlay_color: formData.overlay_color,
+                      sort_order: formData.sort_order,
+                      is_active: formData.is_active,
+                  }
+                : {
+                      title: formData.title,
+                      subtitle: formData.subtitle,
+                      image: formData.image,
+                      link_type: formData.link_type,
+                      link_value: formData.link_value,
+                      link_label: formData.link_label,
+                      sort_order: formData.sort_order,
+                      is_active: formData.is_active,
+                  }
 
-                // Web fields (only if is_web is checked, else null/empty)
-                slide_type: platforms.web ? formData.slide_type : null,
-                description: platforms.web ? formData.description : null,
-                button_text: platforms.web ? formData.button_text : null,
-                button_link: platforms.web ? formData.button_link : null,
-                background_image: platforms.web ? formData.background_image : null,
-                side_image: platforms.web ? formData.side_image : null,
-                video_url: platforms.web ? formData.video_url : null,
-                overlay_color: platforms.web ? formData.overlay_color : null,
-
-                // App fields (only if is_app is checked, else null/empty)
-                subtitle: platforms.app ? formData.subtitle : null,
-                image: platforms.app ? formData.image : null,
-                link_type: platforms.app ? formData.link_type : "none",
-                link_value: platforms.app ? formData.link_value : null,
-                link_label: platforms.app ? formData.link_label : null,
-            }
-
-            const response = await fetch("/admin/hero-slides", {
+            const response = await fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -225,18 +274,51 @@ const NewHeroSlidePage = () => {
             })
 
             if (response.ok) {
-                alert("Hero slide created successfully!")
+                alert("Hero slide updated successfully!")
                 window.location.href = "/app/hero-slides"
             } else {
                 const error = await response.json()
                 alert(`Error: ${error.message}`)
             }
         } catch (error) {
-            console.error("Error creating slide:", error)
-            alert("Failed to create hero slide")
+            console.error("Error updating slide:", error)
+            alert("Failed to update hero slide")
         } finally {
             setSaving(false)
         }
+    }
+
+    const handleDelete = async () => {
+        if (!confirm(`Are you sure you want to delete this ${isWebPlatform ? "web" : "mobile app"} hero slide? This cannot be undone.`))
+            return
+
+        try {
+            const endpoint = isWebPlatform ? `/admin/hero-slides/${id}` : `/admin/app-hero-slides/${id}`
+            const response = await fetch(endpoint, {
+                method: "DELETE",
+                credentials: "include",
+            })
+
+            if (response.ok) {
+                alert("Hero slide deleted!")
+                window.location.href = "/app/hero-slides"
+            } else {
+                alert("Failed to delete slide")
+            }
+        } catch (error) {
+            console.error("Error deleting slide:", error)
+            alert("Failed to delete slide")
+        }
+    }
+
+    if (loading) {
+        return (
+            <Container>
+                <div className="flex items-center justify-center h-64 bg-ui-bg-subtle rounded-xl border border-ui-border-base">
+                    <p className="text-ui-fg-muted font-medium animate-pulse">Loading...</p>
+                </div>
+            </Container>
+        )
     }
 
     const showTextField = formData.slide_type !== "static_image"
@@ -262,38 +344,22 @@ const NewHeroSlidePage = () => {
                     <ArrowLeft />
                     Back to Hero Banners
                 </Button>
-                <Heading level="h1">Create New Hero Slide</Heading>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <Heading level="h1">Edit Hero Slide</Heading>
+                        <p className="text-sm text-ui-fg-subtle mt-1">
+                            Editing the slide configured for {isWebPlatform ? "💻 Web Storefront" : "📱 Mobile App"}.
+                        </p>
+                    </div>
+                    <Button variant="danger" onClick={handleDelete}>
+                        <Trash />
+                        Delete Slide
+                    </Button>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Platform Toggles */}
-                <div>
-                    <Label className="mb-2 block font-semibold text-ui-fg-base">Target Platforms</Label>
-                    <div className="flex flex-col sm:flex-row gap-4 p-4 bg-ui-bg-subtle rounded-xl border border-ui-border-base">
-                        <div className="flex items-center gap-3">
-                            <Switch
-                                id="platform-web"
-                                checked={platforms.web}
-                                onCheckedChange={(checked) =>
-                                    setPlatforms((prev) => ({ ...prev, web: checked }))
-                                }
-                            />
-                            <Label htmlFor="platform-web" className="font-medium cursor-pointer">💻 Show on Web Storefront</Label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Switch
-                                id="platform-app"
-                                checked={platforms.app}
-                                onCheckedChange={(checked) =>
-                                    setPlatforms((prev) => ({ ...prev, app: checked }))
-                                }
-                            />
-                            <Label htmlFor="platform-app" className="font-medium cursor-pointer">📱 Show on Mobile App</Label>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Shared Config */}
+                {/* General/Shared Options */}
                 <section className="bg-ui-bg-base p-6 rounded-2xl border border-ui-border-base space-y-4">
                     <Heading level="h2">General Settings</Heading>
                     <div>
@@ -306,7 +372,7 @@ const NewHeroSlidePage = () => {
                             onChange={(e) =>
                                 setFormData((prev) => ({ ...prev, title: e.target.value }))
                             }
-                            placeholder="e.g. New Season Arrivals"
+                            placeholder="e.g. New Arrivals"
                         />
                     </div>
 
@@ -344,12 +410,10 @@ const NewHeroSlidePage = () => {
                     </div>
                 </section>
 
-                {/* Web Options */}
-                {platforms.web && (
+                {/* Web Options Section */}
+                {isWebPlatform ? (
                     <section className="bg-ui-bg-base p-6 rounded-2xl border border-ui-border-base space-y-6">
-                        <div className="border-b pb-4 flex items-center gap-2">
-                            <Heading level="h2">💻 Web Storefront Configuration</Heading>
-                        </div>
+                        <Heading level="h2">💻 Web Storefront Configuration</Heading>
 
                         {/* Slide Type */}
                         <div>
@@ -434,7 +498,7 @@ const NewHeroSlidePage = () => {
                             </div>
                         )}
 
-                        {/* Static Image Destination link */}
+                        {/* Static Image Destination Link */}
                         {!showButton && (
                             <div>
                                 <Label htmlFor="button_link" className="mb-2 block">
@@ -458,7 +522,7 @@ const NewHeroSlidePage = () => {
                         {showBackgroundImage && (
                             <div>
                                 <Label className="mb-1 block font-medium">Background Image *</Label>
-                                <p className="text-xs text-ui-fg-subtle mb-3">Recommended size: <strong>1920×800 px</strong> (Landscape, high-res), max 1 MB.</p>
+                                <p className="text-xs text-ui-fg-subtle mb-3">Recommended size: <strong>1920×800 px</strong>, max 1 MB.</p>
                                 <div className="flex gap-2">
                                     <Input
                                         id="background_image"
@@ -477,13 +541,13 @@ const NewHeroSlidePage = () => {
                                         variant="secondary"
                                         disabled={uploadingBg}
                                         onClick={() =>
-                                            document.getElementById("bg-upload")?.click()
+                                            document.getElementById("bg-upload-edit")?.click()
                                         }
                                     >
                                         {uploadingBg ? "Uploading..." : "Upload"}
                                     </Button>
                                     <input
-                                        id="bg-upload"
+                                        id="bg-upload-edit"
                                         type="file"
                                         accept="image/*"
                                         style={{ display: "none" }}
@@ -529,13 +593,13 @@ const NewHeroSlidePage = () => {
                                         variant="secondary"
                                         disabled={uploadingSide}
                                         onClick={() =>
-                                            document.getElementById("side-upload")?.click()
+                                            document.getElementById("side-upload-edit")?.click()
                                         }
                                     >
                                         {uploadingSide ? "Uploading..." : "Upload"}
                                     </Button>
                                     <input
-                                        id="side-upload"
+                                        id="side-upload-edit"
                                         type="file"
                                         accept="image/*"
                                         style={{ display: "none" }}
@@ -562,7 +626,7 @@ const NewHeroSlidePage = () => {
                         {showVideo && (
                             <div>
                                 <Label className="mb-1 block font-medium">Video URL *</Label>
-                                <p className="text-xs text-ui-fg-subtle mb-3">Upload an MP4 or WebM video. Loops and plays muted.</p>
+                                <p className="text-xs text-ui-fg-subtle mb-3">Upload an MP4 or WebM video.</p>
                                 <div className="flex gap-2">
                                     <Input
                                         id="video_url"
@@ -581,13 +645,13 @@ const NewHeroSlidePage = () => {
                                         variant="secondary"
                                         disabled={uploadingVideo}
                                         onClick={() =>
-                                            document.getElementById("video-upload")?.click()
+                                            document.getElementById("video-upload-edit")?.click()
                                         }
                                     >
                                         {uploadingVideo ? "Uploading..." : "Upload"}
                                     </Button>
                                     <input
-                                        id="video-upload"
+                                        id="video-upload-edit"
                                         type="file"
                                         accept="video/mp4,video/webm"
                                         style={{ display: "none" }}
@@ -632,14 +696,10 @@ const NewHeroSlidePage = () => {
                             </div>
                         )}
                     </section>
-                )}
-
-                {/* App Options */}
-                {platforms.app && (
+                ) : (
+                    /* App Options Section */
                     <section className="bg-ui-bg-base p-6 rounded-2xl border border-ui-border-base space-y-6">
-                        <div className="border-b pb-4 flex items-center gap-2">
-                            <Heading level="h2">📱 Mobile App Configuration</Heading>
-                        </div>
+                        <Heading level="h2">📱 Mobile App Configuration</Heading>
 
                         {/* Subtitle */}
                         <div>
@@ -675,13 +735,13 @@ const NewHeroSlidePage = () => {
                                     variant="secondary"
                                     disabled={uploadingAppImage}
                                     onClick={() =>
-                                        document.getElementById("app-image-upload")?.click()
+                                        document.getElementById("app-image-upload-edit")?.click()
                                     }
                                 >
                                     {uploadingAppImage ? "Uploading..." : "Upload"}
                                 </Button>
                                 <input
-                                    id="app-image-upload"
+                                    id="app-image-upload-edit"
                                     type="file"
                                     accept="image/*"
                                     style={{ display: "none" }}
@@ -722,7 +782,7 @@ const NewHeroSlidePage = () => {
                         </div>
 
                         {/* Live Picker option */}
-                        {appNeedsValue && !appIsSearch && (
+                        {appNeedsValue && formData.link_type !== "search" && (
                             <div>
                                 <Label className="mb-2 block">
                                     {activeAppDef?.valueLabel}
@@ -748,7 +808,7 @@ const NewHeroSlidePage = () => {
                         )}
 
                         {/* Search value */}
-                        {appNeedsValue && appIsSearch && (
+                        {appNeedsValue && formData.link_type === "search" && (
                             <div>
                                 <Label htmlFor="search-val" className="mb-2 block">Search Query</Label>
                                 <Input
@@ -771,7 +831,7 @@ const NewHeroSlidePage = () => {
                 {/* Submit / Cancel Actions */}
                 <div className="flex gap-3 pt-6 border-t">
                     <Button type="submit" variant="primary" disabled={saving}>
-                        {saving ? "Creating..." : "Create Hero Slide"}
+                        {saving ? "Saving..." : "Save Changes"}
                     </Button>
                     <Button
                         type="button"
@@ -787,7 +847,7 @@ const NewHeroSlidePage = () => {
 }
 
 export const config = defineRouteConfig({
-    label: "New Hero Slide",
+    label: "Edit Hero Slide",
 })
 
-export default NewHeroSlidePage
+export default EditHeroSlidePage

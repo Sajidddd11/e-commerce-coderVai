@@ -7,7 +7,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     try {
         const slides = await heroService.listHeroSlides(
-            { is_active: true },
+            { is_active: true, is_web: true },
             {
                 order: { sort_order: "ASC" },
             }

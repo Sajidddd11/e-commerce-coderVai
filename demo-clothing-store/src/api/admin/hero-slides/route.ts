@@ -26,7 +26,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         type SlideType = "side_image_left" | "side_image_right" | "center_text" | "video" | "static_image"
 
         const body = req.body as {
-            slide_type: SlideType
+            is_web?: boolean
+            is_app?: boolean
+            slide_type?: SlideType
             title?: string
             description?: string
             button_text?: string
@@ -37,10 +39,19 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             overlay_color?: string
             sort_order?: number
             is_active?: boolean
+
+            // App fields
+            subtitle?: string
+            image?: string
+            link_type?: string
+            link_value?: string
+            link_label?: string
         }
 
         const slide = await heroService.createHeroSlides({
-            slide_type: body.slide_type as SlideType,
+            is_web: body.is_web ?? true,
+            is_app: body.is_app ?? false,
+            slide_type: (body.slide_type as SlideType) || null,
             title: body.title || null,
             description: body.description || null,
             button_text: body.button_text || null,
@@ -51,6 +62,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             overlay_color: body.overlay_color || null,
             sort_order: body.sort_order ?? 0,
             is_active: body.is_active ?? true,
+
+            // Mobile app specific
+            subtitle: body.subtitle || null,
+            image: body.image || null,
+            link_type: (body.link_type as any) || "none",
+            link_value: body.link_value || null,
+            link_label: body.link_label || null,
         })
 
         res.json({ slide })
