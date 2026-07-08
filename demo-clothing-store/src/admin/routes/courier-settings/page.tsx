@@ -34,6 +34,8 @@ const CourierSettingsPage = () => {
     const [activeProvider, setActiveProvider] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [switchingTo, setSwitchingTo] = useState<string | null>(null)
+    const [pathaoBalance, setPathaoBalance] = useState<string | null>("Loading...")
+    const [steadfastBalance, setSteadfastBalance] = useState<string | null>("Loading...")
 
     // ── Pathao state ──────────────────────────────────────────────────────────
     const [pathaoConfig, setPathaoConfig] = useState({
@@ -67,15 +69,36 @@ const CourierSettingsPage = () => {
     const fetchAll = async () => {
         try {
             setLoading(true)
-            const [cfgRes, activeRes] = await Promise.all([
+            const [cfgRes, activeRes, balanceRes] = await Promise.all([
                 apiFetch("/admin/courier/config"),
                 apiFetch("/admin/courier/active"),
+                apiFetch("/admin/courier/balance"),
             ])
             const { configs: cfgList } = await cfgRes.json()
             const { provider } = await activeRes.json()
+            const balanceData = await balanceRes.json()
 
             setConfigs(cfgList || [])
             setActiveProvider(provider)
+
+            const hasPathao = cfgList?.some((c: CourierConfig) => c.provider === "pathao")
+            const hasSteadfast = cfgList?.some((c: CourierConfig) => c.provider === "steadfast")
+
+            if (balanceData.success && balanceData.balances) {
+                if (balanceData.balances.pathao?.success) {
+                    setPathaoBalance(balanceData.balances.pathao.balance)
+                } else {
+                    setPathaoBalance(hasPathao ? (balanceData.balances.pathao?.message || "Error") : "Not Configured")
+                }
+                if (balanceData.balances.steadfast?.success) {
+                    setSteadfastBalance(balanceData.balances.steadfast.balance)
+                } else {
+                    setSteadfastBalance(hasSteadfast ? (balanceData.balances.steadfast?.message || "Error") : "Not Configured")
+                }
+            } else {
+                setPathaoBalance(hasPathao ? "Error loading balance" : "Not Configured")
+                setSteadfastBalance(hasSteadfast ? "Error loading balance" : "Not Configured")
+            }
 
             const pathao = cfgList?.find((c: CourierConfig) => c.provider === "pathao")
             if (pathao) {
@@ -135,8 +158,10 @@ const CourierSettingsPage = () => {
             const result = await res.json()
             if (result.success) {
                 toast.success(`Connected to Pathao. Found ${result.data.stores_count} store(s).`)
+                setPathaoBalance("N/A (COD Model)")
             } else {
                 toast.error(result.message || "Failed to connect to Pathao")
+                setPathaoBalance(null)
             }
         } catch (err: any) {
             toast.error(err.message || "Connection failed")
@@ -238,8 +263,10 @@ const CourierSettingsPage = () => {
                 toast.success(
                     `Connected to Steadfast. Balance: ৳${result.data?.current_balance ?? 0}`
                 )
+                setSteadfastBalance(`৳${result.data?.current_balance ?? 0}`)
             } else {
                 toast.error(result.message || "Failed to connect to Steadfast")
+                setSteadfastBalance(null)
             }
         } catch (err: any) {
             toast.error(err.message || "Connection failed")
@@ -365,6 +392,15 @@ const CourierSettingsPage = () => {
                         {isPathaoConfigured && activeProvider !== "pathao" && (
                             <Badge color="grey">Configured</Badge>
                         )}
+                        <Badge color={
+                            pathaoBalance === "Not Configured" || pathaoBalance === "Loading..."
+                                ? "grey"
+                                : pathaoBalance?.toLowerCase().includes("failed") || pathaoBalance?.toLowerCase().includes("error")
+                                    ? "red"
+                                    : "blue"
+                        }>
+                            Balance: {pathaoBalance}
+                        </Badge>
                     </div>
                     <div className="flex items-center gap-2">
                         <Text size="small" className="text-ui-fg-subtle">Sandbox</Text>
@@ -497,6 +533,15 @@ const CourierSettingsPage = () => {
                         {isSteadfastConfigured && activeProvider !== "steadfast" && (
                             <Badge color="grey">Configured</Badge>
                         )}
+                        <Badge color={
+                            steadfastBalance === "Not Configured" || steadfastBalance === "Loading..."
+                                ? "grey"
+                                : steadfastBalance?.toLowerCase().includes("failed") || steadfastBalance?.toLowerCase().includes("error")
+                                    ? "red"
+                                    : "blue"
+                        }>
+                            Balance: {steadfastBalance}
+                        </Badge>
                     </div>
                     <Badge color="blue">Live</Badge>
                 </div>

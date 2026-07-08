@@ -1,5 +1,5 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Text, Table, Select, Input, Button } from "@medusajs/ui"
+import { Container, Heading, Text, Table, Select, Input, Button, Toaster, toast } from "@medusajs/ui"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import codImage from "../../assets/cod.png"
@@ -786,7 +786,7 @@ const OrdersWithAddressPage = () => {
   // Create shipment for single order
   const createShipment = async (orderId: string) => {
     if (!activeProvider) {
-      alert('No active courier configured. Please go to Courier Settings and activate a provider.')
+      toast.error('No active courier configured. Please go to Courier Settings and activate a provider.')
       return { success: false, error: 'No active provider' }
     }
     try {
@@ -811,11 +811,15 @@ const OrdersWithAddressPage = () => {
           ...prev,
           [orderId]: result.shipment
         }))
+        toast.success(`Shipment created successfully via ${activeProvider}. Consignment ID: ${result.shipment?.consignment_id || 'N/A'}`)
         return { success: true, consignment_id: result.shipment?.consignment_id }
       } else {
-        return { success: false, error: result.message }
+        const errorMsg = result.message || 'Failed to create shipment'
+        toast.error(`Failed to create shipment: ${errorMsg}`)
+        return { success: false, error: errorMsg }
       }
     } catch (error: any) {
+      toast.error(`Error: ${error.message}`)
       return { success: false, error: error.message }
     }
   }
@@ -885,13 +889,14 @@ const OrdersWithAddressPage = () => {
             ...prev,
             [orderId]: result.shipment
           }))
+          toast.success(`Tracking status updated to: ${result.shipment.status || 'Updated'}`)
         }
-
       } else {
-        // Failed to fetch tracking status
+        const errorData = await response.json().catch(() => ({}))
+        toast.error(`Failed to update tracking: ${errorData.message || 'Server error'}`)
       }
-    } catch (error) {
-      // Error updating status
+    } catch (error: any) {
+      toast.error(`Error updating tracking: ${error.message}`)
     } finally {
       setTrackingOrder(null)
     }
@@ -913,6 +918,7 @@ const OrdersWithAddressPage = () => {
 
   return (
     <Container>
+      <Toaster />
       <div className="flex items-center justify-between mb-6">
         <Heading level="h1">Orders Manager</Heading>
         <div className="flex items-center gap-4">
