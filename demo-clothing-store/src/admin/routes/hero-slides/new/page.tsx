@@ -1,4 +1,3 @@
-import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Button, Input, Textarea, Label, Switch, Select } from "@medusajs/ui"
 import { ArrowLeft } from "@medusajs/icons"
 import { useState, useEffect } from "react"
@@ -785,9 +784,5 @@ const NewHeroSlidePage = () => {
         </Container>
     )
 }
-
-export const config = defineRouteConfig({
-    label: "New Hero Slide",
-})
 
 export default NewHeroSlidePage

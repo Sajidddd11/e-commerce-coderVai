@@ -1,4 +1,3 @@
-import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Button, Input, Textarea, Label, Switch, Select } from "@medusajs/ui"
 import { ArrowLeft, Trash } from "@medusajs/icons"
 import { useState, useEffect } from "react"
@@ -91,7 +90,7 @@ const EditHeroSlidePage = () => {
         if (!platforms.app) return
 
         const def = LINK_MAP[formData.link_type]
-        if (!def || !def.needsValue || def.loadKey === "search" || def.loadKey === "") {
+        if (!def || !def.needsValue || def.loadKey === "search") {
             setLiveOptions([])
             return
         }
@@ -875,9 +874,5 @@ const EditHeroSlidePage = () => {
         </Container>
     )
 }
-
-export const config = defineRouteConfig({
-    label: "Edit Hero Slide",
-})
 
 export default EditHeroSlidePage
