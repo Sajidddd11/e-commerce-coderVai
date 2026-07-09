@@ -34,8 +34,21 @@ function GoogleCallbackHandler() {
           throw new Error(loginResult.error || "Failed to set session or create customer record.")
         }
 
-        // If login was initiated by the mobile app, redirect to deep link
-        if (state === "mobile") {
+        // Determine if login was initiated from web or mobile
+        let isMobile = true
+        if (typeof window !== "undefined") {
+          const origin = window.sessionStorage.getItem("google_login_origin")
+          if (origin === "web") {
+            isMobile = false
+            window.sessionStorage.removeItem("google_login_origin")
+          }
+        }
+
+        // Prevent deep-link redirects on desktop browsers
+        const ua = typeof navigator !== "undefined" ? navigator.userAgent.toLowerCase() : ""
+        const isDesktop = !/iphone|ipad|ipod|android/i.test(ua)
+
+        if (isMobile && !isDesktop) {
           window.location.href = `zahan://auth-callback?token=${encodeURIComponent(token)}`
         } else {
           router.replace("/account")

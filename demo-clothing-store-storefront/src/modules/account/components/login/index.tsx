@@ -30,6 +30,9 @@ const Login = ({ setCurrentView }: Props) => {
   const handleGoogleLogin = async () => {
     const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
     try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("google_login_origin", "web")
+      }
       const res = await fetch(`${backendUrl}/auth/customer/google`)
       const { location } = await res.json()
       if (location) {
