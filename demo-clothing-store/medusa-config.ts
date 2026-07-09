@@ -51,6 +51,22 @@ module.exports = defineConfig({
         ttl: 3600, // 1 hour — products don't change that frequently
       },
     },
+    {
+      resolve: "@medusajs/auth",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/auth-google",
+            id: "google",
+            options: {
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+              callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+            },
+          },
+        ],
+      },
+    },
     // Blog Module - Custom module for managing blog posts
     {
       resolve: "./src/modules/blog",

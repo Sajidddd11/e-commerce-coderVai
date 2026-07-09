@@ -296,3 +296,16 @@ export const updateCustomerAddress = async (
       return { success: false, error: err.toString() }
     })
 }
+
+export async function setGoogleAuthToken(token: string) {
+  await setAuthToken(token)
+  const customerCacheTag = await getCacheTag("customers")
+  // @ts-ignore
+  revalidateTag(customerCacheTag)
+  try {
+    await transferCart()
+  } catch (error) {
+    console.error("Error transferring cart during Google login:", error)
+  }
+}
+

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { View, ScrollView, Pressable, StyleSheet } from "react-native"
+import { View, ScrollView, Pressable, StyleSheet, Platform } from "react-native"
 import { useRouter } from "expo-router"
 import { LogOut, ShoppingBag, MapPin, User, ChevronRight } from "lucide-react-native"
 import { CoinIcon } from "@components/ui/CoinIcon"
@@ -13,6 +13,13 @@ import { useAuthStore } from "@stores/auth-store"
 import { useCartStore } from "@stores/cart-store"
 import { login, signup } from "@api/customer"
 import { colors, spacing, borderRadius } from "@design/theme"
+import * as WebBrowser from "expo-web-browser"
+import * as Linking from "expo-linking"
+import Svg, { Path } from "react-native-svg"
+import { setToken } from "@utils/storage"
+
+WebBrowser.maybeCompleteAuthSession()
+
 
 export default function AccountScreen() {
   const router = useRouter()
@@ -52,6 +59,41 @@ export default function AccountScreen() {
       }
 
       await Promise.all([loadCustomer(), refreshCart()])
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const isIOS = Platform.OS === "ios"
+
+  const handleGoogleLogin = async () => {
+    setError(null)
+    setSubmitting(true)
+    try {
+      const backendUrl = process.env.EXPO_PUBLIC_MEDUSA_BACKEND_URL ?? "http://localhost:9000"
+      const response = await fetch(`${backendUrl}/auth/customer/google?state=mobile`)
+      const data = await response.json()
+      
+      if (!data.location) {
+        throw new Error("Could not retrieve Google login location from backend")
+      }
+
+      const redirectUrl = Linking.createURL("auth-callback")
+      const result = await WebBrowser.openAuthSessionAsync(data.location, redirectUrl)
+
+      if (result.type === "success" && result.url) {
+        const parsed = Linking.parse(result.url)
+        const token = parsed.queryParams?.token as string
+        
+        if (token) {
+          await setToken(token)
+          await Promise.all([loadCustomer(), refreshCart()])
+        } else {
+          throw new Error("No session token received from auth server")
+        }
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Google login failed")
     } finally {
       setSubmitting(false)
     }
@@ -200,6 +242,46 @@ export default function AccountScreen() {
             style={styles.submit}
           />
 
+          {!isIOS && (
+            <>
+              <View style={styles.dividerContainer}>
+                <View style={styles.dividerLine} />
+                <ThemedText variant="bodySmall" color={colors.grey[50]} style={styles.dividerText}>
+                  OR
+                </ThemedText>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <Button
+                title="Continue with Google"
+                variant="secondary"
+                fullWidth
+                onPress={handleGoogleLogin}
+                style={styles.googleButton}
+                leftIcon={
+                  <Svg width={18} height={18} viewBox="0 0 24 24">
+                    <Path
+                      fill="#EA4335"
+                      d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115z"
+                    />
+                    <Path
+                      fill="#FBBC05"
+                      d="M1.24 6.65A11.968 11.968 0 0 0 0 12c0 1.92.454 3.73 1.24 5.35l4.026-3.115a6.967 6.967 0 0 1 0-4.47L1.24 6.65z"
+                    />
+                    <Path
+                      fill="#34A853"
+                      d="M5.266 14.235a7.077 7.077 0 0 1-4.026 3.115C3.198 21.302 7.27 24 12 24c3.155 0 6.009-1.077 8.218-2.918l-3.89-3.082a6.974 6.974 0 0 1-9.062-3.765z"
+                    />
+                    <Path
+                      fill="#4285F4"
+                      d="M20.218 21.082C22.564 19.127 24 15.845 24 12c0-.855-.077-1.68-.218-2.482H12v4.691h6.764a5.79 5.79 0 0 1-2.51 3.79l3.964 3.083z"
+                    />
+                  </Svg>
+                }
+              />
+            </>
+          )}
+
           <Pressable
             onPress={() => {
               setError(null)
@@ -341,4 +423,20 @@ const styles = StyleSheet.create({
     borderColor: colors.grey[20],
   },
   forgot: { alignSelf: "flex-end" },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.grey[20],
+  },
+  dividerText: {
+    marginHorizontal: spacing.md,
+  },
+  googleButton: {
+    marginTop: spacing.xs,
+  },
 })

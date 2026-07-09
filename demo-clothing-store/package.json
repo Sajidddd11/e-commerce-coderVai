@@ -27,6 +27,7 @@
     "@aws-sdk/client-s3": "^3.1035.0",
     "@getbrevo/brevo": "^5.0.4",
     "@medusajs/admin-sdk": "2.11.3",
+    "@medusajs/auth-google": "2.11.3",
     "@medusajs/cache-redis": "^2.11.3",
     "@medusajs/cli": "2.11.3",
     "@medusajs/framework": "2.11.3",
