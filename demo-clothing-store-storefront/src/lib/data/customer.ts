@@ -299,46 +299,30 @@ export const updateCustomerAddress = async (
 
 export async function loginOrRegisterWithGoogle(token: string) {
   try {
-    // 1. Set the auth token cookie temporarily
-    await setAuthToken(token)
+    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+    
+    // Call the custom backend endpoint to link the OAuth identity with the customer record
+    const response = await fetch(`${backendUrl}/store/auth/google-link`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }),
+    })
 
-    // 2. Check if the customer record exists
-    let customer = await retrieveCustomer()
-
-    if (!customer) {
-      // Decode JWT token payload to retrieve Google user metadata
-      const payloadSegment = token.split(".")[1]
-      if (!payloadSegment) throw new Error("Invalid JWT token structure.")
-      
-      const payloadJson = Buffer.from(payloadSegment, "base64").toString("utf8")
-      const payload = JSON.parse(payloadJson)
-      
-      const userMetadata = payload.user_metadata || {}
-      const email = userMetadata.email
-      const first_name = userMetadata.given_name || userMetadata.name || "Google User"
-      const last_name = userMetadata.family_name || ""
-
-      if (!email) {
-        throw new Error("No email address found in Google token.")
-      }
-
-      // 3. Create the Customer record linked to this Google auth identity
-      const headers = {
-        authorization: `Bearer ${token}`,
-      }
-
-      const createRes = await sdk.store.customer.create(
-        {
-          email,
-          first_name,
-          last_name,
-        },
-        {},
-        headers
-      )
-
-      customer = createRes.customer
+    if (!response.ok) {
+      const errorJson = await response.json().catch(() => ({}))
+      throw new Error(errorJson.message || "Failed to process Google authentication on backend.")
     }
+
+    const { success, token: finalToken, message } = await response.json()
+
+    if (!success || !finalToken) {
+      throw new Error(message || "Backend Google authentication link failed.")
+    }
+
+    // Set the final, fully-linked JWT token cookie
+    await setAuthToken(finalToken)
 
     const customerCacheTag = await getCacheTag("customers")
     // @ts-ignore
