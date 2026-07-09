@@ -15,7 +15,19 @@ const Overview = ({ customer, orders }: OverviewProps) => {
     <div data-testid="overview-page-wrapper">
       <div className="hidden small:block">
         <div className="text-xl-semi flex justify-between items-center mb-4">
-          <span data-testid="welcome-message" data-value={customer?.first_name}>
+          <span data-testid="welcome-message" data-value={customer?.first_name} className="flex items-center gap-x-3">
+            {customer?.metadata?.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={customer.metadata.avatar as string}
+                alt={customer.first_name || ""}
+                className="w-10 h-10 rounded-full object-cover border border-gray-200"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-950 text-white font-semibold text-sm flex items-center justify-center border border-gray-200 shadow-sm">
+                {`${customer?.first_name?.charAt(0) || ""}${customer?.last_name?.charAt(0) || ""}`.toUpperCase() || "U"}
+              </div>
+            )}
             Hello {customer?.first_name}
           </span>
           <span className="text-small-regular text-ui-fg-base">

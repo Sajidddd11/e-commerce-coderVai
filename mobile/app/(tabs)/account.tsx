@@ -3,6 +3,7 @@ import { View, ScrollView, Pressable, StyleSheet } from "react-native"
 import { useRouter } from "expo-router"
 import { LogOut, ShoppingBag, MapPin, User, ChevronRight } from "lucide-react-native"
 import { CoinIcon } from "@components/ui/CoinIcon"
+import { Image } from "expo-image"
 import { Screen } from "@components/layout/Screen"
 import { AccountSupportSection } from "@components/layout/AccountSupportSection"
 import { ThemedText } from "@components/ui/ThemedText"
@@ -62,7 +63,14 @@ export default function AccountScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
-              <User size={28} color={colors.grey[40]} />
+              {customer.metadata?.avatar ? (
+                <Image
+                  source={{ uri: customer.metadata.avatar as string }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <User size={28} color={colors.grey[40]} />
+              )}
             </View>
             <View style={styles.profileInfo}>
               <ThemedText variant="sectionHeading" color={colors.grey[90]} style={styles.profileName}>
@@ -274,6 +282,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey[20],
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   profileInfo: {
     flex: 1,

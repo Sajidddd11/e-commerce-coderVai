@@ -5,6 +5,7 @@ import ProfileBillingAddress from "@modules/account/components/profile-billing-a
 import ProfileEmail from "@modules/account/components/profile-email"
 import ProfileName from "@modules/account/components/profile-name"
 import ProfilePassword from "@modules/account/components/profile-password"
+import ProfilePicture from "@modules/account/components/profile-picture"
 
 import { notFound } from "next/navigation"
 import { listRegions } from "@lib/data/regions"
@@ -34,6 +35,8 @@ export default async function Profile() {
         </p>
       </div>
       <div className="flex flex-col gap-y-8 w-full">
+        <ProfilePicture customer={customer} />
+        <Divider />
         <ProfileName customer={customer} />
         <Divider />
         <ProfileEmail customer={customer} />
