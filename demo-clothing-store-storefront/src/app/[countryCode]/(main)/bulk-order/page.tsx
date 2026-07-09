@@ -38,6 +38,23 @@ async function getBulkProductIds(): Promise<BulkProductRecord[]> {
     }
 }
 
+async function getBulkSettings() {
+    try {
+        const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+        const res = await fetch(`${backendUrl}/store/bulk-products/settings`, {
+            next: { revalidate: 60 },
+            headers: {
+                "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+            },
+        })
+        if (!res.ok) return null
+        const data = await res.json()
+        return data.settings
+    } catch {
+        return null
+    }
+}
+
 export default async function BulkOrderPage({ params }: Props) {
     const { countryCode } = await params
     const region = await getRegion(countryCode)
@@ -45,6 +62,7 @@ export default async function BulkOrderPage({ params }: Props) {
     if (!region) return null
 
     const bulkRecords = await getBulkProductIds()
+    const bulkSettings = await getBulkSettings()
     const activeBulkRecords = bulkRecords.filter((b) => b.is_active)
 
     let products: HttpTypes.StoreProduct[] = []
@@ -85,6 +103,7 @@ export default async function BulkOrderPage({ params }: Props) {
             bulkMap={bulkMap}
             region={region}
             countryCode={countryCode}
+            settings={bulkSettings}
         />
     )
 }

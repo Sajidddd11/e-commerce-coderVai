@@ -79,6 +79,10 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/bulk",
     },
+    // Custom Chat Module
+    {
+      resolve: "./src/modules/chat",
+    },
     // Perfume Asset Module - Custom module for managing perfume volumes & bottles
     {
       resolve: "./src/modules/perfume-asset",

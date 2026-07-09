@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@lib/util/get-product-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "@modules/products/components/thumbnail"
+import { useEffect } from "react"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -15,25 +16,30 @@ type BulkRecord = {
     notes: string | null
 }
 
+type BulkSettings = {
+    phone_enabled: boolean
+    phone_number: string | null
+    whatsapp_enabled: boolean
+    whatsapp_number: string | null
+    whatsapp_message: string | null
+    email_enabled: boolean
+    email_address: string | null
+    livechat_enabled: boolean
+    livechat_provider: string | null
+    livechat_crisp_id: string | null
+    livechat_tawk_property_id: string | null
+    livechat_tawk_widget_id: string | null
+}
+
 type Props = {
     products: HttpTypes.StoreProduct[]
     bulkMap: Record<string, BulkRecord>
     region: HttpTypes.StoreRegion
     countryCode: string
+    settings?: BulkSettings | null
 }
 
-// ─── WhatsApp ─────────────────────────────────────────────────────────────────
-
-const WHATSAPP_NUMBER = "8801304117711"
-
-function buildWhatsAppLink(productName?: string) {
-    const msg = productName
-        ? `Hi, I'm interested in placing a bulk order for "${productName}". Please share pricing and availability.`
-        : `Hi, I'd like to inquire about bulk ordering from ZAHAN. Please share your bulk pricing details.`
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
-}
-
-// ─── WhatsApp Icon ────────────────────────────────────────────────────────────
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
 function WhatsAppIcon({ size = 20 }: { size?: number }) {
     return (
@@ -43,18 +49,109 @@ function WhatsAppIcon({ size = 20 }: { size?: number }) {
     )
 }
 
+function PhoneIcon({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.502-5.12-3.796-6.622-6.622l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+        </svg>
+    )
+}
+
+function EmailIcon({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        </svg>
+    )
+}
+
+function ChatIcon({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21.75l2.755-4.143a1.11 1.11 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+        </svg>
+    )
+}
+
+// ─── Contact Helper ───────────────────────────────────────────────────────────
+
+function getProductContactAction(productTitle: string, settings?: BulkSettings | null) {
+    const defaultMsg = `Hi, I'm interested in placing a bulk order for "${productTitle}". Please share pricing and availability.`
+    
+    if (!settings) {
+        return {
+            label: "Contact on WhatsApp",
+            href: `https://wa.me/8801304117711?text=${encodeURIComponent(defaultMsg)}`,
+            isExternal: true,
+            icon: "whatsapp"
+        }
+    }
+
+    if (settings.whatsapp_enabled && settings.whatsapp_number) {
+        const msg = settings.whatsapp_message
+            ? settings.whatsapp_message.replace("{product}", productTitle)
+            : defaultMsg
+        return {
+            label: "Contact on WhatsApp",
+            href: `https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(msg)}`,
+            isExternal: true,
+            icon: "whatsapp"
+        }
+    }
+
+    if (settings.email_enabled && settings.email_address) {
+        return {
+            label: "Email Inquiry",
+            href: `mailto:${settings.email_address}?subject=Bulk Inquiry: ${encodeURIComponent(productTitle)}&body=${encodeURIComponent(`Hi, I would like to request a bulk quote for "${productTitle}".`)}`,
+            isExternal: false,
+            icon: "email"
+        }
+    }
+
+    if (settings.phone_enabled && settings.phone_number) {
+        return {
+            label: "Call for Quote",
+            href: `tel:${settings.phone_number}`,
+            isExternal: false,
+            icon: "phone"
+        }
+    }
+
+    if (settings.livechat_enabled) {
+        return {
+            label: "Start Live Chat",
+            href: "#",
+            isExternal: false,
+            onClick: true,
+            icon: "chat"
+        }
+    }
+
+    return {
+        label: "Contact on WhatsApp",
+        href: `https://wa.me/8801304117711?text=${encodeURIComponent(defaultMsg)}`,
+        isExternal: true,
+        icon: "whatsapp"
+    }
+}
+
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
 function BulkProductCard({
     product,
     bulkRecord,
+    settings,
+    onStartLiveChat,
 }: {
     product: HttpTypes.StoreProduct
     bulkRecord: BulkRecord
     region: HttpTypes.StoreRegion
+    settings?: BulkSettings | null
+    onStartLiveChat: () => void
 }) {
     const { cheapestPrice } = getProductPrice({ product })
     const refPrice = cheapestPrice?.calculated_price || cheapestPrice?.original_price || null
+    const action = getProductContactAction(product.title, settings)
 
     return (
         <div className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-[#56aebf]/40 hover:shadow-[0_8px_32px_rgba(86,174,191,0.15)] transition-all duration-500 hover:-translate-y-1">
@@ -120,17 +217,33 @@ function BulkProductCard({
 
                 <div className="flex-1" />
 
-                {/* WhatsApp CTA */}
-                <a
-                    href={buildWhatsAppLink(product.title)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 w-full py-2 sm:py-3 px-2 sm:px-4 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-[0_4px_12px_rgba(86,174,191,0.3)] hover:-translate-y-0.5"
-                >
-                    <WhatsAppIcon size={16} />
-                    <span className="hidden sm:inline">Contact for Purchase</span>
-                    <span className="sm:hidden">Contact</span>
-                </a>
+                {/* Action CTA */}
+                {action.onClick ? (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault()
+                            onStartLiveChat()
+                        }}
+                        className="flex items-center justify-center gap-1.5 w-full py-2 sm:py-3 px-2 sm:px-4 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-[0_4px_12px_rgba(86,174,191,0.3)] hover:-translate-y-0.5"
+                    >
+                        <ChatIcon size={16} />
+                        <span className="hidden sm:inline">{action.label}</span>
+                        <span className="sm:hidden">Chat</span>
+                    </button>
+                ) : (
+                    <a
+                        href={action.href}
+                        target={action.isExternal ? "_blank" : undefined}
+                        rel={action.isExternal ? "noopener noreferrer" : undefined}
+                        className="flex items-center justify-center gap-1.5 w-full py-2 sm:py-3 px-2 sm:px-4 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-[0_4px_12px_rgba(86,174,191,0.3)] hover:-translate-y-0.5"
+                    >
+                        {action.icon === "whatsapp" && <WhatsAppIcon size={16} />}
+                        {action.icon === "email" && <EmailIcon size={16} />}
+                        {action.icon === "phone" && <PhoneIcon size={16} />}
+                        <span className="hidden sm:inline">{action.label}</span>
+                        <span className="sm:hidden">Contact</span>
+                    </a>
+                )}
             </div>
         </div>
     )
@@ -138,8 +251,21 @@ function BulkProductCard({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function BulkOrderClient({ products, bulkMap, region, countryCode }: Props) {
-    const generalWhatsApp = buildWhatsAppLink()
+export default function BulkOrderClient({ products, bulkMap, region, countryCode, settings }: Props) {
+
+    const handleStartLiveChat = () => {
+        if (!settings || !settings.livechat_enabled) return
+        window.dispatchEvent(new CustomEvent("open-custom-chat"))
+    }
+
+    // Default Fallback WhatsApp URL if settings not loaded
+    const whatsappNum = settings?.whatsapp_number || "8801304117711"
+    const whatsappMsg = settings?.whatsapp_message || "Hi, I'd like to inquire about bulk ordering from ZAHAN. Please share your bulk pricing details."
+    const generalWhatsApp = `https://wa.me/${whatsappNum}?text=${encodeURIComponent(whatsappMsg)}`
+
+    // Determine how it works step title & desc
+    const step2Title = settings?.whatsapp_enabled ? "Contact via WhatsApp" : "Send Bulk Inquiry"
+    const step2Desc = settings?.whatsapp_enabled ? "Click the button on any product to start a chat" : "Click the button on any product to contact our team"
 
     return (
         <div className="min-h-screen bg-black">
@@ -155,18 +281,49 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                     </h1>
                     <p className="font-inter text-sm md:text-base font-normal text-white/70 max-w-xl mx-auto animate-fade-in-top leading-relaxed mb-6" style={{ animationDelay: "0.2s" }}>
                         Order large quantities of our products at special wholesale pricing.
-                        Browse below and contact us on WhatsApp for a custom quote.
+                        Browse below and contact us through our available channels.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fade-in-top" style={{ animationDelay: "0.3s" }}>
-                        <a
-                            href={generalWhatsApp}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#56aebf] hover:bg-[#458f9e] text-black font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(86,174,191,0.5)] hover:-translate-y-0.5"
-                        >
-                            <WhatsAppIcon size={18} />
-                            Chat on WhatsApp
-                        </a>
+                    
+                    {/* Hero CTAs based on active channels */}
+                    <div className="flex flex-wrap gap-3 justify-center items-center animate-fade-in-top" style={{ animationDelay: "0.3s" }}>
+                        {(!settings || settings.whatsapp_enabled) && (
+                            <a
+                                href={generalWhatsApp}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#56aebf] hover:bg-[#458f9e] text-black font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(86,174,191,0.5)] hover:-translate-y-0.5"
+                            >
+                                <WhatsAppIcon size={18} />
+                                Chat on WhatsApp
+                            </a>
+                        )}
+                        {settings?.phone_enabled && settings.phone_number && (
+                            <a
+                                href={`tel:${settings.phone_number}`}
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-100 text-black font-semibold rounded-xl transition-all duration-300 shadow-lg hover:-translate-y-0.5"
+                            >
+                                <PhoneIcon size={18} />
+                                Call Support
+                            </a>
+                        )}
+                        {settings?.email_enabled && settings.email_address && (
+                            <a
+                                href={`mailto:${settings.email_address}?subject=Bulk Order Inquiry`}
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:-translate-y-0.5"
+                            >
+                                <EmailIcon size={18} />
+                                Email Us
+                            </a>
+                        )}
+                        {settings?.livechat_enabled && (
+                            <button
+                                onClick={handleStartLiveChat}
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#56aebf]/20 border-2 border-[#56aebf]/50 text-[#56aebf] hover:bg-[#56aebf]/30 font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
+                            >
+                                <ChatIcon size={18} />
+                                Start Live Chat
+                            </button>
+                        )}
                         <button
                             onClick={(e) => {
                                 e.preventDefault()
@@ -192,8 +349,8 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                             },
                             {
                                 num: "02",
-                                title: "Contact via WhatsApp",
-                                desc: "Click the button on any product to start a chat",
+                                title: step2Title,
+                                desc: step2Desc,
                             },
                             {
                                 num: "03",
@@ -230,15 +387,18 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                             <p className="font-inter text-slate-500 max-w-sm mx-auto text-sm">
                                 Bulk products are being set up. Contact us directly for wholesale pricing.
                             </p>
-                            <a
-                                href={generalWhatsApp}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 mt-2 px-6 py-3 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg"
-                            >
-                                <WhatsAppIcon size={18} />
-                                Contact Us on WhatsApp
-                            </a>
+                            
+                            {(!settings || settings.whatsapp_enabled) && (
+                                <a
+                                    href={generalWhatsApp}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 mt-2 px-6 py-3 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg"
+                                >
+                                    <WhatsAppIcon size={18} />
+                                    Contact Us on WhatsApp
+                                </a>
+                            )}
                         </div>
                     ) : (
                         <>
@@ -263,6 +423,8 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                                             product={product}
                                             bulkRecord={bulkRecord}
                                             region={region}
+                                            settings={settings}
+                                            onStartLiveChat={handleStartLiveChat}
                                         />
                                     )
                                 })}
@@ -281,18 +443,47 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                         </h2>
                         <p className="font-inter text-base text-white/65 mb-8 max-w-xl mx-auto leading-relaxed">
                             We can arrange bulk orders for any product in our catalog.
-                            Message us on WhatsApp and we&apos;ll work out a custom deal for you.
+                            Reach out to us using one of our active contact methods below.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <a
-                                href={generalWhatsApp}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#56aebf] hover:bg-[#458f9e] text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(86,174,191,0.5)] hover:-translate-y-0.5"
-                            >
-                                <WhatsAppIcon size={20} />
-                                Contact on WhatsApp
-                            </a>
+                        <div className="flex flex-wrap gap-4 justify-center items-center">
+                            {(!settings || settings.whatsapp_enabled) && (
+                                <a
+                                    href={generalWhatsApp}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#56aebf] hover:bg-[#458f9e] text-black font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(86,174,191,0.5)] hover:-translate-y-0.5"
+                                >
+                                    <WhatsAppIcon size={20} />
+                                    Contact on WhatsApp
+                                </a>
+                            )}
+                            {settings?.phone_enabled && settings.phone_number && (
+                                <a
+                                    href={`tel:${settings.phone_number}`}
+                                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-white hover:bg-slate-100 text-black font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                    <PhoneIcon size={20} />
+                                    Call Support
+                                </a>
+                            )}
+                            {settings?.email_enabled && settings.email_address && (
+                                <a
+                                    href={`mailto:${settings.email_address}?subject=Bulk Inquiry`}
+                                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                    <EmailIcon size={20} />
+                                    Email Us
+                                </a>
+                            )}
+                            {settings?.livechat_enabled && (
+                                <button
+                                    onClick={handleStartLiveChat}
+                                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#56aebf]/20 border-2 border-[#56aebf]/50 text-[#56aebf] hover:bg-[#56aebf]/30 font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                    <ChatIcon size={20} />
+                                    Start Live Chat
+                                </button>
+                            )}
                             <LocalizedClientLink
                                 href="/contact"
                                 className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-[#56aebf]/50 text-[#56aebf] hover:bg-[#56aebf]/10 hover:border-[#56aebf] font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
