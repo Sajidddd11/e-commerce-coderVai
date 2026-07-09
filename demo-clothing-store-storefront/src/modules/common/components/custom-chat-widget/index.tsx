@@ -15,6 +15,112 @@ type ChatMessage = {
     created_at: string
 }
 
+function MessageContent({ content }: { content: any }) {
+    try {
+        const rawContent = typeof content === "string" ? content : JSON.stringify(content)
+        const trimmed = rawContent.trim()
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            const data = typeof content === "object" ? content : JSON.parse(trimmed)
+            if (data && data.type === "product_inquiry") {
+                const { productId, handle, title, thumbnail, message } = data
+                
+                let countryCode = "bd"
+                if (typeof window !== "undefined") {
+                    const parts = window.location.pathname.split("/")
+                    if (parts[1] && parts[1].length === 2) {
+                        countryCode = parts[1]
+                    }
+                }
+                const productUrl = `/${countryCode}/products/${handle}`
+
+                return (
+                    <div className="flex flex-col gap-2">
+                        {message && <p className="whitespace-pre-wrap break-words">{message}</p>}
+                        
+                        {/* Embedded Mini Product Card with Thumbnail */}
+                        <div className="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col gap-2 shadow-sm text-slate-800 mt-1 max-w-[280px] w-full select-none">
+                            <div className="flex items-center gap-2.5">
+                                {thumbnail ? (
+                                    <img 
+                                        src={thumbnail} 
+                                        alt={title} 
+                                        className="w-12 h-12 rounded-lg object-cover bg-slate-100 shrink-0 border border-slate-100" 
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 rounded-lg bg-[#56aebf]/10 text-[#56aebf] flex items-center justify-center shrink-0">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                        </svg>
+                                    </div>
+                                )}
+                                <div className="flex-1 min-w-0 text-left">
+                                    <h4 className="font-semibold text-xs text-slate-900 truncate leading-snug">{title}</h4>
+                                    <p className="text-[10px] text-slate-400 truncate">Bulk Order Inquiry</p>
+                                </div>
+                            </div>
+                            
+                            <a
+                                href={productUrl}
+                                className="flex items-center justify-center gap-1 w-full py-1.5 px-3 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-[10px] rounded-lg transition-colors text-center"
+                            >
+                                <span>View Product</span>
+                                <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                )
+            }
+        }
+    } catch {}
+
+    const rawContent = typeof content === "string" ? content : ""
+    const productLinkRegex = /(https?:\/\/[^\s]+)?\/products\/([a-zA-Z0-9_-]+)/
+    const match = rawContent.match(productLinkRegex)
+
+    if (match) {
+        const productUrl = match[0]
+        const handle = match[2]
+        const nameMatch = rawContent.match(/for "([^"]+)"/)
+        const productName = nameMatch ? nameMatch[1] : handle.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+        const textBeforeLink = rawContent.split("Product Link:")[0].split("http")[0].trim()
+
+        return (
+            <div className="flex flex-col gap-2">
+                {textBeforeLink && <p className="whitespace-pre-wrap break-words">{textBeforeLink}</p>}
+                
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-col gap-2 shadow-sm text-slate-800 mt-1 max-w-[280px] w-full select-none">
+                    <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-lg bg-[#56aebf]/10 text-[#56aebf] flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                            </svg>
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                            <h4 className="font-semibold text-xs text-slate-900 truncate leading-snug">{productName}</h4>
+                            <p className="text-[10px] text-slate-400 truncate">Bulk Inquiry Item</p>
+                        </div>
+                    </div>
+                    <a
+                        href={productUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1 w-full py-1.5 px-3 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-[10px] rounded-lg transition-colors text-center"
+                    >
+                        <span>View Product</span>
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        )
+    }
+
+    return <p className="whitespace-pre-wrap break-words">{rawContent}</p>
+}
+
 export default function CustomChatWidget() {
     const [isOpen, setIsOpen] = useState(false)
     const [sessionId, setSessionId] = useState<string | null>(null)
@@ -33,6 +139,7 @@ export default function CustomChatWidget() {
     const [hasSubmittedDetails, setHasSubmittedDetails] = useState(false)
 
     const chatEndRef = useRef<HTMLDivElement>(null)
+    const [pendingInquiry, setPendingInquiry] = useState<string | null>(null)
 
     // ── Init session ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -126,12 +233,64 @@ export default function CustomChatWidget() {
             setIsOpen(true)
             const customEvent = e as CustomEvent
             if (customEvent.detail && customEvent.detail.prefill) {
-                setInputText(customEvent.detail.prefill)
+                const dataStr = customEvent.detail.prefill
+                if (hasSubmittedDetails) {
+                    sendPrefilledMessage(dataStr)
+                } else {
+                    setPendingInquiry(dataStr)
+                }
             }
         }
         window.addEventListener("open-custom-chat", handleOpenChat)
         return () => window.removeEventListener("open-custom-chat", handleOpenChat)
-    }, [])
+    }, [hasSubmittedDetails, sessionId, customerInfo])
+
+    const sendPrefilledMessage = async (contentStr: string, freshName?: string, freshEmail?: string) => {
+        if (!sessionId) return
+        setSending(true)
+
+        const name = freshName || customerInfo.name
+        const email = freshEmail || customerInfo.email
+
+        const tempId = Math.random().toString()
+        const optMessage: ChatMessage = {
+            id: tempId,
+            session_id: sessionId,
+            sender: "customer",
+            content: contentStr,
+            customer_name: name,
+            customer_email: email,
+            is_read: false,
+            created_at: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, optMessage])
+
+        try {
+            const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+            const res = await fetch(`${backendUrl}/store/chat/messages`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    content: contentStr,
+                    customer_name: name,
+                    customer_email: email,
+                }),
+            })
+            if (res.ok) {
+                await fetchMessages(true)
+            } else {
+                console.error("Failed to persist message on server")
+            }
+        } catch (err) {
+            console.error("Error sending prefilled message:", err)
+        } finally {
+            setSending(false)
+        }
+    }
 
     // ── Guest Form Submit ────────────────────────────────────────────────────────
     const handleGuestFormSubmit = (e: React.FormEvent) => {
@@ -149,6 +308,11 @@ export default function CustomChatWidget() {
             name: name,
         })
         setHasSubmittedDetails(true)
+
+        if (pendingInquiry) {
+            sendPrefilledMessage(pendingInquiry, name, phone)
+            setPendingInquiry(null)
+        }
     }
 
     // ── Send Message ─────────────────────────────────────────────────────────────
@@ -295,7 +459,7 @@ export default function CustomChatWidget() {
                                                         : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"
                                                 }`}
                                             >
-                                                <p className="whitespace-pre-wrap">{msg.content}</p>
+                                                <MessageContent content={msg.content} />
                                             </div>
                                             <span className="text-[9px] text-slate-400 font-mono mt-1 px-1">
                                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

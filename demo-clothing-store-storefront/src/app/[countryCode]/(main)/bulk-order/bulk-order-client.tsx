@@ -131,9 +131,16 @@ function BulkProductCard({
                 label: "Live Chat",
                 href: "#",
                 onClick: () => {
-                    const prefillText = `${baseMsg}\nProduct Link: ${productUrl}`
+                    const inquiryData = {
+                        type: "product_inquiry",
+                        productId: product.id,
+                        handle: product.handle,
+                        title: product.title,
+                        thumbnail: product.thumbnail || null,
+                        message: `Hi, I'm interested in placing a bulk order for "${product.title}". Please share pricing and availability.`
+                    }
                     window.dispatchEvent(new CustomEvent("open-custom-chat", {
-                        detail: { prefill: prefillText }
+                        detail: { prefill: JSON.stringify(inquiryData) }
                     }))
                 },
                 icon: "chat"
