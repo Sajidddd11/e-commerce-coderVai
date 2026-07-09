@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { View, ScrollView, Pressable, StyleSheet, ActivityIndicator } from "react-native"
+import { View, FlatList, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import { useRouter } from "expo-router"
 import { ChevronLeft, ChevronRight, Package } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
@@ -40,16 +40,50 @@ export default function OrdersScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const [orders, setOrders] = useState<HttpTypes.StoreOrder[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const LIMIT = 10
+
+  const fetchOrders = async (currentOffset: number, init = false) => {
+    if (!isAuthenticated) return
+
+    if (init) {
+      setLoading(true)
+    } else {
+      setLoadingMore(true)
+    }
+
+    try {
+      const data = await listOrders(LIMIT, currentOffset)
+      if (init) {
+        setOrders(data)
+      } else {
+        setOrders((prev) => [...prev, ...data])
+      }
+
+      if (data.length < LIMIT) {
+        setHasMore(false)
+      } else {
+        setHasMore(true)
+      }
+      setOffset(currentOffset + LIMIT)
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false)
+      setLoadingMore(false)
+    }
+  }
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setLoading(false)
-      return
-    }
-    listOrders(20, 0)
-      .then(setOrders)
-      .finally(() => setLoading(false))
+    fetchOrders(0, true)
   }, [isAuthenticated])
+
+  const handleLoadMore = () => {
+    if (loading || loadingMore || !hasMore) return
+    fetchOrders(offset)
+  }
 
   return (
     <Screen edges={["top"]}>
@@ -81,12 +115,24 @@ export default function OrdersScreen() {
           <Button title="Start shopping" onPress={() => router.push("/(tabs)/shop")} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
-          {orders.map((order) => {
+        <FlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={() => {
+            if (!loadingMore) return null
+            return (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator color={colors.brand.teal} size="small" />
+              </View>
+            )
+          }}
+          renderItem={({ item: order }) => {
             const status = getStatusConfig(order)
             return (
               <Pressable
-                key={order.id}
                 style={styles.orderCard}
                 onPress={() => router.push(`/account/orders/${order.id}`)}
               >
@@ -125,8 +171,8 @@ export default function OrdersScreen() {
                 <ChevronRight size={20} color={colors.grey[40]} />
               </Pressable>
             )
-          })}
-        </ScrollView>
+          }}
+        />
       )}
     </Screen>
   )
@@ -184,5 +230,10 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: "600",
+  },
+  footerLoader: {
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
   },
 })

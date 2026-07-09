@@ -56,7 +56,7 @@ export const listOrders = async (
       next,
       cache: "no-store",
     })
-    .then(({ orders }) => orders)
+    .then((res) => res)
     .catch((err) => medusaError(err))
 }
 

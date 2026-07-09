@@ -65,39 +65,48 @@ const OrderCard = ({ order }: OrderCardProps) => {
         </span>
       </div>
 
-      {/* Meta row */}
-      <div className="flex items-center gap-x-3 text-sm text-slate-500">
-        <span data-testid="order-amount" className="font-medium text-slate-700">
-          {convertToLocale({
-            amount: order.total,
-            currency_code: order.currency_code,
-          })}
-        </span>
-        <span className="text-slate-300">·</span>
-        <span>{`${numberOfLines} ${numberOfLines > 1 ? "items" : "item"}`}</span>
+      {/* Meta & Button row */}
+      <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center gap-x-3">
+          <span data-testid="order-amount" className="font-medium text-slate-700">
+            {convertToLocale({
+              amount: order.total,
+              currency_code: order.currency_code,
+            })}
+          </span>
+          <span className="text-slate-300">·</span>
+          <span>{`${numberOfLines} ${numberOfLines > 1 ? "items" : "item"}`}</span>
+        </div>
+        <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
+          <Button data-testid="order-details-link" variant="secondary" size="small">
+            See details
+          </Button>
+        </LocalizedClientLink>
       </div>
 
       {/* Thumbnails */}
-      <div className="grid grid-cols-4 gap-2 my-1">
+      <div className="flex gap-4 my-2">
         {order.items?.slice(0, 3).map((i) => {
           const handle = i.product?.handle || i.variant?.product?.handle
           
           const thumbnailElement = (
-            <Thumbnail thumbnail={i.thumbnail} images={[]} size="full" />
+            <div className="w-20 h-20 shrink-0 overflow-hidden rounded-lg">
+              <Thumbnail thumbnail={i.thumbnail} images={[]} size="small" />
+            </div>
           )
           const textElement = (
-            <div className="flex items-center text-xs text-slate-600">
+            <div className="flex items-center text-xs text-slate-600 mt-1 max-w-[80px]">
               <span className={`font-medium truncate ${handle ? 'hover:text-blue-600 transition-colors' : ''}`} data-testid="item-title">
                 {i.title}
               </span>
-              <span className="ml-1 text-slate-400">x{i.quantity}</span>
+              <span className="ml-1 text-slate-400 shrink-0">x{i.quantity}</span>
             </div>
           )
 
           return (
-            <div key={i.id} className="flex flex-col gap-y-1" data-testid="order-item">
+            <div key={i.id} className="flex flex-col w-20" data-testid="order-item">
               {handle ? (
-                <LocalizedClientLink href={`/products/${handle}`} className="flex flex-col gap-y-1">
+                <LocalizedClientLink href={`/products/${handle}`} className="flex flex-col">
                   {thumbnailElement}
                   {textElement}
                 </LocalizedClientLink>
@@ -110,21 +119,12 @@ const OrderCard = ({ order }: OrderCardProps) => {
             </div>
           )
         })}
-        {numberOfProducts > 4 && (
-          <div className="w-full h-full flex flex-col items-center justify-center text-xs text-slate-500">
-            <span>+{numberOfLines - 4}</span>
+        {numberOfProducts > 3 && (
+          <div className="w-20 h-20 border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-xs text-slate-400 bg-slate-50 shrink-0">
+            <span>+{numberOfLines - 3}</span>
             <span>more</span>
           </div>
         )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-end">
-        <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
-          <Button data-testid="order-details-link" variant="secondary">
-            See details
-          </Button>
-        </LocalizedClientLink>
       </div>
     </div>
   )

@@ -22,6 +22,9 @@ export function Pagination({
 
   // Function to handle page changes
   const handlePageChange = (newPage: number) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("page-transition-start"))
+    }
     const params = new URLSearchParams(searchParams)
     params.set("page", newPage.toString())
     router.push(`${pathname}?${params.toString()}`)

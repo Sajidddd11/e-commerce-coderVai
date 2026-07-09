@@ -3,8 +3,7 @@ import { Metadata } from "next"
 import OrderOverview from "@modules/account/components/order-overview"
 import { redirect } from "next/navigation"
 import { listOrders } from "@lib/data/orders"
-import Divider from "@modules/common/components/divider"
-import TransferRequestForm from "@modules/account/components/transfer-request-form"
+import { Pagination } from "@modules/store/components/pagination"
 
 // Always fetch fresh — so metadata.custom_status is never stale
 export const dynamic = "force-dynamic"
@@ -14,12 +13,24 @@ export const metadata: Metadata = {
   description: "Overview of your previous orders.",
 }
 
-export default async function Orders() {
-  const orders = await listOrders().catch(() => null)
+type Props = {
+  searchParams: Promise<{ page?: string }>
+}
 
-  if (!orders) {
+export default async function Orders(props: Props) {
+  const searchParams = await props.searchParams
+  const currentPage = searchParams.page ? parseInt(searchParams.page) : 1
+  const limit = 5
+  const offset = (currentPage - 1) * limit
+
+  const ordersRes = await listOrders(limit, offset).catch(() => null)
+
+  if (!ordersRes) {
     redirect("/account")
   }
+
+  const { orders, count } = ordersRes
+  const totalPages = Math.ceil((count ?? 0) / limit)
 
   return (
     <div className="w-full" data-testid="orders-page-wrapper">
@@ -32,8 +43,9 @@ export default async function Orders() {
       </div>
       <div>
         <OrderOverview orders={orders} />
-        <Divider className="my-16" />
-        <TransferRequestForm />
+        {totalPages > 1 && (
+          <Pagination page={currentPage} totalPages={totalPages} />
+        )}
       </div>
     </div>
   )

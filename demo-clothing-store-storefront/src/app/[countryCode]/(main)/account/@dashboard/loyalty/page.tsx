@@ -21,11 +21,14 @@ export default async function LoyaltyPage() {
     const pointsBalance = account?.points || 0
 
     // Fetch customer's orders to map order database IDs to user-friendly order numbers (display_id)
-    const orders = await listOrders(100).catch(() => [])
+    const ordersRes = await listOrders(100).catch(() => null)
+    const orders = ordersRes?.orders || []
     const orderMap: Record<string, number> = {}
     if (orders && Array.isArray(orders)) {
         orders.forEach(o => {
-            orderMap[o.id] = o.display_id
+            if (o.display_id !== undefined && o.display_id !== null) {
+                orderMap[o.id] = o.display_id
+            }
         })
     }
 
