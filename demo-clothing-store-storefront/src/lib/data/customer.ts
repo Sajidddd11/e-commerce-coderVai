@@ -10,6 +10,7 @@ import {
   getCacheOptions,
   getCacheTag,
   getCartId,
+  getPublishableKeyHeader,
   removeAuthToken,
   removeCartId,
   setAuthToken,
@@ -306,6 +307,7 @@ export async function loginOrRegisterWithGoogle(token: string) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...getPublishableKeyHeader(),
       },
       body: JSON.stringify({ token }),
     })
