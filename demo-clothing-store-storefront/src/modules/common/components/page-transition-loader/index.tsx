@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, Suspense } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import LoadingLogo from "@modules/common/components/loading-logo"
 
-export default function PageTransitionLoader() {
+function PageTransitionLoaderInner() {
   const [isVisible, setIsVisible] = useState(false)
   const [progress, setProgress] = useState(0)
   const pathname = usePathname()
@@ -191,5 +191,13 @@ export default function PageTransitionLoader() {
         </div>
       )}
     </>
+  )
+}
+
+export default function PageTransitionLoader() {
+  return (
+    <Suspense fallback={null}>
+      <PageTransitionLoaderInner />
+    </Suspense>
   )
 }
