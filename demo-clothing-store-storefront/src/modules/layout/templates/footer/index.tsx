@@ -126,6 +126,11 @@ export default async function Footer() {
                 </LocalizedClientLink>
               </li>
               <li>
+                <LocalizedClientLink href="/blogs" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
+                  Blogs
+                </LocalizedClientLink>
+              </li>
+              <li>
                 <LocalizedClientLink href="/privacy-policy" className="text-gray-400 text-sm hover:text-[#56aebf] hover:translate-x-2 transition-all duration-200 inline-block">
                   Privacy Policy
                 </LocalizedClientLink>
