@@ -6,13 +6,16 @@ import { listOrders } from "@lib/data/orders"
 import Divider from "@modules/common/components/divider"
 import TransferRequestForm from "@modules/account/components/transfer-request-form"
 
+// Always fetch fresh — so metadata.custom_status is never stale
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Orders",
   description: "Overview of your previous orders.",
 }
 
 export default async function Orders() {
-  const orders = await listOrders()
+  const orders = await listOrders().catch(() => null)
 
   if (!orders) {
     redirect("/account")

@@ -16,7 +16,7 @@ export default async function Addresses(props: {
 }) {
   const params = await props.params
   const { countryCode } = params
-  const customer = await retrieveCustomer()
+  const customer = await retrieveCustomer().catch(() => null)
   const region = await getRegion(countryCode)
 
   if (!customer || !region) {

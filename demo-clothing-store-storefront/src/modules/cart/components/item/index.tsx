@@ -61,12 +61,14 @@ const Item = ({ item, type = "full", currencyCode, renderMode = "desktop" }: Ite
           </LocalizedClientLink>
 
           <div className="flex-1 min-w-0">
-            <Text
-              className="txt-medium-plus text-ui-fg-base break-words"
-              data-testid="product-title"
-            >
-              {item.product_title}
-            </Text>
+            <LocalizedClientLink href={`/products/${item.product_handle}`}>
+              <Text
+                className="txt-medium-plus text-ui-fg-base break-words hover:text-ui-fg-interactive transition-colors"
+                data-testid="product-title"
+              >
+                {item.product_title}
+              </Text>
+            </LocalizedClientLink>
             <LineItemOptions variant={item.variant} data-testid="product-variant" />
 
             <div className="mt-2">
@@ -127,12 +129,14 @@ const Item = ({ item, type = "full", currencyCode, renderMode = "desktop" }: Ite
         </Table.Cell>
 
         <Table.Cell className="text-left">
-          <Text
-            className="txt-medium-plus text-ui-fg-base"
-            data-testid="product-title"
-          >
-            {item.product_title}
-          </Text>
+          <LocalizedClientLink href={`/products/${item.product_handle}`}>
+            <Text
+              className="txt-medium-plus text-ui-fg-base hover:text-ui-fg-interactive transition-colors"
+              data-testid="product-title"
+            >
+              {item.product_title}
+            </Text>
+          </LocalizedClientLink>
           <LineItemOptions variant={item.variant} data-testid="product-variant" />
         </Table.Cell>
 

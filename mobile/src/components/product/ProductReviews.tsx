@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react"
-import { View, Pressable, StyleSheet, Modal, ScrollView } from "react-native"
-import { Star, X } from "lucide-react-native"
+import { View, StyleSheet } from "react-native"
+import { Star, ShieldCheck } from "lucide-react-native"
 import { ThemedText } from "../ui/ThemedText"
-import { Button } from "../ui/Button"
-import { Input } from "../ui/Input"
 import {
   getProductReviews,
-  createProductReview,
   ProductReview,
 } from "@api/enhancements"
-import { useAuthStore } from "@stores/auth-store"
 import { colors, spacing, borderRadius } from "@design/theme"
 
 function Stars({ value, size = 14 }: { value: number; size?: number }) {
@@ -28,19 +24,10 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
 }
 
 export function ProductReviews({ productId }: { productId: string }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const customer = useAuthStore((s) => s.customer)
   const [reviews, setReviews] = useState<ProductReview[]>([])
   const [average, setAverage] = useState(0)
   const [count, setCount] = useState(0)
   const [loaded, setLoaded] = useState(false)
-
-  const [modalOpen, setModalOpen] = useState(false)
-  const [rating, setRating] = useState(5)
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const load = () => {
     getProductReviews(productId).then((res) => {
@@ -56,38 +43,7 @@ export function ProductReviews({ productId }: { productId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId])
 
-  const submit = async () => {
-    setError(null)
-    setSubmitting(true)
-    
-    let customer_name = undefined;
-    if (customer?.first_name || customer?.last_name) {
-      customer_name = `${customer.first_name ?? ""} ${customer.last_name ?? ""}`.trim()
-    } else if (customer?.email) {
-      customer_name = customer.email.split("@")[0]
-    }
-    
-    const res = await createProductReview(productId, { 
-      rating, 
-      title, 
-      content,
-      customer_name,
-      customer_email: customer?.email
-    })
-    setSubmitting(false)
-    if (res.success) {
-      setModalOpen(false)
-      setTitle("")
-      setContent("")
-      setRating(5)
-      load()
-    } else {
-      setError(res.error ?? "Could not submit review.")
-    }
-  }
-
-  // Don't render anything until we know whether reviews exist (graceful when
-  // the backend route is unavailable).
+  // Don't render until we know whether reviews exist (graceful fallback)
   if (!loaded) return null
 
   return (
@@ -110,14 +66,18 @@ export function ProductReviews({ productId }: { productId: string }) {
             </ThemedText>
           )}
         </View>
-        {isAuthenticated ? (
-          <Button
-            title="Write"
-            variant="secondary"
-            size="small"
-            onPress={() => setModalOpen(true)}
-          />
-        ) : null}
+      </View>
+
+      {/* Info note — reviews come from order history */}
+      <View style={styles.infoBox}>
+        <ShieldCheck size={14} color={colors.grey[50]} />
+        <ThemedText variant="bodySmall" color={colors.grey[50]} style={styles.infoText}>
+          Purchased this product? Review it from{" "}
+          <ThemedText variant="bodySmall" color={colors.brand.teal}>
+            My Orders
+          </ThemedText>{" "}
+          after delivery.
+        </ThemedText>
       </View>
 
       {reviews.slice(0, 5).map((r) => (
@@ -140,54 +100,6 @@ export function ProductReviews({ productId }: { productId: string }) {
           ) : null}
         </View>
       ))}
-
-      <Modal
-        visible={modalOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalOpen(false)}
-      >
-        <View style={styles.backdrop}>
-          <View style={styles.sheet}>
-            <View style={styles.sheetHeader}>
-              <ThemedText variant="subheading" color={colors.grey[90]}>
-                Write a review
-              </ThemedText>
-              <Pressable onPress={() => setModalOpen(false)} hitSlop={8}>
-                <X size={22} color={colors.grey[60]} />
-              </Pressable>
-            </View>
-            <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-              <View style={styles.ratingPicker}>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Pressable key={i} onPress={() => setRating(i)} hitSlop={6}>
-                    <Star
-                      size={32}
-                      color={colors.warning}
-                      fill={i <= rating ? colors.warning : "transparent"}
-                    />
-                  </Pressable>
-                ))}
-              </View>
-              <Input label="Title" value={title} onChangeText={setTitle} />
-              <Input
-                label="Your review"
-                value={content}
-                onChangeText={setContent}
-                multiline
-                numberOfLines={4}
-                style={styles.textArea}
-              />
-              {error ? (
-                <ThemedText variant="bodySmall" color={colors.error}>
-                  {error}
-                </ThemedText>
-              ) : null}
-              <Button title="Submit review" fullWidth loading={submitting} onPress={submit} />
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </View>
   )
 }
@@ -201,6 +113,18 @@ const styles = StyleSheet.create({
   },
   summary: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginTop: 2 },
   starsRow: { flexDirection: "row", gap: 2 },
+  infoBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.xs,
+    backgroundColor: colors.grey[5],
+    borderRadius: borderRadius.base,
+    padding: spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    lineHeight: 18,
+  },
   review: {
     gap: spacing.xs,
     paddingVertical: spacing.md,
@@ -212,22 +136,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" },
-  sheet: {
-    backgroundColor: colors.grey[0],
-    borderTopLeftRadius: borderRadius.large,
-    borderTopRightRadius: borderRadius.large,
-    paddingTop: spacing.base,
-    maxHeight: "85%",
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
-  form: { padding: spacing.base, gap: spacing.base },
-  ratingPicker: { flexDirection: "row", gap: spacing.sm, justifyContent: "center" },
-  textArea: { minHeight: 90, textAlignVertical: "top", paddingTop: spacing.md },
 })

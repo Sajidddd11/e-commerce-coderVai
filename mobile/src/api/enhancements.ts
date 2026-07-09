@@ -201,9 +201,42 @@ export async function getProductReviews(
     .catch(() => ({ reviews: [], average: 0, count: 0 }))
 }
 
+export interface ReviewEligibility {
+  eligible: boolean
+  order_id?: string
+  order_display_id?: number
+}
+
+/**
+ * Check if the authenticated customer can review a product.
+ * Returns eligible=true only when they have a delivered or refunded order
+ * containing that product.
+ */
+export async function checkReviewEligibility(
+  productId: string
+): Promise<ReviewEligibility> {
+  try {
+    const headers = await getAuthHeaders()
+    const data = await sdk.client.fetch<ReviewEligibility>(
+      `/store/reviews/product/${productId}/eligibility`,
+      { method: "GET", headers }
+    )
+    return data ?? { eligible: false }
+  } catch {
+    return { eligible: false }
+  }
+}
+
 export async function createProductReview(
   productId: string,
-  body: { rating: number; title?: string; content?: string; customer_name?: string; customer_email?: string }
+  body: {
+    rating: number
+    title?: string
+    content?: string
+    customer_name?: string
+    customer_email?: string
+    order_id: string  // now required — must be a delivered/refunded order
+  }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const headers = await getAuthHeaders()

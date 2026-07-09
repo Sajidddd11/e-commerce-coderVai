@@ -18,13 +18,13 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
       label: "Description",
       component: <ProductDescriptionTab product={product} />,
     },
+    {
+      label: "Customer Reviews",
+      component: <ReviewsTab productId={product.id!} />,
+    },
     // {
     //   label: "Specifications",
     //   component: <SpecificationsTab product={product} />,
-    // },
-    // {
-    //   label: "Customer Reviews",
-    //   component: <ReviewsTab />,
     // },
     // {
     //   label: "Shipping & Returns",
@@ -233,10 +233,10 @@ const SpecificationsTab = ({ product }: ProductTabsProps) => {
   )
 }
 
-const ReviewsTab = () => {
+const ReviewsTab = ({ productId }: { productId: string }) => {
   return (
     <div className="py-8">
-      <ReviewsSection />
+      <ReviewsSection productId={productId} />
     </div>
   )
 }

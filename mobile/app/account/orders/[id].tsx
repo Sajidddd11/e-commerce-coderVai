@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react"
-import { View, ScrollView, Pressable, StyleSheet, ActivityIndicator } from "react-native"
+import {
+  View,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native"
 import { Image } from "expo-image"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import {
@@ -11,11 +21,19 @@ import {
   XCircle,
   RefreshCw,
   Check,
+  Star,
+  X,
+  ShieldCheck,
+  Loader,
 } from "lucide-react-native"
 import { HttpTypes } from "@medusajs/types"
 import { Screen } from "@components/layout/Screen"
 import { ThemedText } from "@components/ui/ThemedText"
+import { Button } from "@components/ui/Button"
+import { Input } from "@components/ui/Input"
 import { retrieveOrder } from "@api/orders"
+import { createProductReview } from "@api/enhancements"
+import { useAuthStore } from "@stores/auth-store"
 import { paymentTitle } from "@utils/shipping"
 import { convertToLocale } from "@utils/money"
 import { colors, spacing, borderRadius } from "@design/theme"
@@ -104,13 +122,158 @@ function getStepColors(status: string) {
   return { active: colors.brand.teal, muted: "rgba(86,174,191,0.12)" }
 }
 
+// ─── Review Modal ─────────────────────────────────────────────────────────────
+
+interface ReviewItem {
+  productId: string
+  title: string
+  thumbnail?: string | null
+}
+
+function ReviewModal({
+  item,
+  orderId,
+  customer,
+  onClose,
+  onSubmitted,
+}: {
+  item: ReviewItem
+  orderId: string
+  customer: { name: string; email: string }
+  onClose: () => void
+  onSubmitted: () => void
+}) {
+  const [rating, setRating] = useState(5)
+  const [title, setTitle] = useState("")
+  const [content, setContent] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+
+  const submit = async () => {
+    if (!title.trim() || !content.trim()) {
+      setError("Please fill in all fields.")
+      return
+    }
+    setError(null)
+    setSubmitting(true)
+    const res = await createProductReview(item.productId, {
+      rating,
+      title,
+      content,
+      customer_name: customer.name,
+      customer_email: customer.email,
+      order_id: orderId,
+    })
+    setSubmitting(false)
+    if (res.success) {
+      setSubmitted(true)
+      setTimeout(() => {
+        onSubmitted()
+        onClose()
+      }, 1800)
+    } else {
+      setError(res.error ?? "Could not submit review.")
+    }
+  }
+
+  return (
+    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.modalBackdrop}
+      >
+        <View style={styles.modalSheet}>
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <ThemedText variant="subheading" color={colors.grey[90]}>
+              Write a review
+            </ThemedText>
+            <Pressable onPress={onClose} hitSlop={8}>
+              <X size={22} color={colors.grey[60]} />
+            </Pressable>
+          </View>
+
+          {/* Product name */}
+          <ThemedText
+            variant="bodySmall"
+            color={colors.grey[50]}
+            style={styles.modalProduct}
+            numberOfLines={1}
+          >
+            {item.title}
+          </ThemedText>
+
+          {submitted ? (
+            <View style={styles.successBox}>
+              <ShieldCheck size={40} color={colors.success} />
+              <ThemedText variant="bodyMedium" color={colors.grey[90]}>
+                Review submitted!
+              </ThemedText>
+              <ThemedText variant="bodySmall" color={colors.grey[50]}>
+                It will appear after admin approval.
+              </ThemedText>
+            </View>
+          ) : (
+            <ScrollView
+              contentContainerStyle={styles.modalForm}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Star picker */}
+              <View style={styles.starRow}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Pressable key={i} onPress={() => setRating(i)} hitSlop={6}>
+                    <Star
+                      size={34}
+                      color={colors.warning}
+                      fill={i <= rating ? colors.warning : "transparent"}
+                    />
+                  </Pressable>
+                ))}
+              </View>
+
+              <Input label="Title" value={title} onChangeText={setTitle} />
+              <Input
+                label="Your review"
+                value={content}
+                onChangeText={setContent}
+                multiline
+                numberOfLines={4}
+                style={styles.textArea}
+              />
+
+              {error ? (
+                <ThemedText variant="bodySmall" color={colors.error}>
+                  {error}
+                </ThemedText>
+              ) : null}
+
+              <Button
+                title="Submit review"
+                fullWidth
+                loading={submitting}
+                onPress={submit}
+              />
+            </ScrollView>
+          )}
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  )
+}
+
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
+  const customer = useAuthStore((s) => s.customer)
   const [order, setOrder] = useState<HttpTypes.StoreOrder | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Review state
+  const [activeReview, setActiveReview] = useState<ReviewItem | null>(null)
+  const [reviewedProductIds, setReviewedProductIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!id) return
@@ -127,6 +290,13 @@ export default function OrderDetailScreen() {
   const steps = getStepsForStatus(customStatus)
   const activeIndex = getActiveStepIndex(customStatus, steps)
   const stepColors = getStepColors(customStatus)
+
+  const isEligibleForReview = customStatus === "delivered" || customStatus === "refunded"
+
+  const customerName = customer?.first_name
+    ? `${customer.first_name} ${customer.last_name ?? ""}`.trim()
+    : customer?.email?.split("@")[0] ?? "Customer"
+  const customerEmail = customer?.email ?? ""
 
   return (
     <Screen edges={["top"]}>
@@ -237,7 +407,7 @@ export default function OrderDetailScreen() {
                   ) : null}
                   <View style={styles.flex}>
                     <ThemedText variant="body" color={colors.grey[90]} numberOfLines={2}>
-                      {item.product_title || item.title}
+                      {(item as any).product_title || item.title}
                     </ThemedText>
                     <ThemedText variant="bodySmall" color={colors.grey[50]}>
                       Qty {item.quantity}
@@ -302,7 +472,94 @@ export default function OrderDetailScreen() {
             </View>
           ) : null}
 
+          {/* ── Rate Your Items (delivered / refunded only) ── */}
+          {isEligibleForReview && (order.items?.length ?? 0) > 0 && (
+            <View style={styles.reviewCard}>
+              <View style={styles.reviewCardHeader}>
+                <Star size={16} color={colors.warning} fill={colors.warning} />
+                <ThemedText variant="subheading" color={colors.grey[90]}>
+                  Rate Your Items
+                </ThemedText>
+              </View>
+              <ThemedText variant="bodySmall" color={colors.grey[50]} style={styles.reviewCardSubtitle}>
+                Share your experience with the products you received.
+              </ThemedText>
+
+              {order.items?.map((item) => {
+                const productId = (item as any).product_id
+                const alreadyReviewed = productId && reviewedProductIds.has(productId)
+
+                return (
+                  <View key={item.id} style={styles.reviewItemRow}>
+                    {item.thumbnail ? (
+                      <Image source={item.thumbnail} style={styles.reviewThumb} contentFit="cover" />
+                    ) : null}
+                    <View style={styles.flex}>
+                      <ThemedText variant="body" color={colors.grey[90]} numberOfLines={2}>
+                        {(item as any).product_title || item.title}
+                      </ThemedText>
+                      {(item as any).variant_title ? (
+                        <ThemedText variant="bodySmall" color={colors.grey[50]}>
+                          {(item as any).variant_title}
+                        </ThemedText>
+                      ) : null}
+                    </View>
+                    {alreadyReviewed ? (
+                      <View style={styles.reviewedBadge}>
+                        <ShieldCheck size={12} color={colors.success} />
+                        <ThemedText variant="bodySmall" color={colors.success}>
+                          Reviewed
+                        </ThemedText>
+                      </View>
+                    ) : productId ? (
+                      <Pressable
+                        style={styles.writeReviewBtn}
+                        onPress={() =>
+                          setActiveReview({
+                            productId,
+                            title: (item as any).product_title || item.title || "",
+                            thumbnail: item.thumbnail,
+                          })
+                        }
+                      >
+                        <Star size={11} color="#fff" fill="#fff" />
+                        <ThemedText variant="bodySmall" color="#fff" style={styles.writeReviewText}>
+                          Review
+                        </ThemedText>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                )
+              })}
+
+              <View style={styles.reviewCardFooter}>
+                <ShieldCheck size={12} color={colors.grey[40]} />
+                <ThemedText variant="bodySmall" color={colors.grey[40]} style={styles.flex}>
+                  Reviews appear after admin approval.
+                </ThemedText>
+              </View>
+            </View>
+          )}
+
         </ScrollView>
+      )}
+
+      {/* ── Review Modal ── */}
+      {activeReview && (
+        <ReviewModal
+          item={activeReview}
+          orderId={order?.id ?? ""}
+          customer={{ name: customerName, email: customerEmail }}
+          onClose={() => setActiveReview(null)}
+          onSubmitted={() => {
+            if (activeReview.productId) {
+              setReviewedProductIds((prev) =>
+                new Set([...prev, activeReview.productId])
+              )
+            }
+            setActiveReview(null)
+          }}
+        />
       )}
     </Screen>
   )
@@ -362,20 +619,10 @@ const styles = StyleSheet.create({
     padding: spacing.base,
     gap: spacing.md,
   },
-  trackingTitle: {
-    marginBottom: spacing.xs,
-  },
-  stepsContainer: {
-    gap: 0,
-  },
-  stepRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  stepLeft: {
-    alignItems: "center",
-    width: 32,
-  },
+  trackingTitle: { marginBottom: spacing.xs },
+  stepsContainer: { gap: 0 },
+  stepRow: { flexDirection: "row", gap: spacing.md },
+  stepLeft: { alignItems: "center", width: 32 },
   stepDot: {
     width: 32,
     height: 32,
@@ -390,14 +637,8 @@ const styles = StyleSheet.create({
     minHeight: 20,
     borderRadius: 1,
   },
-  stepContent: {
-    flex: 1,
-    paddingTop: 6,
-    gap: 2,
-  },
-  activeLabel: {
-    fontWeight: "700",
-  },
+  stepContent: { flex: 1, paddingTop: 6, gap: 2 },
+  activeLabel: { fontWeight: "700" },
   statusBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -408,15 +649,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: spacing.xs,
   },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-  },
-  statusBadgeText: {
-    fontWeight: "600",
-    fontSize: 12,
-  },
+  statusDot: { width: 7, height: 7, borderRadius: 4 },
+  statusBadgeText: { fontWeight: "600", fontSize: 12 },
 
   // General cards
   card: {
@@ -435,4 +669,104 @@ const styles = StyleSheet.create({
   },
   thumb: { width: 48, height: 48, borderRadius: borderRadius.base, backgroundColor: colors.grey[10] },
   divider: { height: 1, backgroundColor: colors.grey[20], marginVertical: spacing.xs },
+
+  // Rate Your Items card
+  reviewCard: {
+    backgroundColor: colors.grey[0],
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: borderRadius.rounded,
+    padding: spacing.base,
+    gap: spacing.sm,
+  },
+  reviewCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  reviewCardSubtitle: { marginBottom: spacing.xs },
+  reviewItemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    backgroundColor: colors.grey[5],
+    borderRadius: borderRadius.base,
+    padding: spacing.sm,
+  },
+  reviewThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.base,
+    backgroundColor: colors.grey[10],
+  },
+  reviewedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "rgba(16,185,129,0.1)",
+  },
+  writeReviewBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: colors.grey[90],
+  },
+  writeReviewText: { fontWeight: "700", fontSize: 11 },
+  reviewCardFooter: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.grey[10],
+  },
+
+  // Modal
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
+  },
+  modalSheet: {
+    backgroundColor: colors.grey[0],
+    borderTopLeftRadius: borderRadius.large,
+    borderTopRightRadius: borderRadius.large,
+    paddingTop: spacing.base,
+    maxHeight: "90%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  modalProduct: {
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  modalForm: {
+    padding: spacing.base,
+    gap: spacing.base,
+    paddingBottom: spacing.xl,
+  },
+  starRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "center",
+    paddingVertical: spacing.sm,
+  },
+  textArea: { minHeight: 90, textAlignVertical: "top", paddingTop: spacing.md },
+  successBox: {
+    alignItems: "center",
+    gap: spacing.md,
+    padding: spacing.xl,
+  },
 })
