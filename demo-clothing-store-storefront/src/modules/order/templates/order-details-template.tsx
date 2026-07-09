@@ -69,6 +69,7 @@ function getStepColors(status: string): StepColors {
 type OrderDetailsTemplateProps = {
   order: HttpTypes.StoreOrder
   customer?: { first_name?: string; last_name?: string; email?: string } | null
+  reviewedProductIds?: string[]
 }
 
 const ELIGIBLE_STATUSES = ["delivered", "refunded"]
@@ -78,6 +79,7 @@ const ELIGIBLE_STATUSES = ["delivered", "refunded"]
 const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
   order,
   customer,
+  reviewedProductIds,
 }) => {
   // Always read the custom status from metadata first (same as mobile)
   const customStatus: string =
@@ -94,7 +96,9 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
     title: string
     thumbnail?: string | null
   } | null>(null)
-  const [reviewedItems, setReviewedItems] = useState<Set<string>>(new Set())
+  const [reviewedItems, setReviewedItems] = useState<Set<string>>(
+    () => new Set(reviewedProductIds ?? [])
+  )
 
   const currency = order.currency_code || "bdt"
 
@@ -470,9 +474,11 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
           customerEmail={customerEmail}
           onClose={() => setActiveReview(null)}
           onSubmitted={() => {
-            setReviewedItems((prev) =>
-              new Set([...prev, activeReview.id])
-            )
+            setReviewedItems((prev) => {
+              const next = new Set(prev)
+              next.add(activeReview.id)
+              return next
+            })
             setActiveReview(null)
           }}
         />

@@ -32,7 +32,7 @@ import { ThemedText } from "@components/ui/ThemedText"
 import { Button } from "@components/ui/Button"
 import { Input } from "@components/ui/Input"
 import { retrieveOrder } from "@api/orders"
-import { createProductReview } from "@api/enhancements"
+import { createProductReview, getReviewedProductIds } from "@api/enhancements"
 import { useAuthStore } from "@stores/auth-store"
 import { paymentTitle } from "@utils/shipping"
 import { convertToLocale } from "@utils/money"
@@ -277,8 +277,16 @@ export default function OrderDetailScreen() {
 
   useEffect(() => {
     if (!id) return
-    retrieveOrder(id)
-      .then(setOrder)
+    setLoading(true)
+    Promise.all([
+      retrieveOrder(id),
+      getReviewedProductIds().catch(() => [])
+    ])
+      .then(([orderRes, reviewedIds]) => {
+        setOrder(orderRes)
+        setReviewedProductIds(new Set(reviewedIds))
+      })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [id])
 
@@ -486,7 +494,10 @@ export default function OrderDetailScreen() {
               </ThemedText>
 
               {order.items?.map((item) => {
-                const productId = (item as any).product_id
+                const productId =
+                  (item as any).product_id ||
+                  item.product?.id ||
+                  item.variant?.product_id
                 const alreadyReviewed = productId && reviewedProductIds.has(productId)
 
                 return (
@@ -553,9 +564,11 @@ export default function OrderDetailScreen() {
           onClose={() => setActiveReview(null)}
           onSubmitted={() => {
             if (activeReview.productId) {
-              setReviewedProductIds((prev) =>
-                new Set([...prev, activeReview.productId])
-              )
+              setReviewedProductIds((prev) => {
+                const next = new Set(prev)
+                next.add(activeReview.productId)
+                return next
+              })
             }
             setActiveReview(null)
           }}

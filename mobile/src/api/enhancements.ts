@@ -251,6 +251,23 @@ export async function createProductReview(
   }
 }
 
+/**
+ * Get all product IDs reviewed by the current authenticated customer
+ */
+export async function getReviewedProductIds(): Promise<string[]> {
+  try {
+    const headers = await getAuthHeaders()
+    const data = await sdk.client.fetch<{ reviewed_product_ids: string[] }>(
+      `/store/reviews/me`,
+      { method: "GET", headers }
+    )
+    return data?.reviewed_product_ids ?? []
+  } catch {
+    return []
+  }
+}
+
+
 export async function markReviewHelpful(reviewId: string): Promise<void> {
   await sdk.client
     .fetch(`/store/reviews/${reviewId}/helpful`, { method: "POST" })

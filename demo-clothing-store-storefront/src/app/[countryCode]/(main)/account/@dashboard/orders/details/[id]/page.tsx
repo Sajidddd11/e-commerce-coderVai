@@ -1,5 +1,6 @@
 import { retrieveOrder } from "@lib/data/orders"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getReviewedProductIds } from "@lib/data/reviews"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
 import { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
@@ -27,9 +28,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function OrderDetailPage(props: Props) {
   const params = await props.params
-  const [order, customer] = await Promise.all([
+  const [order, customer, reviewedProductIds] = await Promise.all([
     retrieveOrder(params.id).catch(() => null),
     retrieveCustomer().catch(() => null),
+    getReviewedProductIds().catch(() => []),
   ])
 
   if (!order) {
@@ -39,6 +41,7 @@ export default async function OrderDetailPage(props: Props) {
   return (
     <OrderDetailsTemplate
       order={order}
+      reviewedProductIds={reviewedProductIds}
       customer={
         customer
           ? {

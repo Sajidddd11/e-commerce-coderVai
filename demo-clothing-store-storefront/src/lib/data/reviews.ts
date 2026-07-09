@@ -44,3 +44,30 @@ export async function submitProductReview(params: {
     return { success: false, message: msg }
   }
 }
+
+/**
+ * Fetches the list of product IDs already reviewed by the logged-in customer.
+ */
+export async function getReviewedProductIds(): Promise<string[]> {
+  try {
+    const authHeaders = await getAuthHeaders()
+    if (!authHeaders || Object.keys(authHeaders).length === 0) {
+      return []
+    }
+
+    const res = await sdk.client.fetch<{ reviewed_product_ids: string[] }>(
+      `/store/reviews/me`,
+      {
+        method: "GET",
+        headers: {
+          ...authHeaders,
+        },
+        cache: "no-store",
+      }
+    )
+    return res?.reviewed_product_ids ?? []
+  } catch {
+    return []
+  }
+}
+
