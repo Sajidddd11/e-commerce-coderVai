@@ -297,15 +297,63 @@ export const updateCustomerAddress = async (
     })
 }
 
-export async function setGoogleAuthToken(token: string) {
-  await setAuthToken(token)
-  const customerCacheTag = await getCacheTag("customers")
-  // @ts-ignore
-  revalidateTag(customerCacheTag)
+export async function loginOrRegisterWithGoogle(token: string) {
   try {
-    await transferCart()
-  } catch (error) {
-    console.error("Error transferring cart during Google login:", error)
+    // 1. Set the auth token cookie temporarily
+    await setAuthToken(token)
+
+    // 2. Check if the customer record exists
+    let customer = await retrieveCustomer()
+
+    if (!customer) {
+      // Decode JWT token payload to retrieve Google user metadata
+      const payloadSegment = token.split(".")[1]
+      if (!payloadSegment) throw new Error("Invalid JWT token structure.")
+      
+      const payloadJson = Buffer.from(payloadSegment, "base64").toString("utf8")
+      const payload = JSON.parse(payloadJson)
+      
+      const userMetadata = payload.user_metadata || {}
+      const email = userMetadata.email
+      const first_name = userMetadata.given_name || userMetadata.name || "Google User"
+      const last_name = userMetadata.family_name || ""
+
+      if (!email) {
+        throw new Error("No email address found in Google token.")
+      }
+
+      // 3. Create the Customer record linked to this Google auth identity
+      const headers = {
+        authorization: `Bearer ${token}`,
+      }
+
+      const createRes = await sdk.store.customer.create(
+        {
+          email,
+          first_name,
+          last_name,
+        },
+        {},
+        headers
+      )
+
+      customer = createRes.customer
+    }
+
+    const customerCacheTag = await getCacheTag("customers")
+    // @ts-ignore
+    revalidateTag(customerCacheTag)
+
+    try {
+      await transferCart()
+    } catch (cartError) {
+      console.error("Error transferring cart during Google login:", cartError)
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error during loginOrRegisterWithGoogle:", error)
+    return { success: false, error: error.toString() }
   }
 }
 

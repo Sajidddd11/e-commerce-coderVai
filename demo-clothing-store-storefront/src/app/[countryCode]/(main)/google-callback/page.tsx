@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { setGoogleAuthToken } from "@lib/data/customer"
+import { loginOrRegisterWithGoogle } from "@lib/data/customer"
 
 function GoogleCallbackHandler() {
   const searchParams = useSearchParams()
@@ -29,7 +29,10 @@ function GoogleCallbackHandler() {
       .then(async ({ token }) => {
         if (!token) throw new Error("No token returned from authentication server.")
         
-        await setGoogleAuthToken(token)
+        const loginResult = await loginOrRegisterWithGoogle(token)
+        if (!loginResult.success) {
+          throw new Error(loginResult.error || "Failed to set session or create customer record.")
+        }
 
         // If login was initiated by the mobile app, redirect to deep link
         if (state === "mobile") {
