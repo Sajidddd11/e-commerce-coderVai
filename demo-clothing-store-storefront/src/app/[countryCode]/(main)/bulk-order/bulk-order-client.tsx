@@ -4,7 +4,8 @@ import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@lib/util/get-product-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "@modules/products/components/thumbnail"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import CustomChatWidget from "@modules/common/components/custom-chat-widget"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,98 +42,36 @@ type Props = {
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
-function WhatsAppIcon({ size = 20 }: { size?: number }) {
+function WhatsAppIcon({ size = 20, className }: { size?: number; className?: string }) {
     return (
-        <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24">
+        <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24" className={className}>
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
         </svg>
     )
 }
 
-function PhoneIcon({ size = 20 }: { size?: number }) {
+function PhoneIcon({ size = 20, className }: { size?: number; className?: string }) {
     return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className={className}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.502-5.12-3.796-6.622-6.622l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
         </svg>
     )
 }
 
-function EmailIcon({ size = 20 }: { size?: number }) {
+function EmailIcon({ size = 20, className }: { size?: number; className?: string }) {
     return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className={className}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
         </svg>
     )
 }
 
-function ChatIcon({ size = 20 }: { size?: number }) {
+function ChatIcon({ size = 20, className }: { size?: number; className?: string }) {
     return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className={className}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21.75l2.755-4.143a1.11 1.11 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
         </svg>
     )
-}
-
-// ─── Contact Helper ───────────────────────────────────────────────────────────
-
-function getProductContactAction(productTitle: string, settings?: BulkSettings | null) {
-    const defaultMsg = `Hi, I'm interested in placing a bulk order for "${productTitle}". Please share pricing and availability.`
-    
-    if (!settings) {
-        return {
-            label: "Contact on WhatsApp",
-            href: `https://wa.me/8801304117711?text=${encodeURIComponent(defaultMsg)}`,
-            isExternal: true,
-            icon: "whatsapp"
-        }
-    }
-
-    if (settings.whatsapp_enabled && settings.whatsapp_number) {
-        const msg = settings.whatsapp_message
-            ? settings.whatsapp_message.replace("{product}", productTitle)
-            : defaultMsg
-        return {
-            label: "Contact on WhatsApp",
-            href: `https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(msg)}`,
-            isExternal: true,
-            icon: "whatsapp"
-        }
-    }
-
-    if (settings.email_enabled && settings.email_address) {
-        return {
-            label: "Email Inquiry",
-            href: `mailto:${settings.email_address}?subject=Bulk Inquiry: ${encodeURIComponent(productTitle)}&body=${encodeURIComponent(`Hi, I would like to request a bulk quote for "${productTitle}".`)}`,
-            isExternal: false,
-            icon: "email"
-        }
-    }
-
-    if (settings.phone_enabled && settings.phone_number) {
-        return {
-            label: "Call for Quote",
-            href: `tel:${settings.phone_number}`,
-            isExternal: false,
-            icon: "phone"
-        }
-    }
-
-    if (settings.livechat_enabled) {
-        return {
-            label: "Start Live Chat",
-            href: "#",
-            isExternal: false,
-            onClick: true,
-            icon: "chat"
-        }
-    }
-
-    return {
-        label: "Contact on WhatsApp",
-        href: `https://wa.me/8801304117711?text=${encodeURIComponent(defaultMsg)}`,
-        isExternal: true,
-        icon: "whatsapp"
-    }
 }
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
@@ -141,17 +80,90 @@ function BulkProductCard({
     product,
     bulkRecord,
     settings,
+    countryCode,
     onStartLiveChat,
 }: {
     product: HttpTypes.StoreProduct
     bulkRecord: BulkRecord
     region: HttpTypes.StoreRegion
     settings?: BulkSettings | null
+    countryCode: string
     onStartLiveChat: () => void
 }) {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const { cheapestPrice } = getProductPrice({ product })
     const refPrice = cheapestPrice?.calculated_price || cheapestPrice?.original_price || null
-    const action = getProductContactAction(product.title, settings)
+    
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://codervai.com"
+    const productUrl = `${origin}/${countryCode}/products/${product.handle}`
+    
+    const baseMsg = `Hi, I'm interested in placing a bulk order for "${product.title}". Please share pricing and availability.`
+    const activeActions: {
+        label: string
+        href: string
+        isExternal?: boolean
+        onClick?: () => void
+        icon: string
+    }[] = []
+
+    if (!settings) {
+        activeActions.push({
+            label: "WhatsApp",
+            href: `https://wa.me/8801304117711?text=${encodeURIComponent(`${baseMsg}\nProduct Link: ${productUrl}`)}`,
+            isExternal: true,
+            icon: "whatsapp"
+        })
+    } else {
+        if (settings.whatsapp_enabled && settings.whatsapp_number) {
+            const rawMsg = settings.whatsapp_message
+                ? settings.whatsapp_message.replace("{product}", product.title)
+                : baseMsg
+            const whatsappMsg = `${rawMsg}\nProduct Link: ${productUrl}`
+            activeActions.push({
+                label: "WhatsApp",
+                href: `https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(whatsappMsg)}`,
+                isExternal: true,
+                icon: "whatsapp"
+            })
+        }
+        if (settings.livechat_enabled) {
+            activeActions.push({
+                label: "Live Chat",
+                href: "#",
+                onClick: () => {
+                    const prefillText = `${baseMsg}\nProduct Link: ${productUrl}`
+                    window.dispatchEvent(new CustomEvent("open-custom-chat", {
+                        detail: { prefill: prefillText }
+                    }))
+                },
+                icon: "chat"
+            })
+        }
+        if (settings.phone_enabled && settings.phone_number) {
+            activeActions.push({
+                label: "Call",
+                href: `tel:${settings.phone_number}`,
+                icon: "phone"
+            })
+        }
+        if (settings.email_enabled && settings.email_address) {
+            const emailBody = `Hi, I would like to request a bulk quote for "${product.title}".\n\nProduct Link: ${productUrl}`
+            activeActions.push({
+                label: "Email",
+                href: `mailto:${settings.email_address}?subject=Bulk Inquiry: ${encodeURIComponent(product.title)}&body=${encodeURIComponent(emailBody)}`,
+                icon: "email"
+            })
+        }
+    }
+
+    if (activeActions.length === 0) {
+        activeActions.push({
+            label: "WhatsApp",
+            href: `https://wa.me/8801304117711?text=${encodeURIComponent(`${baseMsg}\nProduct Link: ${productUrl}`)}`,
+            isExternal: true,
+            icon: "whatsapp"
+        })
+    }
 
     return (
         <div className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-[#56aebf]/40 hover:shadow-[0_8px_32px_rgba(86,174,191,0.15)] transition-all duration-500 hover:-translate-y-1">
@@ -217,33 +229,75 @@ function BulkProductCard({
 
                 <div className="flex-1" />
 
-                {/* Action CTA */}
-                {action.onClick ? (
+                {/* Dropdown CTA */}
+                <div className="relative w-full mt-2">
                     <button
                         onClick={(e) => {
                             e.preventDefault()
-                            onStartLiveChat()
+                            e.stopPropagation()
+                            setIsDropdownOpen(!isDropdownOpen)
                         }}
-                        className="flex items-center justify-center gap-1.5 w-full py-2 sm:py-3 px-2 sm:px-4 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-[0_4px_12px_rgba(86,174,191,0.3)] hover:-translate-y-0.5"
+                        className="flex items-center justify-center gap-1.5 w-full py-2.5 px-4 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                     >
-                        <ChatIcon size={16} />
-                        <span className="hidden sm:inline">{action.label}</span>
-                        <span className="sm:hidden">Chat</span>
+                        <span>Contact for Quote</span>
+                        <svg className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
                     </button>
-                ) : (
-                    <a
-                        href={action.href}
-                        target={action.isExternal ? "_blank" : undefined}
-                        rel={action.isExternal ? "noopener noreferrer" : undefined}
-                        className="flex items-center justify-center gap-1.5 w-full py-2 sm:py-3 px-2 sm:px-4 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-[0_4px_12px_rgba(86,174,191,0.3)] hover:-translate-y-0.5"
-                    >
-                        {action.icon === "whatsapp" && <WhatsAppIcon size={16} />}
-                        {action.icon === "email" && <EmailIcon size={16} />}
-                        {action.icon === "phone" && <PhoneIcon size={16} />}
-                        <span className="hidden sm:inline">{action.label}</span>
-                        <span className="sm:hidden">Contact</span>
-                    </a>
-                )}
+
+                    {isDropdownOpen && (
+                        <>
+                            {/* Backdrop to close dropdown on clicking outside */}
+                            <div
+                                className="fixed inset-0 z-20 cursor-default"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setIsDropdownOpen(false)
+                                }}
+                            />
+                            {/* Dropdown Options Box */}
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl p-1.5 z-30 flex flex-col gap-1">
+                                {activeActions.map((act, index) => {
+                                    const itemClass = "flex items-center gap-2.5 w-full py-2 px-3 hover:bg-slate-50 text-slate-700 hover:text-[#56aebf] font-semibold text-xs rounded-lg transition-colors text-left";
+                                    if (act.onClick) {
+                                        return (
+                                            <button
+                                                key={index}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    e.stopPropagation()
+                                                    setIsDropdownOpen(false)
+                                                    act.onClick!()
+                                                }}
+                                                className={itemClass}
+                                            >
+                                                <ChatIcon size={14} className="text-[#56aebf]" />
+                                                <span>{act.label}</span>
+                                            </button>
+                                        )
+                                    }
+                                    return (
+                                        <a
+                                            key={index}
+                                            href={act.href}
+                                            target={act.isExternal ? "_blank" : undefined}
+                                            rel={act.isExternal ? "noopener noreferrer" : undefined}
+                                            onClick={() => setIsDropdownOpen(false)}
+                                            className={itemClass}
+                                        >
+                                            {act.icon === "whatsapp" && <WhatsAppIcon size={14} className="text-[#56aebf]" />}
+                                            {act.icon === "email" && <EmailIcon size={14} className="text-[#56aebf]" />}
+                                            {act.icon === "phone" && <PhoneIcon size={14} className="text-[#56aebf]" />}
+                                            <span>{act.label}</span>
+                                        </a>
+                                    )
+                                })}
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     )
@@ -284,52 +338,14 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                         Browse below and contact us through our available channels.
                     </p>
                     
-                    {/* Hero CTAs based on active channels */}
-                    <div className="flex flex-wrap gap-3 justify-center items-center animate-fade-in-top" style={{ animationDelay: "0.3s" }}>
-                        {(!settings || settings.whatsapp_enabled) && (
-                            <a
-                                href={generalWhatsApp}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#56aebf] hover:bg-[#458f9e] text-black font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(86,174,191,0.5)] hover:-translate-y-0.5"
-                            >
-                                <WhatsAppIcon size={18} />
-                                Chat on WhatsApp
-                            </a>
-                        )}
-                        {settings?.phone_enabled && settings.phone_number && (
-                            <a
-                                href={`tel:${settings.phone_number}`}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-100 text-black font-semibold rounded-xl transition-all duration-300 shadow-lg hover:-translate-y-0.5"
-                            >
-                                <PhoneIcon size={18} />
-                                Call Support
-                            </a>
-                        )}
-                        {settings?.email_enabled && settings.email_address && (
-                            <a
-                                href={`mailto:${settings.email_address}?subject=Bulk Order Inquiry`}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:-translate-y-0.5"
-                            >
-                                <EmailIcon size={18} />
-                                Email Us
-                            </a>
-                        )}
-                        {settings?.livechat_enabled && (
-                            <button
-                                onClick={handleStartLiveChat}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#56aebf]/20 border-2 border-[#56aebf]/50 text-[#56aebf] hover:bg-[#56aebf]/30 font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
-                            >
-                                <ChatIcon size={18} />
-                                Start Live Chat
-                            </button>
-                        )}
+                    {/* Hero CTAs */}
+                    <div className="flex justify-center items-center animate-fade-in-top" style={{ animationDelay: "0.3s" }}>
                         <button
                             onClick={(e) => {
                                 e.preventDefault()
                                 document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })
                             }}
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#56aebf]/50 text-[#56aebf] hover:bg-[#56aebf]/10 hover:border-[#56aebf] font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5"
+                            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#56aebf] hover:bg-[#458f9e] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_4px_12px_rgba(86,174,191,0.3)] hover:-translate-y-0.5"
                         >
                             Browse Products
                         </button>
@@ -424,6 +440,7 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                                             bulkRecord={bulkRecord}
                                             region={region}
                                             settings={settings}
+                                            countryCode={countryCode}
                                             onStartLiveChat={handleStartLiveChat}
                                         />
                                     )
@@ -494,6 +511,7 @@ export default function BulkOrderClient({ products, bulkMap, region, countryCode
                     </div>
                 </div>
             </section>
+            {settings?.livechat_enabled && <CustomChatWidget />}
         </div>
     )
 }

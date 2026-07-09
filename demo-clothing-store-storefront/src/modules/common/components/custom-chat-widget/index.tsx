@@ -27,8 +27,12 @@ export default function CustomChatWidget() {
     const [sending, setSending] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
 
+    // Guest lead capture states
+    const [guestName, setGuestName] = useState("")
+    const [guestPhone, setGuestPhone] = useState("")
+    const [hasSubmittedDetails, setHasSubmittedDetails] = useState(false)
+
     const chatEndRef = useRef<HTMLDivElement>(null)
-    const lastCountRef = useRef(0)
 
     // ── Init session ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -44,6 +48,18 @@ export default function CustomChatWidget() {
                         email: cust.email || null,
                         name: `${cust.first_name || ""} ${cust.last_name || ""}`.trim() || null,
                     })
+                    setHasSubmittedDetails(true)
+                } else {
+                    // Check if guest details exist in localStorage
+                    const savedName = localStorage.getItem("chat_guest_name")
+                    const savedPhone = localStorage.getItem("chat_guest_phone")
+                    if (savedName && savedPhone) {
+                        setCustomerInfo({
+                            email: savedPhone, // Use phone as email identifier for guest sessions
+                            name: savedName,
+                        })
+                        setHasSubmittedDetails(true)
+                    }
                 }
             } catch (err) {
                 console.error("Failed to initialize chat session:", err)
@@ -98,20 +114,42 @@ export default function CustomChatWidget() {
 
     // Auto scroll chat to bottom when list changes or opens
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && hasSubmittedDetails) {
             chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
             setUnreadCount(0)
         }
-    }, [messages, isOpen])
+    }, [messages, isOpen, hasSubmittedDetails])
 
     // Listen for custom trigger (from bulk order client button)
     useEffect(() => {
-        const handleOpenChat = () => {
+        const handleOpenChat = (e: Event) => {
             setIsOpen(true)
+            const customEvent = e as CustomEvent
+            if (customEvent.detail && customEvent.detail.prefill) {
+                setInputText(customEvent.detail.prefill)
+            }
         }
         window.addEventListener("open-custom-chat", handleOpenChat)
         return () => window.removeEventListener("open-custom-chat", handleOpenChat)
     }, [])
+
+    // ── Guest Form Submit ────────────────────────────────────────────────────────
+    const handleGuestFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!guestName.trim() || !guestPhone.trim()) return
+
+        const name = guestName.trim()
+        const phone = guestPhone.trim()
+
+        localStorage.setItem("chat_guest_name", name)
+        localStorage.setItem("chat_guest_phone", phone)
+
+        setCustomerInfo({
+            email: phone,
+            name: name,
+        })
+        setHasSubmittedDetails(true)
+    }
 
     // ── Send Message ─────────────────────────────────────────────────────────────
     const handleSendMessage = async (e: React.FormEvent) => {
@@ -152,7 +190,6 @@ export default function CustomChatWidget() {
                 }),
             })
             if (res.ok) {
-                // Fetch actual message to sync properly
                 await fetchMessages(true)
             } else {
                 console.error("Failed to persist message on server")
@@ -167,10 +204,10 @@ export default function CustomChatWidget() {
     if (!sessionId) return null
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-inter">
+        <div className="font-inter">
             {/* Chat Box window */}
             {isOpen && (
-                <div className="w-[340px] sm:w-[380px] h-[480px] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 transition-all duration-300">
+                <div className="fixed bottom-[84px] right-4 left-4 sm:left-auto sm:right-20 md:right-24 sm:w-[360px] h-[480px] max-h-[calc(100vh-120px)] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50 transition-all duration-300">
                     {/* Header */}
                     <div className="bg-[#56aebf] p-4 text-white flex items-center justify-between shadow-md">
                         <div className="flex items-center gap-2">
@@ -190,89 +227,137 @@ export default function CustomChatWidget() {
                         </button>
                     </div>
 
-                    {/* Messages Body */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
-                        {messages.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center px-4 text-slate-400">
-                                <svg className="w-12 h-12 mb-2 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21.75l2.755-4.143a1.11 1.11 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                                </svg>
-                                <p className="text-sm font-medium text-slate-500">How can we help you?</p>
-                                <p className="text-xs text-slate-400 mt-1">Send a message and support team will reply here shortly.</p>
+                    {/* Messages Body / Lead Info Form */}
+                    {!hasSubmittedDetails ? (
+                        <div className="flex-1 flex flex-col justify-center p-5 bg-slate-50 text-slate-800 overflow-y-auto">
+                            <div className="text-center mb-5">
+                                <div className="w-12 h-12 rounded-full bg-[#56aebf]/10 text-[#56aebf] flex items-center justify-center mx-auto mb-3">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-bold text-sm text-slate-800">Welcome to Live Support</h4>
+                                <p className="text-[11px] text-slate-500 mt-1 max-w-[220px] mx-auto">Please introduce yourself to start a live support chat.</p>
                             </div>
-                        ) : (
-                            messages.map((msg) => {
-                                const isMe = msg.sender === "customer"
-                                return (
-                                    <div
-                                        key={msg.id}
-                                        className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
-                                    >
+                            <form onSubmit={handleGuestFormSubmit} className="space-y-3.5">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Name</label>
+                                    <input
+                                        type="text"
+                                        value={guestName}
+                                        onChange={(e) => setGuestName(e.target.value)}
+                                        placeholder="e.g. John Doe"
+                                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#56aebf] bg-white text-slate-800"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={guestPhone}
+                                        onChange={(e) => setGuestPhone(e.target.value)}
+                                        placeholder="e.g. +88017xxxxxxxx"
+                                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#56aebf] bg-white text-slate-800"
+                                        required
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-[#56aebf] hover:bg-[#458f9e] text-white py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors mt-2"
+                                >
+                                    Start Chat
+                                </button>
+                            </form>
+                        </div>
+                    ) : (
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+                            {messages.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-full text-center px-4 text-slate-400">
+                                    <svg className="w-12 h-12 mb-2 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21.75l2.755-4.143a1.11 1.11 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                                    </svg>
+                                    <p className="text-sm font-medium text-slate-500">How can we help you?</p>
+                                    <p className="text-xs text-slate-400 mt-1">Send a message and support team will reply here shortly.</p>
+                                </div>
+                            ) : (
+                                messages.map((msg) => {
+                                    const isMe = msg.sender === "customer"
+                                    return (
                                         <div
-                                            className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
-                                                isMe
-                                                    ? "bg-[#56aebf] text-white rounded-tr-none"
-                                                    : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"
-                                            }`}
+                                            key={msg.id}
+                                            className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
                                         >
-                                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                                            <div
+                                                className={`max-w-[80%] sm:max-w-[75%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
+                                                    isMe
+                                                        ? "bg-[#56aebf] text-white rounded-tr-none"
+                                                        : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"
+                                                }`}
+                                            >
+                                                <p className="whitespace-pre-wrap">{msg.content}</p>
+                                            </div>
+                                            <span className="text-[9px] text-slate-400 font-mono mt-1 px-1">
+                                                {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                            </span>
                                         </div>
-                                        <span className="text-[9px] text-slate-400 font-mono mt-1 px-1">
-                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                        </span>
-                                    </div>
-                                )
-                            })
-                        )}
-                        <div ref={chatEndRef} />
-                    </div>
+                                    )
+                                })
+                            )}
+                            <div ref={chatEndRef} />
+                        </div>
+                    )}
 
-                    {/* Footer Form */}
-                    <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-slate-100 flex gap-2">
-                        <input
-                            type="text"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            placeholder="Type a message..."
-                            className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#56aebf]"
-                            disabled={sending}
-                        />
-                        <button
-                            type="submit"
-                            disabled={!inputText.trim() || sending}
-                            className="bg-[#56aebf] hover:bg-[#458f9e] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:hover:bg-[#56aebf]"
-                        >
-                            Send
-                        </button>
-                    </form>
+                    {/* Footer Form - only shown after guest details submitted */}
+                    {hasSubmittedDetails && (
+                        <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-slate-100 flex gap-2">
+                            <input
+                                type="text"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                placeholder="Type a message..."
+                                className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#56aebf] bg-white text-slate-800"
+                                disabled={sending}
+                            />
+                            <button
+                                type="submit"
+                                disabled={!inputText.trim() || sending}
+                                className="bg-[#56aebf] hover:bg-[#458f9e] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                            >
+                                Send
+                            </button>
+                        </form>
+                    )}
                 </div>
             )}
 
             {/* Bubble Button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-14 h-14 bg-[#56aebf] text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 relative group"
-                aria-label="Open support chat"
-            >
-                {isOpen ? (
-                    // Close Icon
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-                ) : (
-                    // Chat Bubble Icon
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21.75l2.755-4.143a1.11 1.11 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                    </svg>
-                )}
+            <div className="fixed bottom-4 right-20 md:bottom-6 md:right-24 z-50 flex items-center justify-center">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-14 h-14 bg-[#56aebf] text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 relative group"
+                    aria-label="Open support chat"
+                >
+                    {isOpen ? (
+                        // Close Icon
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    ) : (
+                        // Chat Bubble Icon
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21.75l2.755-4.143a1.11 1.11 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                        </svg>
+                    )}
 
-                {/* Unread Count Badge */}
-                {unreadCount > 0 && !isOpen && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-md animate-bounce">
-                        {unreadCount}
-                    </span>
-                )}
-            </button>
+                    {/* Unread Count Badge */}
+                    {unreadCount > 0 && !isOpen && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-md animate-bounce">
+                            {unreadCount}
+                        </span>
+                    )}
+                </button>
+            </div>
         </div>
     )
 }

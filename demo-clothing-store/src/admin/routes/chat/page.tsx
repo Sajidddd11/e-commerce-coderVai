@@ -275,21 +275,21 @@ const CustomerChatPage = () => {
 
                         {/* Input Area */}
                         <form onSubmit={handleSendMessage} className="p-3 border-t border-ui-border-base flex gap-2 bg-ui-bg-subtle/10">
-                            <Input
+                            <input
+                                type="text"
                                 value={inputText}
                                 onChange={(e) => setInputText(e.target.value)}
                                 placeholder="Type a message to reply..."
-                                className="flex-1 focus:ring-[#56aebf] border-ui-border-base"
+                                className="flex-1 h-9 px-3 border border-ui-border-base rounded-md text-sm bg-ui-bg-base text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-[#56aebf] focus:border-[#56aebf] transition-all"
                                 disabled={sending}
                             />
-                            <Button
+                            <button
                                 type="submit"
-                                variant="primary"
                                 disabled={!inputText.trim() || sending}
-                                className="bg-[#56aebf] hover:bg-[#458f9e]"
+                                className="h-9 px-4 rounded-md text-xs font-semibold text-white bg-[#56aebf] hover:bg-[#458f9e] transition-colors disabled:opacity-50"
                             >
                                 {sending ? "Sending..." : "Send"}
-                            </Button>
+                            </button>
                         </form>
                     </>
                 ) : (
