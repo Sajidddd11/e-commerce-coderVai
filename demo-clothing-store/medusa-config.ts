@@ -56,6 +56,11 @@ module.exports = defineConfig({
       options: {
         providers: [
           {
+            resolve: "@medusajs/auth-emailpass",
+            id: "emailpass",
+            options: {},
+          },
+          {
             resolve: "@medusajs/auth-google",
             id: "google",
             options: {
