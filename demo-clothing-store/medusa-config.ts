@@ -84,6 +84,10 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/loyalty",
     },
+    // Finance Module - Custom finance tracker and product cost module
+    {
+      resolve: "./src/modules/finance",
+    },
     // Delete Log Module - Audit trail for all deletions
     {
       resolve: "./src/modules/delete-log",
