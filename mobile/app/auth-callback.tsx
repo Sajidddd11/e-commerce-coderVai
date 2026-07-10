@@ -25,6 +25,15 @@ export default function AuthCallbackScreen() {
 
   useEffect(() => {
     const handleAuth = async () => {
+      console.log("[AUTH-CALLBACK] Deep link params received:", params)
+
+      if (Object.keys(params).length === 0) {
+        console.log("[AUTH-CALLBACK] Empty params, waiting for next tick...")
+        return
+      }
+
+      setError(null)
+
       // Check if this is a redirection that requires more details (name/phone)
       if (params.requiresInfo === "true") {
         setEmail((params.email as string) || "")

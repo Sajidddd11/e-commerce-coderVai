@@ -127,7 +127,6 @@ export default function SuggestedForYou({
         <LocalizedClientLink
           href="/suggested"
           className="group rounded-sm relative overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-full"
-          style={{ aspectRatio: "1 / 1" }}
         >
           <div className="absolute inset-0 flex flex-col items-center justify-center group-hover:opacity-30 transition-opacity duration-300 text-center px-4">
             <h3 className="text-sm small:text-base font-bold text-gray-900 mb-1">
