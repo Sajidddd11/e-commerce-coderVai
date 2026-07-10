@@ -317,7 +317,20 @@ export async function loginOrRegisterWithGoogle(token: string) {
       throw new Error(errorJson.message || "Failed to process Google authentication on backend.")
     }
 
-    const { success, token: finalToken, message } = await response.json()
+    const responseData = await response.json()
+    const { success, token: finalToken, message, requiresInfo, email, firstName, lastName, phone, authIdentityId } = responseData
+
+    if (requiresInfo) {
+      return {
+        success: false,
+        requiresInfo: true,
+        email,
+        firstName,
+        lastName,
+        phone,
+        authIdentityId,
+      }
+    }
 
     if (!success || !finalToken) {
       throw new Error(message || "Backend Google authentication link failed.")
@@ -336,9 +349,57 @@ export async function loginOrRegisterWithGoogle(token: string) {
       console.error("Error transferring cart during Google login:", cartError)
     }
 
-    return { success: true }
+    return { success: true, token: finalToken }
   } catch (error: any) {
     console.error("Error during loginOrRegisterWithGoogle:", error)
+    return { success: false, error: error.toString() }
+  }
+}
+
+export async function registerWithGoogleDetails(body: {
+  authIdentityId: string
+  email: string
+  first_name: string
+  last_name: string
+  phone: string
+}) {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+    const response = await fetch(`${backendUrl}/store/auth/google-register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getPublishableKeyHeader(),
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const errorJson = await response.json().catch(() => ({}))
+      throw new Error(errorJson.message || "Failed to submit Google registration on backend.")
+    }
+
+    const { success, token: finalToken, message } = await response.json()
+
+    if (!success || !finalToken) {
+      throw new Error(message || "Registration failed.")
+    }
+
+    await setAuthToken(finalToken)
+
+    const customerCacheTag = await getCacheTag("customers")
+    // @ts-ignore
+    revalidateTag(customerCacheTag)
+
+    try {
+      await transferCart()
+    } catch (cartError) {
+      console.error("Error transferring cart during registration:", cartError)
+    }
+
+    return { success: true, token: finalToken }
+  } catch (error: any) {
+    console.error("Error during registerWithGoogleDetails:", error)
     return { success: false, error: error.toString() }
   }
 }

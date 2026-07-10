@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react"
-import { View, StyleSheet, ActivityIndicator } from "react-native"
+import { View, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { useAuthStore } from "@stores/auth-store"
 import { useCartStore } from "@stores/cart-store"
 import { ThemedText } from "@components/ui/ThemedText"
 import { setToken } from "@utils/storage"
 import { colors } from "@design/theme"
-
-import { retrieveCustomer } from "@api/customer"
+import { retrieveCustomer, registerWithGoogleDetails } from "@api/customer"
 
 export default function AuthCallbackScreen() {
   const router = useRouter()
@@ -15,9 +14,27 @@ export default function AuthCallbackScreen() {
   const setCustomer = useAuthStore((s) => s.setCustomer)
   const refreshCart = useCartStore((s) => s.refresh)
   const [error, setError] = useState<string | null>(null)
+  
+  const [requiresInfo, setRequiresInfo] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [email, setEmail] = useState("")
+  const [authIdentityId, setAuthIdentityId] = useState("")
 
   useEffect(() => {
     const handleAuth = async () => {
+      // Check if this is a redirection that requires more details (name/phone)
+      if (params.requiresInfo === "true") {
+        setEmail((params.email as string) || "")
+        setFirstName((params.firstName as string) || "")
+        setLastName((params.lastName as string) || "")
+        setAuthIdentityId((params.authIdentityId as string) || "")
+        setRequiresInfo(true)
+        return
+      }
+
       const token = params.token as string
 
       if (!token) {
@@ -51,9 +68,46 @@ export default function AuthCallbackScreen() {
     }
 
     handleAuth()
-  }, [params.token])
+  }, [params.token, params.requiresInfo])
 
-  if (error) {
+  const handleSubmit = async () => {
+    if (!firstName.trim() || !phone.trim()) {
+      setError("Name and Phone Number are required fields.")
+      return
+    }
+
+    setSubmitting(true)
+    setError(null)
+
+    try {
+      const result = await registerWithGoogleDetails({
+        authIdentityId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+      })
+
+      if (result.success && result.token) {
+        // Retrieve the customer profile to verify session is active
+        const customer = await retrieveCustomer()
+        if (customer) {
+          setCustomer(customer)
+          await refreshCart()
+          router.replace("/(tabs)/account")
+        } else {
+          throw new Error("Could not retrieve customer details after registration.")
+        }
+      } else {
+        throw new Error(result.error || "Failed to complete registration.")
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to register profile.")
+      setSubmitting(false)
+    }
+  }
+
+  if (error && !requiresInfo) {
     return (
       <View style={styles.container}>
         <ThemedText variant="sectionHeading" color={colors.error} style={styles.title}>
@@ -62,7 +116,90 @@ export default function AuthCallbackScreen() {
         <ThemedText variant="body" color={colors.grey[50]} style={styles.subtitle}>
           {error}
         </ThemedText>
+        <TouchableOpacity style={styles.button} onPress={() => router.replace("/(tabs)/account")}>
+          <ThemedText variant="button" color="#fff">Go Back</ThemedText>
+        </TouchableOpacity>
       </View>
+    )
+  }
+
+  if (requiresInfo) {
+    return (
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: colors.grey[0] }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+          <View style={styles.formCard}>
+            <ThemedText variant="sectionHeading" color={colors.grey[90]} style={styles.formTitle}>
+              Complete Your Profile
+            </ThemedText>
+            <ThemedText variant="bodySmall" color={colors.grey[40]} style={styles.formSubtitle}>
+              Please provide your name and mobile number to finish creating your ZAHAN account.
+            </ThemedText>
+
+            {error && (
+              <ThemedText variant="body" color={colors.error} style={styles.errorText}>
+                {error}
+              </ThemedText>
+            )}
+
+            <View style={styles.inputContainer}>
+              <ThemedText variant="bodySmall" color={colors.grey[60]} style={styles.label}>
+                First Name *
+              </ThemedText>
+              <TextInput
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="Enter your first name"
+                placeholderTextColor={colors.grey[30]}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <ThemedText variant="bodySmall" color={colors.grey[60]} style={styles.label}>
+                Last Name
+              </ThemedText>
+              <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Enter your last name"
+                placeholderTextColor={colors.grey[30]}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <ThemedText variant="bodySmall" color={colors.grey[60]} style={styles.label}>
+                Mobile Number *
+              </ThemedText>
+              <TextInput
+                style={styles.input}
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="e.g. 01XXXXXXXXX"
+                keyboardType="phone-pad"
+                placeholderTextColor={colors.grey[30]}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, submitting && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <ThemedText variant="button" color="#fff">
+                  Complete Registration
+                </ThemedText>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     )
   }
 
@@ -94,5 +231,73 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 15,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: colors.grey[0],
+  },
+  formCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.grey[10],
+  },
+  formTitle: {
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  formSubtitle: {
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 18,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    marginBottom: 6,
+    fontWeight: "600",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.grey[20],
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: colors.grey[90],
+    backgroundColor: colors.grey[5],
+  },
+  button: {
+    backgroundColor: colors.brand.teal,
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    shadowColor: colors.brand.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  buttonDisabled: {
+    backgroundColor: colors.grey[30],
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  errorText: {
+    textAlign: "center",
+    marginBottom: 16,
+    fontWeight: "500",
   },
 })

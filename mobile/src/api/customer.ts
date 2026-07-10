@@ -179,3 +179,41 @@ export async function deleteCustomerAddress(
     return { success: false, error: e?.message ?? "Could not delete address" }
   }
 }
+
+export async function registerWithGoogleDetails(body: {
+  authIdentityId: string
+  email: string
+  first_name: string
+  last_name: string
+  phone: string
+}): Promise<{ success: boolean; token?: string; error?: string }> {
+  try {
+    const response = await sdk.client.fetch<{ success: boolean; token: string; message?: string }>(
+      "/store/auth/google-register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+      }
+    )
+
+    if (!response.success || !response.token) {
+      return { success: false, error: response.message || "Registration failed." }
+    }
+
+    await setToken(response.token)
+    await transferCart()
+
+    // Merge guest browsing history after registration
+    const customer = await retrieveCustomer()
+    if (customer?.id) {
+      mergeGuestHistory(customer.id).catch(() => null)
+    }
+
+    return { success: true, token: response.token }
+  } catch (e: any) {
+    return { success: false, error: e?.message ?? "Could not complete registration" }
+  }
+}

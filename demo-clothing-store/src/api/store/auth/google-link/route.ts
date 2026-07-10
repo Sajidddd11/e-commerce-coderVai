@@ -52,25 +52,31 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         // 3. Find if a Customer with this email already exists
         const [existingCustomer] = await customerModuleService.listCustomers(
             { email },
-            { select: ["id", "email", "first_name", "last_name"] }
+            { select: ["id", "email", "first_name", "last_name", "phone"] }
         )
 
         let customerId = existingCustomer?.id
+        const googlePhone = userMetadata.phone_number || userMetadata.phone || ""
+        const googleFirstName = userMetadata.given_name || userMetadata.name || ""
+        const googleLastName = userMetadata.family_name || ""
 
-        if (existingCustomer) {
-            console.log(`[GOOGLE-LINK] Linking existing customer ${customerId} (${email}) to auth identity ${authIdentityId}`)
-        } else {
-            console.log(`[GOOGLE-LINK] Customer record not found for email ${email}. Creating a new profile...`)
-            
-            // Create a new Customer record
-            const newCustomer = await customerModuleService.createCustomers({
+        // A profile is complete only if it exists and has both a name and a phone number
+        const isCompleteProfile = existingCustomer && existingCustomer.first_name && existingCustomer.phone
+
+        if (!isCompleteProfile) {
+            console.log(`[GOOGLE-LINK] Customer profile incomplete or missing for email ${email}. Requiring registration details.`)
+            return res.status(200).json({
+                success: false,
+                requiresInfo: true,
                 email,
-                first_name: userMetadata.given_name || userMetadata.name || "Google User",
-                last_name: userMetadata.family_name || "",
+                firstName: existingCustomer?.first_name || googleFirstName,
+                lastName: existingCustomer?.last_name || googleLastName,
+                phone: existingCustomer?.phone || googlePhone,
+                authIdentityId,
             })
-            
-            customerId = newCustomer.id
         }
+
+        console.log(`[GOOGLE-LINK] Linking existing customer ${customerId} (${email}) to auth identity ${authIdentityId}`)
 
         // 4. Link by updating the app_metadata json column on the AuthIdentity
         const authIdentityObj = await authModuleService.retrieveAuthIdentity(authIdentityId)
