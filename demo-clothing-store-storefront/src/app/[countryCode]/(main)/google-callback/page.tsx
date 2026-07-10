@@ -111,7 +111,7 @@ function GoogleCallbackHandler() {
       <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 text-center">
         <h1 className="text-xl font-semibold text-red-600 mb-2">Authentication Failed</h1>
         <p className="text-gray-500 mb-4">{error}</p>
-        <button onClick={() => router.replace("/account")} className="underline text-teal-600">
+        <button onClick={() => router.replace("/account")} className="underline text-[#56aebf] hover:text-[#458f9e] transition-colors">
           Return to sign in
         </button>
       </div>
@@ -121,9 +121,11 @@ function GoogleCallbackHandler() {
   if (requiresInfo) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
-        <div className="w-full max-w-md bg-white border border-gray-100 shadow-2xl rounded-2xl p-8 space-y-6">
+        <div className="w-full max-w-md bg-white border border-[#56aebf]/20 shadow-[0_0_40px_rgba(86,174,191,0.15)] rounded-2xl p-8 space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Complete Your Profile</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+              Complete Your <span className="text-[#56aebf]">Profile</span>
+            </h1>
             <p className="text-sm text-gray-500">Just a couple details needed to finalize your account setup.</p>
           </div>
           
@@ -134,7 +136,7 @@ function GoogleCallbackHandler() {
                 id="first_name"
                 type="text"
                 required
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#56aebf] focus:border-[#56aebf] focus:outline-none transition-all"
                 value={formData.first_name}
                 onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
               />
@@ -145,7 +147,7 @@ function GoogleCallbackHandler() {
               <input
                 id="last_name"
                 type="text"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#56aebf] focus:border-[#56aebf] focus:outline-none transition-all"
                 value={formData.last_name}
                 onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
               />
@@ -158,7 +160,7 @@ function GoogleCallbackHandler() {
                 type="tel"
                 required
                 placeholder="e.g. 01XXXXXXXXX"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#56aebf] focus:border-[#56aebf] focus:outline-none transition-all"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
@@ -167,11 +169,11 @@ function GoogleCallbackHandler() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:bg-gray-300 disabled:shadow-none flex items-center justify-center space-x-2"
+              className="w-full py-3 bg-[#56aebf] hover:bg-[#458f9e] text-black font-semibold rounded-lg shadow-[0_0_20px_rgba(86,174,191,0.2)] hover:shadow-[0_0_30px_rgba(86,174,191,0.4)] transition-all duration-300 disabled:bg-gray-200 disabled:shadow-none flex items-center justify-center space-x-2"
             >
               {submitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
                   <span>Saving...</span>
                 </>
               ) : (
@@ -186,7 +188,7 @@ function GoogleCallbackHandler() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mb-4"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#56aebf] mb-4"></div>
       <p className="text-gray-500">Signing in with Google...</p>
     </div>
   )
@@ -196,7 +198,7 @@ export default function GoogleCallbackPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mb-4"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#56aebf] mb-4"></div>
         <p className="text-gray-500">Loading...</p>
       </div>
     }>

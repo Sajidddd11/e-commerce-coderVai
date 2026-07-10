@@ -22,6 +22,7 @@ export default function AuthCallbackScreen() {
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
   const [authIdentityId, setAuthIdentityId] = useState("")
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -140,9 +141,14 @@ export default function AuthCallbackScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.formCard}>
-            <ThemedText variant="sectionHeading" color={colors.grey[90]} style={styles.formTitle}>
-              Complete Your Profile
-            </ThemedText>
+            <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 8 }}>
+              <ThemedText variant="sectionHeading" color={colors.grey[90]}>
+                Complete Your{" "}
+              </ThemedText>
+              <ThemedText variant="sectionHeading" color={colors.brand.teal}>
+                Profile
+              </ThemedText>
+            </View>
             <ThemedText variant="bodySmall" color={colors.grey[40]} style={styles.formSubtitle}>
               Please provide your name and mobile number to finish creating your ZAHAN account.
             </ThemedText>
@@ -158,11 +164,13 @@ export default function AuthCallbackScreen() {
                 First Name *
               </ThemedText>
               <TextInput
-                style={styles.input}
+                style={[styles.input, focusedField === "firstName" && styles.inputFocused]}
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Enter your first name"
                 placeholderTextColor={colors.grey[30]}
+                onFocus={() => setFocusedField("firstName")}
+                onBlur={() => setFocusedField(null)}
               />
             </View>
 
@@ -171,11 +179,13 @@ export default function AuthCallbackScreen() {
                 Last Name
               </ThemedText>
               <TextInput
-                style={styles.input}
+                style={[styles.input, focusedField === "lastName" && styles.inputFocused]}
                 value={lastName}
                 onChangeText={setLastName}
                 placeholder="Enter your last name"
                 placeholderTextColor={colors.grey[30]}
+                onFocus={() => setFocusedField("lastName")}
+                onBlur={() => setFocusedField(null)}
               />
             </View>
 
@@ -184,12 +194,14 @@ export default function AuthCallbackScreen() {
                 Mobile Number *
               </ThemedText>
               <TextInput
-                style={styles.input}
+                style={[styles.input, focusedField === "phone" && styles.inputFocused]}
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="e.g. 01XXXXXXXXX"
                 keyboardType="phone-pad"
                 placeholderTextColor={colors.grey[30]}
+                onFocus={() => setFocusedField("phone")}
+                onBlur={() => setFocusedField(null)}
               />
             </View>
 
@@ -250,15 +262,15 @@ const styles = StyleSheet.create({
   formCard: {
     width: "100%",
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    shadowColor: colors.brand.teal,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    elevation: 8,
     borderWidth: 1,
-    borderColor: colors.grey[10],
+    borderColor: "rgba(86, 174, 191, 0.2)",
   },
   formTitle: {
     marginBottom: 8,
@@ -285,6 +297,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.grey[90],
     backgroundColor: colors.grey[5],
+    transitionProperty: "borderColor",
+    transitionDuration: "200ms",
+  },
+  inputFocused: {
+    borderColor: colors.brand.teal,
+    borderWidth: 1.5,
+    backgroundColor: "#fff",
   },
   button: {
     backgroundColor: colors.brand.teal,
