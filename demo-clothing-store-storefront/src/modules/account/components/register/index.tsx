@@ -218,7 +218,7 @@ const Register = ({ setCurrentView }: Props) => {
             signupMethod === "phone" ? "border-black text-black" : "border-transparent text-gray-400"
           }`}
         >
-          Mobile OTP Signup
+          Mobile Signup
         </button>
       </div>
 
@@ -227,21 +227,21 @@ const Register = ({ setCurrentView }: Props) => {
         <form className="w-full flex flex-col" action={formAction}>
           <div className="flex flex-col w-full gap-y-2">
             <Input
-              label="First name *"
+              label="First name"
               name="first_name"
               required
               autoComplete="given-name"
               data-testid="first-name-input"
             />
             <Input
-              label="Last name *"
+              label="Last name"
               name="last_name"
               required
               autoComplete="family-name"
               data-testid="last-name-input"
             />
             <Input
-              label="Email *"
+              label="Email"
               name="email"
               required
               type="email"
@@ -249,7 +249,7 @@ const Register = ({ setCurrentView }: Props) => {
               data-testid="email-input"
             />
             <Input
-              label="Phone *"
+              label="Phone"
               name="phone"
               type="tel"
               autoComplete="tel"
@@ -257,7 +257,7 @@ const Register = ({ setCurrentView }: Props) => {
               data-testid="phone-input"
             />
             <Input
-              label="Password *"
+              label="Password"
               name="password"
               required
               type="password"
@@ -298,7 +298,7 @@ const Register = ({ setCurrentView }: Props) => {
               </p>
               <div className="flex flex-col w-full gap-y-2">
                 <Input
-                  label="Mobile Number *"
+                  label="Mobile Number"
                   name="phone"
                   type="tel"
                   required
@@ -356,21 +356,21 @@ const Register = ({ setCurrentView }: Props) => {
               </p>
               <div className="flex flex-col w-full gap-y-2">
                 <Input
-                  label="First name *"
+                  label="First name"
                   name="first_name"
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
                 <Input
-                  label="Last name *"
+                  label="Last name"
                   name="last_name"
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                 />
                 <Input
-                  label="Password *"
+                  label="Password"
                   name="password"
                   type="password"
                   required

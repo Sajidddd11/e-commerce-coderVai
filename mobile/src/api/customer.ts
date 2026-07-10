@@ -8,7 +8,7 @@ import { mergeGuestHistory } from "./recommendations"
  * Ported from web src/lib/data/customer.ts.
  * JWT stored via expo-secure-store instead of a cookie.
  */
-const ACTIVE_PUBLISHABLE_KEY = PUBLISHABLE_KEY
+const ACTIVE_PUBLISHABLE_KEY = PUBLISHABLE_KEY ?? ""
 
 export async function retrieveCustomer(): Promise<HttpTypes.StoreCustomer | null> {
   const headers = await getAuthHeaders()

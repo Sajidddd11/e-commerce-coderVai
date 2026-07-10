@@ -16,9 +16,9 @@ export const sdk = new Medusa({
   publishableKey: process.env.EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
 })
 
-sdk.client.headers = sdk.client.headers || {}
+;(sdk.client as any).headers = (sdk.client as any).headers || {}
 if (process.env.EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY) {
-  sdk.client.headers["x-publishable-api-key"] = process.env.EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  ;(sdk.client as any).headers["x-publishable-api-key"] = process.env.EXPO_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 }
 
 export const MEDUSA_BACKEND = MEDUSA_BACKEND_URL

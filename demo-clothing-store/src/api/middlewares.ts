@@ -105,8 +105,63 @@ async function resolvePhoneIdentifierToEmail(
   next()
 }
 
+/**
+ * Middleware to enforce unique phone numbers during registration and profile updates
+ */
+async function validatePhoneUniqueness(
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
+) {
+  const { phone } = req.body as { phone?: string }
+  if (!phone) {
+    return next()
+  }
+
+  // Normalize phone number
+  let normalizedPhone = phone.replace(/[\s\-\(\)]/g, "")
+  if (normalizedPhone.startsWith("+")) {
+    normalizedPhone = normalizedPhone.substring(1)
+  }
+
+  if (/^(88)?01[3-9]\d{8}$/.test(normalizedPhone)) {
+    try {
+      const customerModuleService = req.scope.resolve(Modules.CUSTOMER)
+      const currentCustomerId = (req as any).auth_context?.actor_id
+
+      const searchPhone = normalizedPhone.startsWith("88") 
+        ? [normalizedPhone, normalizedPhone.substring(2)]
+        : [normalizedPhone, "88" + normalizedPhone]
+
+      const existingCustomers = await customerModuleService.listCustomers(
+        { phone: searchPhone } as any,
+        { select: ["id"] } as any
+      )
+
+      const duplicate = existingCustomers.find(c => c.id !== currentCustomerId)
+
+      if (duplicate) {
+        return res.status(400).json({
+          message: "This mobile number is already registered to another account.",
+          type: "invalid_data"
+        })
+      }
+    } catch (err) {
+      console.error("[PHONE UNIQUE MIDDLEWARE] Error checking phone uniqueness:", err)
+    }
+  }
+
+  next()
+}
+
 export default defineMiddlewares({
   routes: [
+    // Validate phone number uniqueness during storefront customer creation and updates
+    {
+      matcher: "/store/customers*",
+      method: ["POST"],
+      middlewares: [validatePhoneUniqueness],
+    },
     // Intercept emailpass login requests to swap phone number with email
     {
       matcher: "/auth/customer/emailpass",

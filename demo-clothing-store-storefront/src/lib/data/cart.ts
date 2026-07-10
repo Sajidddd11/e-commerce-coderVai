@@ -137,8 +137,14 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   // Normalize email input if provided, or fall back to shipping address phone
   if (data.email) {
     data.email = normalizeCheckoutEmail(data.email)
-  } else if (!data.email && data.shipping_address?.phone) {
-    data.email = normalizeCheckoutEmail(data.shipping_address.phone)
+  } else if (
+    !data.email && 
+    data.shipping_address && 
+    typeof data.shipping_address === "object" && 
+    "phone" in data.shipping_address && 
+    data.shipping_address.phone
+  ) {
+    data.email = normalizeCheckoutEmail(data.shipping_address.phone as string)
   }
 
   const headers = {
