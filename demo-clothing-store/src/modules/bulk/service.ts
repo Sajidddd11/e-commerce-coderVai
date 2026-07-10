@@ -22,6 +22,10 @@ class BulkModuleService extends MedusaService({
         livechat_crisp_id: string
         livechat_tawk_property_id: string
         livechat_tawk_widget_id: string
+        sms_notifier_enabled: boolean
+        sms_notifier_numbers: string
+        sms_notifier_time: string
+        sms_notifier_last_sent: string
     }> {
         const settings = await this.listBulkSettings()
         
@@ -50,6 +54,10 @@ class BulkModuleService extends MedusaService({
             livechat_crisp_id: getVal("livechat_crisp_id", ""),
             livechat_tawk_property_id: getVal("livechat_tawk_property_id", ""),
             livechat_tawk_widget_id: getVal("livechat_tawk_widget_id", ""),
+            sms_notifier_enabled: getBool("sms_notifier_enabled", false),
+            sms_notifier_numbers: getVal("sms_notifier_numbers", ""),
+            sms_notifier_time: getVal("sms_notifier_time", "21:00"),
+            sms_notifier_last_sent: getVal("sms_notifier_last_sent", ""),
         }
     }
 
@@ -69,6 +77,10 @@ class BulkModuleService extends MedusaService({
         livechat_crisp_id: string
         livechat_tawk_property_id: string
         livechat_tawk_widget_id: string
+        sms_notifier_enabled: boolean
+        sms_notifier_numbers: string
+        sms_notifier_time: string
+        sms_notifier_last_sent: string
     }>): Promise<any[]> {
         const results: any[] = []
 

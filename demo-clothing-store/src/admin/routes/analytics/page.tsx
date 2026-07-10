@@ -505,6 +505,11 @@ const AnalyticsDashboardPage = () => {
 
     // ── Fetch main stats ────────────────────────────────────────────────────
     const [financeStats, setFinanceStats] = useState<{ revenue: number; cogs: number; expenses: number; profit: number } | null>(null)
+    const [showNotifierModal, setShowNotifierModal] = useState(false)
+    const [notifierEnabled, setNotifierEnabled] = useState(false)
+    const [notifierNumbers, setNotifierNumbers] = useState("")
+    const [notifierTime, setNotifierTime] = useState("21:00")
+    const [savingNotifier, setSavingNotifier] = useState(false)
 
     const fetchStats = async (startDate = "", endDate = "") => {
         setLoading(true)
@@ -517,11 +522,14 @@ const AnalyticsDashboardPage = () => {
             params.set("top_limit", "20")
             const qs = params.toString()
 
-            const [res, financeRes] = await Promise.all([
+            const [res, financeRes, settingsRes] = await Promise.all([
                 fetch(`/admin/stats${qs ? `?${qs}` : ""}`, {
                     credentials: "include",
                 }),
                 fetch(`/admin/finance/stats?${params.toString()}`, {
+                    credentials: "include",
+                }),
+                fetch(`/admin/bulk-products/settings`, {
                     credentials: "include",
                 })
             ])
@@ -533,11 +541,44 @@ const AnalyticsDashboardPage = () => {
                 const fData = await financeRes.json()
                 setFinanceStats(fData.stats)
             }
+
+            if (settingsRes.ok) {
+                const sData = await settingsRes.json()
+                setNotifierEnabled(sData.settings.sms_notifier_enabled)
+                setNotifierNumbers(sData.settings.sms_notifier_numbers || "")
+                setNotifierTime(sData.settings.sms_notifier_time || "21:00")
+            }
             setLastRefreshed(new Date())
         } catch (e: any) {
             setError(e?.message ?? "Failed to load analytics")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleSaveNotifier = async () => {
+        setSavingNotifier(true)
+        try {
+            const res = await fetch("/admin/bulk-products/settings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sms_notifier_enabled: notifierEnabled,
+                    sms_notifier_numbers: notifierNumbers,
+                    sms_notifier_time: notifierTime,
+                }),
+                credentials: "include"
+            })
+            if (res.ok) {
+                setShowNotifierModal(false)
+            } else {
+                alert("Failed to save settings")
+            }
+        } catch (err) {
+            console.error(err)
+            alert("Error saving settings")
+        } finally {
+            setSavingNotifier(false)
         }
     }
 
@@ -896,6 +937,12 @@ const AnalyticsDashboardPage = () => {
                     </div>
                 </div>
                 <div className="flex gap-2 items-center">
+                    <button
+                        onClick={() => setShowNotifierModal(true)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer"
+                    >
+                        Notifier Settings
+                    </button>
                     <button
                         onClick={handleExportPDF}
                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer"
@@ -2009,6 +2056,144 @@ const AnalyticsDashboardPage = () => {
             >
                 Alariya Admin - Analytics Dashboard
             </div>
+
+            {/* ── Notifier Config Modal ── */}
+            {showNotifierModal && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(0, 0, 0, 0.4)",
+                    backdropFilter: "blur(4px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                }}>
+                    <div style={{
+                        background: "var(--ui-bg-base, #ffffff)",
+                        border: "1px solid var(--ui-border-base, #e5e7eb)",
+                        borderRadius: 12,
+                        width: 480,
+                        padding: 24,
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                        fontFamily: "Inter, system-ui, sans-serif"
+                    }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "var(--ui-fg-base)" }}>Daily Sales Notifier</h3>
+                            <button 
+                                onClick={() => setShowNotifierModal(false)}
+                                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ui-fg-muted)", fontSize: 18 }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <p style={{ fontSize: 12, color: "var(--ui-fg-subtle, #6b7280)", margin: "0 0 20px 0", lineHeight: 1.5 }}>
+                            Automatically send daily order count, revenue, cost of goods, and net profit summaries via SMS.
+                        </p>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+                            <input
+                                id="notifier_enabled_checkbox"
+                                type="checkbox"
+                                checked={notifierEnabled}
+                                onChange={(e) => setNotifierEnabled(e.target.checked)}
+                                style={{ width: 16, height: 16, cursor: "pointer" }}
+                            />
+                            <label htmlFor="notifier_enabled_checkbox" style={{ fontSize: 13, fontWeight: 600, color: "var(--ui-fg-base)", cursor: "pointer" }}>
+                                Enable Daily SMS Notifications
+                            </label>
+                        </div>
+
+                        {notifierEnabled && (
+                            <>
+                                <div style={{ marginBottom: 16 }}>
+                                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 6, color: "var(--ui-fg-subtle)" }}>
+                                        Recipient Phone Numbers (comma-separated)
+                                    </label>
+                                    <textarea
+                                        value={notifierNumbers}
+                                        onChange={(e) => setNotifierNumbers(e.target.value)}
+                                        placeholder="e.g. 8801700000000, 8801800000000"
+                                        style={{
+                                            width: "100%",
+                                            height: 80,
+                                            borderRadius: 8,
+                                            border: "1px solid var(--ui-border-base, #e5e7eb)",
+                                            background: "var(--ui-bg-field, #fafafa)",
+                                            color: "var(--ui-fg-base)",
+                                            padding: "8px 12px",
+                                            fontSize: 13,
+                                            fontFamily: "monospace",
+                                            resize: "none"
+                                        }}
+                                    />
+                                    <span style={{ fontSize: 10, color: "var(--ui-fg-muted)", marginTop: 4, display: "block" }}>
+                                        Include country code (e.g. 880) for each recipient number.
+                                    </span>
+                                </div>
+
+                                <div style={{ marginBottom: 24 }}>
+                                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 6, color: "var(--ui-fg-subtle)" }}>
+                                        Daily Notification Time (Dhaka Timezone)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={notifierTime}
+                                        onChange={(e) => setNotifierTime(e.target.value)}
+                                        style={{
+                                            width: "100%",
+                                            borderRadius: 8,
+                                            border: "1px solid var(--ui-border-base, #e5e7eb)",
+                                            background: "var(--ui-bg-field, #fafafa)",
+                                            color: "var(--ui-fg-base)",
+                                            padding: "8px 12px",
+                                            fontSize: 13
+                                        }}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                            <button
+                                onClick={() => setShowNotifierModal(false)}
+                                style={{
+                                    padding: "8px 16px",
+                                    borderRadius: 8,
+                                    border: "1px solid var(--ui-border-base, #e5e7eb)",
+                                    background: "transparent",
+                                    color: "var(--ui-fg-base)",
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveNotifier}
+                                disabled={savingNotifier}
+                                style={{
+                                    padding: "8px 16px",
+                                    borderRadius: 8,
+                                    border: "none",
+                                    background: "var(--ui-bg-interactive, #6366f1)",
+                                    color: "#ffffff",
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    opacity: savingNotifier ? 0.7 : 1
+                                }}
+                            >
+                                {savingNotifier ? "Saving..." : "Save Settings"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

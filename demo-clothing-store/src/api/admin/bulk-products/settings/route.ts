@@ -35,6 +35,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             livechat_crisp_id: data.livechat_crisp_id,
             livechat_tawk_property_id: data.livechat_tawk_property_id,
             livechat_tawk_widget_id: data.livechat_tawk_widget_id,
+            sms_notifier_enabled: data.sms_notifier_enabled,
+            sms_notifier_numbers: data.sms_notifier_numbers,
+            sms_notifier_time: data.sms_notifier_time,
+            sms_notifier_last_sent: data.sms_notifier_last_sent,
         })
 
         const settings = await bulkService.getSettings()
