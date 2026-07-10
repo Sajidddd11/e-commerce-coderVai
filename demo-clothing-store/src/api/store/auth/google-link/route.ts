@@ -47,7 +47,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
         // 2. Resolve required Medusa modules
         const customerModuleService = req.scope.resolve(Modules.CUSTOMER)
-        const remoteLink = req.scope.resolve("link")
+        const authModuleService = req.scope.resolve(Modules.AUTH)
 
         // 3. Find if a Customer with this email already exists
         const [existingCustomer] = await customerModuleService.listCustomers(
@@ -59,18 +59,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
         if (existingCustomer) {
             console.log(`[GOOGLE-LINK] Linking existing customer ${customerId} (${email}) to auth identity ${authIdentityId}`)
-            
-            // Create a link between AuthIdentity and the existing Customer record
-            await remoteLink.create({
-                [Modules.AUTH]: {
-                    auth_identity_id: authIdentityId,
-                },
-                [Modules.CUSTOMER]: {
-                    customer_id: customerId,
-                },
-            }).catch((err) => {
-                console.error("[GOOGLE-LINK] Remote link association failed (could already exist):", err)
-            })
         } else {
             console.log(`[GOOGLE-LINK] Customer record not found for email ${email}. Creating a new profile...`)
             
@@ -82,22 +70,19 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             })
             
             customerId = newCustomer.id
-
-            // Link the new Customer record to this Google AuthIdentity
-            await remoteLink.create({
-                [Modules.AUTH]: {
-                    auth_identity_id: authIdentityId,
-                },
-                [Modules.CUSTOMER]: {
-                    customer_id: customerId,
-                },
-            }).catch((err) => {
-                console.error("[GOOGLE-LINK] Remote link creation failed for new customer:", err)
-            })
         }
 
-        // 4. Retrieve refreshed AuthIdentity to make sure Google provider metadata is loaded
-        const authModuleService = req.scope.resolve(Modules.AUTH)
+        // 4. Link by updating the app_metadata json column on the AuthIdentity
+        const authIdentityObj = await authModuleService.retrieveAuthIdentity(authIdentityId)
+        const appMetadata = authIdentityObj.app_metadata || {}
+        appMetadata["customer_id"] = customerId
+
+        await authModuleService.updateAuthIdentities({
+            id: authIdentityId,
+            app_metadata: appMetadata,
+        })
+
+        // Retrieve refreshed AuthIdentity to make sure Google provider metadata is loaded
         const authIdentity = await authModuleService.retrieveAuthIdentity(authIdentityId, {
             relations: ["provider_identities"]
         })

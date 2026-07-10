@@ -2,7 +2,7 @@
   "expo": {
     "name": "ZAHAN",
     "slug": "zahan-store",
-    "version": "1.0.3",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "zahan",
@@ -12,6 +12,7 @@
       "supportsTablet": true,
       "userInterfaceStyle": "light",
       "bundleIdentifier": "com.zahan.store",
+      "buildNumber": "10",
       "associatedDomains": [
         "applinks:zahan.com.bd"
       ],
@@ -23,7 +24,7 @@
       }
     },
     "android": {
-      "versionCode": 7,
+      "versionCode": 10,
       "userInterfaceStyle": "light",
       "package": "com.zahan.store",
       "intentFilters": [
