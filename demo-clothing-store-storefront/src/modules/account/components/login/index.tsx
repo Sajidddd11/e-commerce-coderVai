@@ -55,10 +55,10 @@ const Login = ({ setCurrentView }: Props) => {
       <form className="w-full" action={formAction}>
         <div className="flex flex-col w-full gap-y-2">
           <Input
-            label="Email"
+            label="Email or Phone Number"
             name="email"
-            type="email"
-            title="Enter a valid email address."
+            type="text"
+            title="Enter a valid email address or phone number."
             autoComplete="email"
             required
             data-testid="email-input"

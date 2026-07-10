@@ -115,11 +115,30 @@ export async function getOrSetCart(countryCode: string) {
   return cart
 }
 
+function normalizeCheckoutEmail(emailOrPhone: string): string {
+  if (!emailOrPhone) return ""
+  if (emailOrPhone.includes("@")) {
+    return emailOrPhone.trim().toLowerCase()
+  }
+  let clean = emailOrPhone.replace(/[\s\-\(\)\+]/g, "")
+  if (/^\d+$/.test(clean)) {
+    return `${clean}@phone.zahan.com`
+  }
+  return emailOrPhone.trim().toLowerCase()
+}
+
 export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   const cartId = await getCartId()
 
   if (!cartId) {
     throw new Error("No existing cart found, please create one before updating")
+  }
+
+  // Normalize email input if provided, or fall back to shipping address phone
+  if (data.email) {
+    data.email = normalizeCheckoutEmail(data.email)
+  } else if (!data.email && data.shipping_address?.phone) {
+    data.email = normalizeCheckoutEmail(data.shipping_address.phone)
   }
 
   const headers = {

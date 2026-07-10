@@ -4,6 +4,7 @@ import type {
   MedusaResponse,
   MedusaNextFunction,
 } from "@medusajs/framework/http"
+import { Modules } from "@medusajs/framework/utils"
 import { enrichPaymentContext } from "./middlewares/enrich-payment-context"
 import { blockIfEditor } from "./middlewares/block-if-editor"
 import { auditDeleteLog } from "./middlewares/audit-log"
@@ -58,8 +59,60 @@ async function addPublishableKeyForSslCallbacks(
   next()
 }
 
+/**
+ * Middleware to swap phone number login identifier to email address
+ */
+async function resolvePhoneIdentifierToEmail(
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
+) {
+  const { email } = req.body as { email?: string }
+
+  if (!email) {
+    return next()
+  }
+
+  // Normalize and check if it's a mobile number
+  let normalizedPhone = email.replace(/[\s\-\(\)]/g, "")
+  if (normalizedPhone.startsWith("+")) {
+    normalizedPhone = normalizedPhone.substring(1)
+  }
+
+  // Check if it matches a Bangladeshi phone format
+  if (/^(88)?01[3-9]\d{8}$/.test(normalizedPhone)) {
+    try {
+      const customerModuleService = req.scope.resolve(Modules.CUSTOMER)
+      
+      const searchPhone = normalizedPhone.startsWith("88") 
+        ? [normalizedPhone, normalizedPhone.substring(2)]
+        : [normalizedPhone, "88" + normalizedPhone]
+
+      const [customer] = await customerModuleService.listCustomers(
+        { phone: searchPhone } as any,
+        { select: ["email"] } as any
+      )
+
+      if (customer && customer.email) {
+        console.log(`[AUTH MIDDLEWARE] Swapping login identifier phone ${normalizedPhone} to email ${customer.email}`)
+        ;(req.body as any).email = customer.email
+      }
+    } catch (err) {
+      console.error("[AUTH MIDDLEWARE] Error resolving phone identifier:", err)
+    }
+  }
+
+  next()
+}
+
 export default defineMiddlewares({
   routes: [
+    // Intercept emailpass login requests to swap phone number with email
+    {
+      matcher: "/auth/customer/emailpass",
+      method: ["POST"],
+      middlewares: [resolvePhoneIdentifierToEmail],
+    },
     // Enrich payment session creation with cart data
     {
       matcher: /^\/store\/payment-collections\/[^\/]+\/payment-sessions$/,
@@ -75,6 +128,14 @@ export default defineMiddlewares({
     // Authenticate storefront notifications endpoints
     {
       matcher: "/store/notifications*",
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+      ],
+    },
+    // Authenticate storefront customer email updates endpoint
+    {
+      matcher: "/store/customers/me/email",
+      method: ["POST"],
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
       ],

@@ -538,14 +538,12 @@ export default function CheckoutScreen() {
             </View>
 
             <Input
-              label="Email address"
+              label="Email or Phone Number"
               value={form.email}
               onChangeText={(v) => setForm({ email: v })}
-              keyboardType="email-address"
               autoCapitalize="none"
-              placeholder="your@email.com"
               editable={!customer}
-              error={attemptedSubmit && !form.email.trim() ? "Email address is required" : undefined}
+              error={attemptedSubmit && !form.email.trim() ? "Email or Phone Number is required" : undefined}
             />
 
             <DistrictPicker

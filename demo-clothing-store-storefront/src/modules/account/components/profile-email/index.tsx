@@ -6,7 +6,7 @@ import Input from "@modules/common/components/input"
 
 import AccountInfo from "../account-info"
 import { HttpTypes } from "@medusajs/types"
-// import { updateCustomer } from "@lib/data/customer"
+import { updateCustomerEmail } from "@lib/data/customer"
 
 type MyInformationProps = {
   customer: HttpTypes.StoreCustomer
@@ -15,24 +15,20 @@ type MyInformationProps = {
 const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
   const [successState, setSuccessState] = React.useState(false)
 
-  // TODO: It seems we don't support updating emails now?
-  const updateCustomerEmail = (
+  const updateCustomerEmailAction = async (
     _currentState: Record<string, unknown>,
     formData: FormData
   ) => {
-    const customer = {
-      email: formData.get("email") as string,
-    }
-
-    try {
-      // await updateCustomer(customer)
+    const email = formData.get("email") as string
+    const res = await updateCustomerEmail(email)
+    if (res.success) {
       return { success: true, error: null }
-    } catch (error: any) {
-      return { success: false, error: error.toString() }
+    } else {
+      return { success: false, error: res.error }
     }
   }
 
-  const [state, formAction] = useActionState(updateCustomerEmail, {
+  const [state, formAction] = useActionState(updateCustomerEmailAction, {
     error: false,
     success: false,
   })
@@ -45,16 +41,20 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
     setSuccessState(state.success)
   }, [state])
 
+  const isEmailProvided = customer.email && !customer.email.endsWith("@phone.zahan.com")
+  const currentEmailInfo = isEmailProvided ? customer.email : "Not provided"
+
   return (
     <form action={formAction} className="w-full">
       <AccountInfo
         label="Email"
-        currentInfo={`${customer.email}`}
+        currentInfo={currentEmailInfo}
         isSuccess={successState}
         isError={!!state.error}
         errorMessage={state.error}
         clearState={clearState}
         data-testid="account-email-editor"
+        hideEdit={!!isEmailProvided}
       >
         <div className="grid grid-cols-1 gap-y-2">
           <Input
@@ -63,7 +63,7 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
             type="email"
             autoComplete="email"
             required
-            defaultValue={customer.email}
+            defaultValue={isEmailProvided ? customer.email : ""}
             data-testid="email-input"
           />
         </div>

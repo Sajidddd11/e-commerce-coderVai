@@ -11,7 +11,7 @@ import { Button } from "@components/ui/Button"
 import { Input } from "@components/ui/Input"
 import { useAuthStore } from "@stores/auth-store"
 import { useCartStore } from "@stores/cart-store"
-import { login, signup } from "@api/customer"
+import { login, signup, requestPhoneOtp, verifyPhoneOtp, signupWithPhone } from "@api/customer"
 import { colors, spacing, borderRadius } from "@design/theme"
 import * as WebBrowser from "expo-web-browser"
 import * as Linking from "expo-linking"
@@ -30,11 +30,15 @@ export default function AccountScreen() {
   const refreshCart = useCartStore((s) => s.refresh)
 
   const [mode, setMode] = useState<"login" | "register">("login")
+  const [phoneMode, setPhoneMode] = useState<"phone_input" | "otp_input" | "details_input" | null>(null)
+  
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [phone, setPhone] = useState("")
+  const [regOtp, setRegOtp] = useState("")
+  
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -59,6 +63,98 @@ export default function AccountScreen() {
       }
 
       await Promise.all([loadCustomer(), refreshCart()])
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handlePhoneSendOtp = async () => {
+    if (!phone) {
+      setError("Mobile number is required.")
+      return
+    }
+
+    let normalizedPhone = phone.replace(/[\s\-\(\)]/g, "")
+    if (normalizedPhone.startsWith("+")) {
+      normalizedPhone = normalizedPhone.substring(1)
+    }
+
+    if (!/^(88)?01[3-9]\d{8}$/.test(normalizedPhone)) {
+      setError("Please enter a valid Bangladeshi mobile number.")
+      return
+    }
+
+    setError(null)
+    setSubmitting(true)
+    try {
+      const result = await requestPhoneOtp(normalizedPhone)
+      if (result.success) {
+        setPhone(normalizedPhone)
+        setPhoneMode("otp_input")
+      } else {
+        setError(result.message || "Failed to send verification code.")
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "An error occurred.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handlePhoneVerifyOtp = async () => {
+    if (!regOtp || regOtp.length !== 6) {
+      setError("Please enter the 6-digit code.")
+      return
+    }
+
+    setError(null)
+    setSubmitting(true)
+    try {
+      const result = await verifyPhoneOtp(phone, regOtp)
+      if (result.success) {
+        if (result.exists) {
+          setError("This mobile number is already registered. Please sign in instead.")
+          setPhoneMode(null)
+          setMode("login")
+        } else {
+          setPhoneMode("details_input")
+        }
+      } else {
+        setError(result.message || "Incorrect or expired OTP.")
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Verification failed.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handlePhoneRegister = async () => {
+    if (!firstName.trim() || !password) {
+      setError("First Name and Password are required.")
+      return
+    }
+
+    setError(null)
+    setSubmitting(true)
+    try {
+      const result = await signupWithPhone({
+        phone,
+        otp: regOtp,
+        first_name: firstName,
+        last_name: lastName,
+        password,
+      })
+
+      if (result.success) {
+        await Promise.all([loadCustomer(), refreshCart()])
+        setPhoneMode(null)
+        setMode("login")
+      } else {
+        setError(result.error || "Failed to complete registration.")
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Registration failed.")
     } finally {
       setSubmitting(false)
     }
@@ -170,19 +266,187 @@ export default function AccountScreen() {
       >
       <View style={styles.container}>
         <ThemedText variant="sectionHeading" color={colors.grey[90]}>
-          {mode === "login" ? "Welcome back" : "Create account"}
+          {phoneMode ? "Mobile Signup" : mode === "login" ? "Welcome back" : "Create account"}
         </ThemedText>
         <ThemedText variant="body" color={colors.grey[50]} style={styles.subtitle}>
-          {mode === "login"
+          {phoneMode 
+            ? "Verify your phone to register an account."
+            : mode === "login"
             ? "Sign in to access your orders and addresses."
             : "Join ZAHAN for faster checkout and order tracking."}
         </ThemedText>
 
         <View style={styles.form}>
-          {mode === "register" ? (
+          {phoneMode === null ? (
+            <>
+              {mode === "register" ? (
+                <>
+                  <Input
+                    label="First name"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    autoCapitalize="words"
+                  />
+                  <Input
+                    label="Last name"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    autoCapitalize="words"
+                  />
+                  <Input
+                    label="Phone"
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                  />
+                  <Input
+                    label="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                  />
+                </>
+              ) : (
+                <Input
+                  label="Email or Mobile Number"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                />
+              )}
+
+              <Input
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+
+              {error ? (
+                <ThemedText variant="bodySmall" color={colors.error}>
+                  {error}
+                </ThemedText>
+              ) : null}
+
+              {mode === "login" ? (
+                <Pressable
+                  onPress={() => router.push("/account/forgot-password")}
+                  style={styles.forgot}
+                >
+                  <ThemedText variant="bodySmall" color={colors.brand.teal}>
+                    Forgot password?
+                  </ThemedText>
+                </Pressable>
+              ) : null}
+
+              <Button
+                title={mode === "login" ? "Sign in" : "Create account with Email"}
+                fullWidth
+                loading={submitting}
+                onPress={submit}
+                style={styles.submit}
+              />
+
+              {mode === "register" && (
+                <Button
+                  title="Sign up with Mobile Number"
+                  variant="secondary"
+                  fullWidth
+                  onPress={() => {
+                    setError(null)
+                    setPhoneMode("phone_input")
+                  }}
+                  style={{ marginTop: spacing.xs }}
+                />
+              )}
+            </>
+          ) : null}
+
+          {phoneMode === "phone_input" && (
             <>
               <Input
-                label="First name"
+                label="Mobile Number"
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholder="e.g. 01XXXXXXXXX"
+              />
+
+              {error ? (
+                <ThemedText variant="bodySmall" color={colors.error}>
+                  {error}
+                </ThemedText>
+              ) : null}
+
+              <Button
+                title="Send Verification Code"
+                fullWidth
+                loading={submitting}
+                onPress={handlePhoneSendOtp}
+                style={styles.submit}
+              />
+              
+              <Button
+                title="Cancel"
+                variant="secondary"
+                fullWidth
+                onPress={() => {
+                  setError(null)
+                  setPhoneMode(null)
+                }}
+                style={{ marginTop: spacing.xs }}
+              />
+            </>
+          )}
+
+          {phoneMode === "otp_input" && (
+            <>
+              <ThemedText variant="bodySmall" color={colors.grey[60]} style={{ textAlign: "center", marginBottom: spacing.xs }}>
+                Enter the 6-digit code sent to {phone}
+              </ThemedText>
+              
+              <Input
+                label="Verification Code"
+                value={regOtp}
+                onChangeText={setRegOtp}
+                keyboardType="number-pad"
+                placeholder="6-digit OTP code"
+                maxLength={6}
+              />
+
+              {error ? (
+                <ThemedText variant="bodySmall" color={colors.error}>
+                  {error}
+                </ThemedText>
+              ) : null}
+
+              <Button
+                title="Verify OTP"
+                fullWidth
+                loading={submitting}
+                onPress={handlePhoneVerifyOtp}
+                style={styles.submit}
+              />
+
+              <Button
+                title="Change Phone Number"
+                variant="secondary"
+                fullWidth
+                onPress={() => {
+                  setError(null)
+                  setPhoneMode("phone_input")
+                }}
+                style={{ marginTop: spacing.xs }}
+              />
+            </>
+          )}
+
+          {phoneMode === "details_input" && (
+            <>
+              <Input
+                label="First name *"
                 value={firstName}
                 onChangeText={setFirstName}
                 autoCapitalize="words"
@@ -194,55 +458,29 @@ export default function AccountScreen() {
                 autoCapitalize="words"
               />
               <Input
-                label="Phone"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
+                label="Password *"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+
+              {error ? (
+                <ThemedText variant="bodySmall" color={colors.error}>
+                  {error}
+                </ThemedText>
+              ) : null}
+
+              <Button
+                title="Complete Registration"
+                fullWidth
+                loading={submitting}
+                onPress={handlePhoneRegister}
+                style={styles.submit}
               />
             </>
-          ) : null}
+          )}
 
-          <Input
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
-          <Input
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          {error ? (
-            <ThemedText variant="bodySmall" color={colors.error}>
-              {error}
-            </ThemedText>
-          ) : null}
-
-          {mode === "login" ? (
-            <Pressable
-              onPress={() => router.push("/account/forgot-password")}
-              style={styles.forgot}
-            >
-              <ThemedText variant="bodySmall" color={colors.brand.teal}>
-                Forgot password?
-              </ThemedText>
-            </Pressable>
-          ) : null}
-
-          <Button
-            title={mode === "login" ? "Sign in" : "Create account"}
-            fullWidth
-            loading={submitting}
-            onPress={submit}
-            style={styles.submit}
-          />
-
-          {!isIOS && (
+          {phoneMode === null && !isIOS && (
             <>
               <View style={styles.dividerContainer}>
                 <View style={styles.dividerLine} />
@@ -282,22 +520,24 @@ export default function AccountScreen() {
             </>
           )}
 
-          <Pressable
-            onPress={() => {
-              setError(null)
-              setMode(mode === "login" ? "register" : "login")
-            }}
-            style={styles.toggle}
-          >
-            <ThemedText variant="body" color={colors.grey[60]}>
-              {mode === "login"
-                ? "New here? "
-                : "Already have an account? "}
-              <ThemedText variant="bodyMedium" color={colors.brand.teal}>
-                {mode === "login" ? "Create one" : "Sign in"}
+          {phoneMode === null && (
+            <Pressable
+              onPress={() => {
+                setError(null)
+                setMode(mode === "login" ? "register" : "login")
+              }}
+              style={styles.toggle}
+            >
+              <ThemedText variant="body" color={colors.grey[60]}>
+                {mode === "login"
+                  ? "New here? "
+                  : "Already have an account? "}
+                <ThemedText variant="bodyMedium" color={colors.brand.teal}>
+                  {mode === "login" ? "Create one" : "Sign in"}
+                </ThemedText>
               </ThemedText>
-            </ThemedText>
-          </Pressable>
+            </Pressable>
+          )}
         </View>
       </View>
       <AccountSupportSection />

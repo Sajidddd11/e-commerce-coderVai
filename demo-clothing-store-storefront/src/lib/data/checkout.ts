@@ -24,6 +24,18 @@ import {
 } from "./cookies"
 import { retrieveCustomer } from "./customer"
 
+function normalizeCheckoutEmail(emailOrPhone: string): string {
+    if (!emailOrPhone) return ""
+    if (emailOrPhone.includes("@")) {
+        return emailOrPhone.trim().toLowerCase()
+    }
+    let clean = emailOrPhone.replace(/[\s\-\(\)\+]/g, "")
+    if (/^\d+$/.test(clean)) {
+        return `${clean}@phone.zahan.com`
+    }
+    return emailOrPhone.trim().toLowerCase()
+}
+
 /**
  * Prepares the entire checkout in one atomic operation
  * Combines address setting, shipping selection, and payment initiation
@@ -81,7 +93,10 @@ export async function prepareCheckout(currentState: unknown, formData: FormData)
                 phone: formData.get("shipping_address.phone") as string,
                 company: formData.get("shipping_address.company") as string,
             },
-            email: formData.get("email") as string,
+            email: normalizeCheckoutEmail(
+                (formData.get("email") as string) || 
+                (formData.get("shipping_address.phone") as string)
+            ),
             metadata: {
                 delivery_instructions: formData.get("delivery_instructions") as string || "",
             }

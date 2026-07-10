@@ -253,14 +253,13 @@ const ShippingAddress = ({
           data-testid="shipping-phone-input"
         />
         <Input
-          label="Email"
+          label="Email (Optional)"
           name="email"
           type="email"
           title="Enter a valid email address."
           autoComplete="email"
           value={formData.email}
           onChange={handleChange}
-          required
           data-testid="shipping-email-input"
         />
         <DistrictSelect

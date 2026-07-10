@@ -12,7 +12,7 @@ type MyInformationProps = {
   customer: HttpTypes.StoreCustomer
 }
 
-const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
+const ProfilePhone: React.FC<MyInformationProps> = ({ customer }) => {
   const [successState, setSuccessState] = React.useState(false)
 
   const updateCustomerPhone = async (
@@ -44,16 +44,20 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
     setSuccessState(state.success)
   }, [state])
 
+  const isPhoneProvided = customer.phone && customer.phone.trim().length > 0
+  const currentPhoneInfo = isPhoneProvided ? customer.phone : "Not provided"
+
   return (
     <form action={formAction} className="w-full">
       <AccountInfo
         label="Phone"
-        currentInfo={`${customer.phone}`}
+        currentInfo={currentPhoneInfo}
         isSuccess={successState}
         isError={!!state.error}
         errorMessage={state.error}
         clearState={clearState}
         data-testid="account-phone-editor"
+        hideEdit={!!isPhoneProvided}
       >
         <div className="grid grid-cols-1 gap-y-2">
           <Input
@@ -62,7 +66,7 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
             type="phone"
             autoComplete="phone"
             required
-            defaultValue={customer.phone ?? ""}
+            defaultValue={isPhoneProvided ? (customer.phone ?? "") : ""}
             data-testid="phone-input"
           />
         </div>
@@ -71,4 +75,5 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
   )
 }
 
-export default ProfileEmail
+export default ProfilePhone
+

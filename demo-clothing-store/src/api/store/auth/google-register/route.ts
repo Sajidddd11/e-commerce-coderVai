@@ -42,7 +42,8 @@ export const POST = async (
                 first_name,
                 last_name: last_name || "",
                 phone,
-            })
+                has_account: true,
+            } as any)
         } else {
             console.log(`[GOOGLE-REGISTER] Creating new customer record for email ${email}`)
             const newCustomer = await customerModuleService.createCustomers({
@@ -50,8 +51,9 @@ export const POST = async (
                 first_name,
                 last_name: last_name || "",
                 phone,
-            })
-            customerId = newCustomer.id
+                has_account: true,
+            } as any)
+            customerId = Array.isArray(newCustomer) ? newCustomer[0].id : (newCustomer as any).id
         }
 
         // 2. Link the AuthIdentity to the Customer record

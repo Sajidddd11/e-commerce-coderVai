@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { sdk } from "./sdk"
+import { sdk, PUBLISHABLE_KEY } from "./sdk"
 import { getAuthHeaders, setToken, removeToken } from "@utils/storage"
 import { getCartId, removeCartId } from "./cart"
 import { mergeGuestHistory } from "./recommendations"
@@ -8,6 +8,7 @@ import { mergeGuestHistory } from "./recommendations"
  * Ported from web src/lib/data/customer.ts.
  * JWT stored via expo-secure-store instead of a cookie.
  */
+const ACTIVE_PUBLISHABLE_KEY = PUBLISHABLE_KEY
 
 export async function retrieveCustomer(): Promise<HttpTypes.StoreCustomer | null> {
   const headers = await getAuthHeaders()
@@ -194,6 +195,7 @@ export async function registerWithGoogleDetails(body: {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-publishable-api-key": ACTIVE_PUBLISHABLE_KEY,
         },
         body,
       }
@@ -215,5 +217,81 @@ export async function registerWithGoogleDetails(body: {
     return { success: true, token: response.token }
   } catch (e: any) {
     return { success: false, error: e?.message ?? "Could not complete registration" }
+  }
+}
+
+export async function requestPhoneOtp(phone: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    console.log("[DEBUG] requestPhoneOtp phone:", phone);
+    console.log("[DEBUG] requestPhoneOtp publishable key:", ACTIVE_PUBLISHABLE_KEY);
+    return await sdk.client.fetch<{ success: boolean; message?: string }>("/store/auth/phone-send-otp", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "x-publishable-api-key": ACTIVE_PUBLISHABLE_KEY,
+      },
+      body: { phone },
+    })
+  } catch (e: any) {
+    return { success: false, message: e?.message ?? "Failed to request code." }
+  }
+}
+
+export async function verifyPhoneOtp(
+  phone: string,
+  otp: string
+): Promise<{ success: boolean; exists?: boolean; email?: string; message?: string }> {
+  try {
+    return await sdk.client.fetch<{ success: boolean; exists?: boolean; email?: string; message?: string }>(
+      "/store/auth/phone-verify-otp",
+      {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "x-publishable-api-key": ACTIVE_PUBLISHABLE_KEY,
+        },
+        body: { phone, otp },
+      }
+    )
+  } catch (e: any) {
+    return { success: false, message: e?.message ?? "Failed to verify code." }
+  }
+}
+
+export async function signupWithPhone(body: {
+  phone: string
+  otp: string
+  first_name: string
+  last_name?: string
+  password?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await sdk.client.fetch<{ success: boolean; token?: string; message?: string }>(
+      "/store/auth/phone-register",
+      {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "x-publishable-api-key": ACTIVE_PUBLISHABLE_KEY,
+        },
+        body,
+      }
+    )
+
+    if (!response.success || !response.token) {
+      return { success: false, error: response.message || "Registration failed." }
+    }
+
+    await setToken(response.token)
+    await transferCart()
+
+    const customer = await retrieveCustomer()
+    if (customer?.id) {
+      mergeGuestHistory(customer.id).catch(() => null)
+    }
+
+    return { success: true }
+  } catch (e: any) {
+    return { success: false, error: e?.message ?? "Could not complete phone registration" }
   }
 }

@@ -404,3 +404,112 @@ export async function registerWithGoogleDetails(body: {
   }
 }
 
+export async function requestPhoneOtp(phone: string) {
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+  try {
+    const response = await fetch(`${backendUrl}/store/auth/phone-send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getPublishableKeyHeader(),
+      },
+      body: JSON.stringify({ phone }),
+    })
+    return await response.json()
+  } catch (error: any) {
+    return { success: false, message: error.toString() }
+  }
+}
+
+export async function verifyPhoneOtp(phone: string, otp: string) {
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+  try {
+    const response = await fetch(`${backendUrl}/store/auth/phone-verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getPublishableKeyHeader(),
+      },
+      body: JSON.stringify({ phone, otp }),
+    })
+    return await response.json()
+  } catch (error: any) {
+    return { success: false, message: error.toString() }
+  }
+}
+
+export async function signupWithPhone(data: {
+  phone: string
+  otp: string
+  first_name: string
+  last_name?: string
+  password?: string
+}) {
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+  try {
+    const response = await fetch(`${backendUrl}/store/auth/phone-register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getPublishableKeyHeader(),
+      },
+      body: JSON.stringify(data),
+    })
+
+    const result = await response.json()
+
+    if (result.success && result.token) {
+      await setAuthToken(result.token)
+      
+      const customerCacheTag = await getCacheTag("customers")
+      // @ts-ignore
+      revalidateTag(customerCacheTag)
+      
+      try {
+        await transferCart()
+      } catch (cartError) {
+        console.error("Error transferring cart during registration:", cartError)
+      }
+
+      // Fetch customer_id for guest merge
+      try {
+        const customer = await retrieveCustomer()
+        return { success: true, customer_id: customer?.id ?? null }
+      } catch {
+        return { success: true, customer_id: null }
+      }
+    }
+
+    return { success: false, error: result.message || "Signup failed" }
+  } catch (error: any) {
+    return { success: false, error: error.toString() }
+  }
+}
+
+export async function updateCustomerEmail(email: string) {
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+  try {
+    const response = await fetch(`${backendUrl}/store/customers/me/email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getPublishableKeyHeader(),
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify({ email }),
+    })
+
+    const result = await response.json()
+    if (response.ok && result.success) {
+      const cacheTag = await getCacheTag("customers")
+      // @ts-ignore
+      revalidateTag(cacheTag)
+      return { success: true }
+    }
+    return { success: false, error: result.message || "Failed to update email." }
+  } catch (error: any) {
+    return { success: false, error: error.toString() }
+  }
+}
+
+
