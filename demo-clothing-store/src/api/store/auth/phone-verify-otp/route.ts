@@ -39,8 +39,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       : [normalizedPhone, "88" + normalizedPhone]
 
     const [existingCustomer] = await customerModuleService.listCustomers(
-      { phone: searchPhone },
-      { select: ["id", "email"] }
+      { phone: searchPhone } as any,
+      { select: ["id", "email"] } as any
     )
 
     return res.status(200).json({
