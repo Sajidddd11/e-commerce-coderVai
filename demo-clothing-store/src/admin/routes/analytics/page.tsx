@@ -504,6 +504,8 @@ const AnalyticsDashboardPage = () => {
     const [customError, setCustomError] = useState<string | null>(null)
 
     // ── Fetch main stats ────────────────────────────────────────────────────
+    const [financeStats, setFinanceStats] = useState<{ revenue: number; cogs: number; expenses: number; profit: number } | null>(null)
+
     const fetchStats = async (startDate = "", endDate = "") => {
         setLoading(true)
         setError(null)
@@ -514,11 +516,23 @@ const AnalyticsDashboardPage = () => {
             params.set("trend_days", "30")
             params.set("top_limit", "20")
             const qs = params.toString()
-            const res = await fetch(`/admin/stats${qs ? `?${qs}` : ""}`, {
-                credentials: "include",
-            })
+
+            const [res, financeRes] = await Promise.all([
+                fetch(`/admin/stats${qs ? `?${qs}` : ""}`, {
+                    credentials: "include",
+                }),
+                fetch(`/admin/finance/stats?${params.toString()}`, {
+                    credentials: "include",
+                })
+            ])
+
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
             setStats(await res.json())
+
+            if (financeRes.ok) {
+                const fData = await financeRes.json()
+                setFinanceStats(fData.stats)
+            }
             setLastRefreshed(new Date())
         } catch (e: any) {
             setError(e?.message ?? "Failed to load analytics")
@@ -625,6 +639,235 @@ const AnalyticsDashboardPage = () => {
         })
     }
 
+    const handleExportPDF = () => {
+        // 1. Top products breakdown rows
+        const topProductsRows = (stats?.top_products || []).slice(0, 8).map((p, idx) => `
+            <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563;">${idx + 1}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; color: #111827;">${p.title}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #1f2937;">${p.quantity}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #10b981;">${fmt(p.revenue, currency)}</td>
+            </tr>
+        `).join("")
+
+        // 2. Sales by payment gateway rows
+        const paymentRows = (stats?.payment_method_split || []).map(item => `
+            <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; color: #111827;">${item.method || "Direct / Invoice"}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #1f2937;">${num(item.count)}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #10b981;">${fmt(item.revenue, currency)}</td>
+            </tr>
+        `).join("")
+
+        // 3. Order status summary rows
+        const orderStatusMap = stats?.orders.status_breakdown || {}
+        const statusRows = Object.entries(orderStatusMap).map(([status, count]) => `
+            <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; text-transform: capitalize; color: #111827;">${status}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #1f2937;">${num(count)}</td>
+            </tr>
+        `).join("")
+
+        // 4. Payment status summary rows
+        const paymentStatusMap = stats?.orders.payment_status_breakdown || {}
+        const payStatusRows = Object.entries(paymentStatusMap).map(([status, count]) => `
+            <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; text-transform: capitalize; color: #111827;">${status}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #1f2937;">${num(count)}</td>
+            </tr>
+        `).join("")
+
+        // 5. Day of Week Sales rows
+        const dowRows = (stats?.revenue_by_dow || []).map(item => `
+            <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; color: #111827;">${item.day}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #1f2937;">${num(item.orders)}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #10b981;">${fmt(item.revenue, currency)}</td>
+            </tr>
+        `).join("")
+
+        const printWindow = window.open("", "_blank")
+        if (!printWindow) return
+
+        const html = `
+            <html>
+            <head>
+                <title>Zahan Business Performance Report</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1f2937; line-height: 1.5; background: #fff; }
+                    .header-container { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 24px; }
+                    .logo { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: #111827; }
+                    .report-title { font-size: 14px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; }
+                    
+                    .section-header { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #9ca3af; letter-spacing: 0.05em; margin-bottom: 14px; border-bottom: 1px solid #f3f4f6; padding-bottom: 4px; }
+                    
+                    .meta-grid-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 30px; font-size: 12px; }
+                    .meta-item { background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 12px 14px; }
+                    .meta-label { font-size: 10px; text-transform: uppercase; color: #9ca3af; font-weight: 600; margin-bottom: 4px; }
+                    .meta-value { font-size: 13px; font-weight: 700; color: #111827; }
+                    
+                    .section-title { font-size: 14px; font-weight: 700; color: #111827; margin-top: 30px; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    @media print {
+                        body { padding: 20px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header-container">
+                    <div class="logo">ZAHAN</div>
+                    <div class="report-title">Sales & Performance Report</div>
+                </div>
+
+                <div class="section-header">1. Executive Overview Metrics</div>
+                <div class="meta-grid-kpis">
+                    <div class="meta-item">
+                        <div class="meta-label">Selected Period</div>
+                        <div class="meta-value">${activeFilterLabel}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Avg. Order Value</div>
+                        <div class="meta-value">${fmt(stats?.avg_order_value ?? 0, currency)}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Repeat Customer Rate</div>
+                        <div class="meta-value">${stats?.repeat_customer_rate?.toFixed(1) ?? "0.0"}%</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Cancellation Rate</div>
+                        <div class="meta-value">${stats?.cancellation_rate?.toFixed(1) ?? "0.0"}%</div>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <div class="meta-label">Total Orders</div>
+                        <div class="meta-value">${num(stats?.orders.total ?? 0)}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Total Customers</div>
+                        <div class="meta-value">${num(stats?.customers.total ?? 0)}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Unfulfilled Orders</div>
+                        <div class="meta-value">${num(stats?.unfulfilled_orders.count ?? 0)}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Admin Accounts</div>
+                        <div class="meta-value">${num(stats?.admins.total ?? 0)}</div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 30px;">2. Financial Breakdown (Period Match)</div>
+                <div class="meta-grid-kpis" style="margin-bottom: 35px;">
+                    <div class="meta-item" style="border-left: 3px solid #6366f1;">
+                        <div class="meta-label">Total Revenue</div>
+                        <div class="meta-value" style="color: #6366f1;">${fmt(financeStats?.revenue ?? 0, currency)}</div>
+                    </div>
+                    <div class="meta-item" style="border-left: 3px solid #ef4444;">
+                        <div class="meta-label">Cost of Goods (COGS)</div>
+                        <div class="meta-value" style="color: #ef4444;">${fmt(financeStats?.cogs ?? 0, currency)}</div>
+                    </div>
+                    <div class="meta-item" style="border-left: 3px solid #f59e0b;">
+                        <div class="meta-label">Operational Expenses</div>
+                        <div class="meta-value" style="color: #f59e0b;">${fmt(financeStats?.expenses ?? 0, currency)}</div>
+                    </div>
+                    <div class="meta-item" style="border-left: 3px solid #10b981;">
+                        <div class="meta-label">Net Profit Margin</div>
+                        <div class="meta-value" style="color: #10b981;">${fmt(financeStats?.profit ?? 0, currency)}</div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 30px;">3. Performance Details & Breakdowns</div>
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px;">
+                    <div>
+                        <div class="section-title">Top Performing Products</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">#</th>
+                                    <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Product</th>
+                                    <th style="padding: 8px 12px; text-align: center; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Units</th>
+                                    <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${topProductsRows}
+                            </tbody>
+                        </table>
+
+                        <div class="section-title" style="margin-top: 30px;">Sales by Day of Week</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Day</th>
+                                    <th style="padding: 8px 12px; text-align: center; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Orders</th>
+                                    <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${dowRows}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="section-title">Sales by Payment Method</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Gateway</th>
+                                    <th style="padding: 8px 12px; text-align: center; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Orders</th>
+                                    <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${paymentRows}
+                            </tbody>
+                        </table>
+
+                        <div class="section-title" style="margin-top: 30px;">Order Status Distribution</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Status</th>
+                                    <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${statusRows}
+                            </tbody>
+                        </table>
+
+                        <div class="section-title" style="margin-top: 30px;">Payment Status Distribution</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Payment Status</th>
+                                    <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${payStatusRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top: 60px; border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 11px; color: #9ca3af; text-align: center;">
+                    Generated by Zahan Administration on ${new Date().toLocaleString()} &bull; Page 1 of 1
+                </div>
+            </body>
+            </html>
+        `
+        printWindow.document.write(html)
+        printWindow.document.close()
+
+        printWindow.focus()
+        setTimeout(() => {
+            printWindow.print()
+            printWindow.close()
+        }, 500)
+    }
+
     // Active filter label for header
     const activeFilterLabel =
         activePreset === "custom" && filterStart && filterEnd
@@ -652,14 +895,22 @@ const AnalyticsDashboardPage = () => {
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => fetchStats(filterStart, filterEnd)}
-                    disabled={loading}
-                    className="flex items-center gap-1 px-3.5 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer disabled:opacity-70"
-                >
-                    <ArrowPath className="w-3.5 h-3.5" />
-                    {loading ? "Refreshing..." : "Refresh"}
-                </button>
+                <div className="flex gap-2 items-center">
+                    <button
+                        onClick={handleExportPDF}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer"
+                    >
+                        Export Report (PDF)
+                    </button>
+                    <button
+                        onClick={() => fetchStats(filterStart, filterEnd)}
+                        disabled={loading}
+                        className="flex items-center gap-1 px-3.5 py-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base text-ui-fg-base text-[12px] font-semibold cursor-pointer disabled:opacity-70"
+                    >
+                        <ArrowPath className="w-3.5 h-3.5" />
+                        {loading ? "Refreshing..." : "Refresh"}
+                    </button>
+                </div>
             </div>
 
             {/* ── Global Filter Bar ── */}
@@ -877,6 +1128,15 @@ const AnalyticsDashboardPage = () => {
                     trend={revenueTrend}
                     accent="#8b5cf6"
                     iconBg="#f5f3ff"
+                />
+                <KpiCard
+                    loading={loading}
+                    icon={<CurrencyDollar style={{ width: 16, height: 16 }} />}
+                    label="Net Profit (Selected Range)"
+                    value={fmt(financeStats?.profit ?? 0, currency)}
+                    sub={`COGS: ${fmt(financeStats?.cogs ?? 0, currency)} | Expenses: ${fmt(financeStats?.expenses ?? 0, currency)}`}
+                    accent="#10b981"
+                    iconBg="#ecfdf5"
                 />
                 <KpiCard
                     loading={loading}

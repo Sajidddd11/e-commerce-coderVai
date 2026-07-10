@@ -975,6 +975,152 @@ export default function ExpensesPage() {
         )
     }
 
+    const handleExportPDF = () => {
+        const filtered = expenses.filter(e => {
+            const matchesSearch = !expenseSearch || 
+                (e.description && e.description.toLowerCase().includes(expenseSearch.toLowerCase())) ||
+                (e.category?.name && e.category.name.toLowerCase().includes(expenseSearch.toLowerCase()))
+            const matchesCategory = expenseCategoryFilter === "all" || e.category_id === expenseCategoryFilter
+            
+            const dateVal = new Date(e.date)
+            let matchesStartDate = true
+            let matchesEndDate = true
+            if (expenseStartDate) {
+                const start = new Date(expenseStartDate + "T00:00:00")
+                matchesStartDate = dateVal >= start
+            }
+            if (expenseEndDate) {
+                const end = new Date(expenseEndDate + "T23:59:59")
+                matchesEndDate = dateVal <= end
+            }
+            
+            return matchesSearch && matchesCategory && matchesStartDate && matchesEndDate
+        })
+
+        const totalAmount = filtered.reduce((acc, curr) => acc + curr.amount, 0)
+        
+        // Group by category to show a breakdown in the report
+        const categoryMap: Record<string, number> = {}
+        filtered.forEach(e => {
+            const catName = e.category?.name || "Uncategorized"
+            categoryMap[catName] = (categoryMap[catName] || 0) + e.amount
+        })
+        const breakdownRows = Object.entries(categoryMap).map(([name, amt]) => {
+            const share = totalAmount > 0 ? (amt / totalAmount) * 100 : 0
+            return `
+                <tr>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500;">${name}</td>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #ef4444; font-weight: 600;">-${fmt(amt)}</td>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #6b7280;">${share.toFixed(0)}%</td>
+                </tr>
+            `
+        }).join("")
+
+        const columns = ["Date", "Category", "Description", "Amount"]
+        const rows = filtered.map(e => [
+            new Date(e.date).toLocaleDateString(),
+            e.category?.name || "Uncategorized",
+            e.description || "—",
+            fmt(e.amount)
+        ])
+
+        const printWindow = window.open("", "_blank")
+        if (!printWindow) return
+
+        const tableHeaders = columns.map(col => `<th style="padding: 10px 12px; border-bottom: 2px solid #ddd; text-align: left; font-weight: 600; color: #374151;">${col}</th>`).join("")
+        const tableRows = rows.map(row => {
+            return `<tr>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${row[0]}</td>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">${row[1]}</td>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #f3f4f6; color: #4b5563;">${row[2]}</td>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #f3f4f6; color: #ef4444; font-weight: 600; text-align: right;">-${row[3]}</td>
+            </tr>`
+        }).join("")
+
+        const html = `
+            <html>
+            <head>
+                <title>Zahan Operational Expense Report</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1f2937; line-height: 1.5; background: #fff; }
+                    .header-container { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 24px; }
+                    .logo { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: #111827; }
+                    .report-title { font-size: 14px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; }
+                    .meta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; font-size: 13px; }
+                    .meta-item { background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 12px 16px; }
+                    .meta-label { font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: 600; margin-bottom: 4px; }
+                    .meta-value { font-size: 14px; font-weight: 700; color: #111827; }
+                    .section-title { font-size: 16px; font-weight: 700; color: #111827; margin-top: 30px; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                    @media print {
+                        body { padding: 20px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header-container">
+                    <div class="logo">ZAHAN</div>
+                    <div class="report-title">Operational Expense Report</div>
+                </div>
+                
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <div class="meta-label">Selected Period</div>
+                        <div class="meta-value">${expenseStartDate || "All-time"} to ${expenseEndDate || "All-time"}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Total Operational Costs</div>
+                        <div class="meta-value" style="color: #ef4444;">${fmt(totalAmount)}</div>
+                    </div>
+                </div>
+
+                ${breakdownRows.length > 0 ? `
+                    <div class="section-title">Share breakdown by category</div>
+                    <table style="max-width: 500px; margin-bottom: 30px;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 8px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Category</th>
+                                <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Total Spent</th>
+                                <th style="padding: 8px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${breakdownRows}
+                        </tbody>
+                    </table>
+                ` : ""}
+
+                <div class="section-title">Itemized transaction log</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="padding: 10px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Date</th>
+                            <th style="padding: 10px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Category</th>
+                            <th style="padding: 10px 12px; text-align: left; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Description</th>
+                            <th style="padding: 10px 12px; text-align: right; color: #4b5563; border-bottom: 2px solid #e5e7eb;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 60px; border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 11px; color: #9ca3af; text-align: center;">
+                    Generated by Zahan Administration on ${new Date().toLocaleString()} &bull; Page 1 of 1
+                </div>
+            </body>
+            </html>
+        `
+        printWindow.document.write(html)
+        printWindow.document.close()
+        
+        printWindow.focus()
+        setTimeout(() => {
+            printWindow.print()
+            printWindow.close()
+        }, 500)
+    }
+
     const renderExpenses = () => {
         // 1. Filter expenses by search text, category ID, and date range
         const filtered = expenses.filter(e => {
@@ -1007,20 +1153,29 @@ export default function ExpensesPage() {
         return (
             <div style={S.card}>
                 {/* Header with Title and Add Button */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
                     <div>
                         <h3 style={{ fontSize: 16, fontWeight: 600 }}>Logged Expenses</h3>
                         <p style={{ fontSize: 12, color: "var(--ui-fg-muted)", marginTop: 2 }}>
                             Showing {filtered.length} total operational costs log entries.
                         </p>
                     </div>
-                    <button
-                        onClick={() => setShowExpenseModal(true)}
-                        style={S.btn("primary")}
-                    >
-                        <Plus style={{ width: 16, height: 16 }} />
-                        Record Expense
-                    </button>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button
+                            onClick={handleExportPDF}
+                            style={S.btn("secondary")}
+                            title="Export to PDF Report"
+                        >
+                            Export Report (PDF)
+                        </button>
+                        <button
+                            onClick={() => setShowExpenseModal(true)}
+                            style={S.btn("primary")}
+                        >
+                            <Plus style={{ width: 16, height: 16 }} />
+                            Record Expense
+                        </button>
+                    </div>
                 </div>
 
                 {/* Filters Row */}
