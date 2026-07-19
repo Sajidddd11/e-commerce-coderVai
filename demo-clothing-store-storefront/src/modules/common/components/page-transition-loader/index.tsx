@@ -162,7 +162,7 @@ function PageTransitionLoaderInner() {
         if (scrollY) {
           window.scrollTo(0, parseInt(scrollY || '0') * -1)
         }
-      }, 400)
+      }, 150)
     }
   }, [pathname, searchParams])
 
