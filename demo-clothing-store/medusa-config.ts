@@ -41,16 +41,23 @@ module.exports = defineConfig({
     // {
     //   resolve: "@medusajs/index",
     // },
-    // Note: Cache-redis commented out temporarily - enable once Redis is running
-    // Redis caching for product queries and cart operations
-    {
-      resolve: "@medusajs/cache-redis",
-      key: "cache",
-      options: {
-        redisUrl: process.env.REDIS_URL,
-        ttl: 3600, // 1 hour — products don't change that frequently
-      },
-    },
+    // Query and entity caching (uses Redis when available, falls back to in-memory)
+    process.env.REDIS_URL
+      ? {
+          resolve: "@medusajs/cache-redis",
+          key: "cache",
+          options: {
+            redisUrl: process.env.REDIS_URL,
+            ttl: 3600, // 1 hour
+          },
+        }
+      : {
+          resolve: "@medusajs/cache-inmemory",
+          key: "cache",
+          options: {
+            ttl: 3600,
+          },
+        },
     {
       resolve: "@medusajs/auth",
       options: {

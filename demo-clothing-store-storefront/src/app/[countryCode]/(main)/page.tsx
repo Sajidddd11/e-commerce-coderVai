@@ -28,22 +28,23 @@ export default async function Home(props: {
 
   const { countryCode } = params
 
-  const region = await getRegion(countryCode)
-  const { collections } = await listCollections({
-    fields: "id, handle, title",
-  })
-  const allCategories = await listCategories()
+  // Fetch all core layout and user data concurrently via Promise.all
+  // to eliminate sequential network request waterfalls
+  const [region, collectionsData, allCategories, heroSlides, customer] =
+    await Promise.all([
+      getRegion(countryCode),
+      listCollections({ fields: "id, handle, title" }),
+      listCategories(),
+      listHeroSlides(),
+      retrieveCustomer(),
+    ])
+
+  const collections = collectionsData?.collections
   const categories = filterCategoriesWithProducts(allCategories)
-  const heroSlides = await listHeroSlides()
 
   if (!collections || !region || !categories || categories.length === 0) {
     return null
   }
-
-  // Fetch the logged-in customer so we can pass their ID to the recommendation
-  // engine. Without this, the API queries only by session_id (current browser
-  // session) and never reaches the 5-event threshold for "Suggested For You".
-  const customer = await retrieveCustomer()
 
   return (
     <div className="w-full">

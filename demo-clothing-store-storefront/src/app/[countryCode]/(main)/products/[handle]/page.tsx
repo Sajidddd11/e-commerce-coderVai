@@ -65,32 +65,36 @@ function getImagesForVariant(
     return product.images
   }
 
-  const variant = product.variants.find((v) => v.id === selectedVariantId)
+  const variant = product.variants.find((v) => v.id === selectedVariantId) as
+    | (HttpTypes.StoreProductVariant & { images?: HttpTypes.StoreProductImage[] })
+    | undefined
 
   // If the variant has no specific images, fall back to all product images
   if (!variant || !variant.images || variant.images.length === 0) {
     return product.images
   }
 
-  const imageIdsMap = new Map(variant.images.map((i) => [i.id, true]))
-  return product.images.filter((i) => imageIdsMap.has(i.id))
+  const imageIdsMap = new Map(
+    variant.images.map((i: HttpTypes.StoreProductImage) => [i.id, true])
+  )
+  return product.images.filter((i: HttpTypes.StoreProductImage) =>
+    imageIdsMap.has(i.id)
+  )
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const params = await props.params
-  const { handle } = params
-  const region = await getRegion(params.countryCode)
+  const [params, searchParams] = await Promise.all([props.params, props.searchParams])
+  const { handle, countryCode } = params
 
-  if (!region) {
-    notFound()
-  }
+  const [region, product] = await Promise.all([
+    getRegion(countryCode),
+    listProducts({
+      countryCode,
+      queryParams: { handle },
+    }).then(({ response }) => response.products[0]),
+  ])
 
-  const product = await listProducts({
-    countryCode: params.countryCode,
-    queryParams: { handle },
-  }).then(({ response }) => response.products[0])
-
-  if (!product) {
+  if (!region || !product) {
     notFound()
   }
 
@@ -113,22 +117,19 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function ProductPage(props: Props) {
-  const params = await props.params
-  const region = await getRegion(params.countryCode)
-  const searchParams = await props.searchParams
+  const [params, searchParams] = await Promise.all([props.params, props.searchParams])
+
+  const [region, pricedProduct] = await Promise.all([
+    getRegion(params.countryCode),
+    listProducts({
+      countryCode: params.countryCode,
+      queryParams: { handle: params.handle },
+    }).then(({ response }) => response.products[0]),
+  ])
 
   const selectedVariantId = searchParams.v_id
 
-  if (!region) {
-    notFound()
-  }
-
-  const pricedProduct = await listProducts({
-    countryCode: params.countryCode,
-    queryParams: { handle: params.handle },
-  }).then(({ response }) => response.products[0])
-
-  if (!pricedProduct) {
+  if (!region || !pricedProduct) {
     notFound()
   }
 

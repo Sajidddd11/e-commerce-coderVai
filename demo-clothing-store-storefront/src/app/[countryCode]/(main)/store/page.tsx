@@ -25,8 +25,7 @@ type Params = {
 }
 
 export default async function StorePage(props: Params) {
-  const params = await props.params;
-  const searchParams = await props.searchParams;
+  const [params, searchParams] = await Promise.all([props.params, props.searchParams])
   const { sortBy, page, search, category, priceMin, priceMax } = searchParams
 
   // Parse comma-separated category IDs
