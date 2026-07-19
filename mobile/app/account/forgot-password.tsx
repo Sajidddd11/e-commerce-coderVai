@@ -98,8 +98,8 @@ export default function ForgotPasswordScreen() {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={80}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
       >
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {step === "email" ? (

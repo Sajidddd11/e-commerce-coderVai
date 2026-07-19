@@ -175,7 +175,7 @@ export default function AddressesScreen() {
       <Modal visible={modalOpen} animationType="slide" transparent onRequestClose={() => setModalOpen(false)}>
         <View style={styles.backdrop}>
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            behavior="padding"
             style={styles.sheet}
           >
             <View style={styles.sheetHeader}>

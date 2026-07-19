@@ -180,7 +180,7 @@ function ReviewModal({
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
         style={styles.modalBackdrop}
       >
         <View style={styles.modalSheet}>
