@@ -6,36 +6,60 @@ Follow these steps on your production VPS (Dokploy / Nginx / Reverse Proxy) to a
 
 ## ⚡ 1. Enable Gzip / Brotli Compression on Nginx
 
-Enabling Gzip compression on your production proxy reduces heavy JSON API responses (like `/store/products`) from **224 KB → ~25 KB** (~90% size reduction).
+Enabling Gzip compression on Dokploy reduces heavy JSON API responses (like `/store/products`) from **224 KB → ~25 KB** (~90% size reduction).
 
-### Nginx Configuration File (`/etc/nginx/nginx.conf` or site config):
-```nginx
-# ─────────────────────────────────────────────────────────────
-# Gzip Compression — Add inside the http {} block
-# ─────────────────────────────────────────────────────────────
-gzip on;
-gzip_vary on;
-gzip_proxied any;
-gzip_comp_level 6;
-gzip_min_length 1000;
-gzip_types
-    application/json
-    application/javascript
-    text/css
-    text/plain
-    text/xml
-    application/xml
-    image/svg+xml;
+Here is the **exact updated configuration** for your Dokploy Traefik config:
 
-# HTTP Keep-Alive — Keeps TCP sockets warm to avoid TLS re-handshakes
-keepalive_timeout 65;
-keepalive_requests 100;
-```
+```yaml
+http:
+  middlewares:
+    gzip-compress:
+      compress: {}
 
-### Reload Nginx:
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
+  routers:
+    ecom-zahan-cv3821-router-13:
+      rule: Host(`ecom-zahan-cv3821-db3f08-46-202-166-178.sslip.io`)
+      service: ecom-zahan-cv3821-service-13
+      middlewares:
+        - redirect-to-https
+      entryPoints:
+        - web
+    ecom-zahan-cv3821-router-websecure-13:
+      rule: Host(`ecom-zahan-cv3821-db3f08-46-202-166-178.sslip.io`)
+      service: ecom-zahan-cv3821-service-13
+      middlewares:
+        - gzip-compress
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    ecom-zahan-cv3821-router-14:
+      rule: Host(`api.zahan.net`)
+      service: ecom-zahan-cv3821-service-14
+      middlewares:
+        - redirect-to-https
+      entryPoints:
+        - web
+    ecom-zahan-cv3821-router-websecure-14:
+      rule: Host(`api.zahan.net`)
+      service: ecom-zahan-cv3821-service-14
+      middlewares:
+        - gzip-compress
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+  services:
+    ecom-zahan-cv3821-service-13:
+      loadBalancer:
+        servers:
+          - url: http://ecom-zahan-cv3821:9000
+        passHostHeader: true
+    ecom-zahan-cv3821-service-14:
+      loadBalancer:
+        servers:
+          - url: http://ecom-zahan-cv3821:9000
+        passHostHeader: true
 ```
 
 ---

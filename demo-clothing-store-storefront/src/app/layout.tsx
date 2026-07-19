@@ -4,6 +4,8 @@ import Script from "next/script"
 import RootProvider from "@modules/common/components/root-provider"
 import WhatsAppChatButton from "@modules/common/components/whatsapp-chat-button"
 import { Toaster } from "@medusajs/ui"
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import "styles/globals.css"
 
 export const metadata: Metadata = {
@@ -79,6 +81,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           <main className="relative m-0 p-0">{props.children}</main>
           <WhatsAppChatButton />
         </RootProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )

@@ -14,6 +14,7 @@ function measureUrl(url, headers = {}, method = 'GET', body = null) {
       method: method,
       headers: {
         'User-Agent': 'SpeedTest/1.0',
+        'Accept-Encoding': 'gzip, deflate, br',
         ...headers
       }
     };
@@ -33,9 +34,11 @@ function measureUrl(url, headers = {}, method = 'GET', body = null) {
 
       res.on('end', () => {
         totalTime = performance.now() - start;
+        const encoding = res.headers['content-encoding'] || 'none';
         resolve({
           url,
           statusCode,
+          encoding,
           ttfbMs: Math.round(ttfb),
           totalTimeMs: Math.round(totalTime),
           dataSizeBytes: dataSize,
@@ -94,8 +97,8 @@ async function runTests() {
     const r2 = await measureUrl(ep.url, ep.headers);
     console.log(`📌 ${ep.name}`);
     console.log(`   URL: ${ep.url}`);
-    console.log(`   Req 1 -> Status: ${r1.statusCode} | TTFB: ${r1.ttfbMs}ms | Total: ${r1.totalTimeMs}ms | Size: ${r1.dataSizeKB} KB`);
-    console.log(`   Req 2 -> Status: ${r2.statusCode} | TTFB: ${r2.ttfbMs}ms | Total: ${r2.totalTimeMs}ms | Size: ${r2.dataSizeKB} KB`);
+    console.log(`   Req 1 -> Status: ${r1.statusCode} | Encoding: ${r1.encoding} | TTFB: ${r1.ttfbMs}ms | Total: ${r1.totalTimeMs}ms | Size: ${r1.dataSizeKB} KB`);
+    console.log(`   Req 2 -> Status: ${r2.statusCode} | Encoding: ${r2.encoding} | TTFB: ${r2.ttfbMs}ms | Total: ${r2.totalTimeMs}ms | Size: ${r2.dataSizeKB} KB`);
     if (r1.error) console.log(`   Error: ${r1.error}`);
     console.log("");
   }
