@@ -5,72 +5,103 @@ import { usePathname, useSearchParams } from "next/navigation"
 import LoadingLogo from "@modules/common/components/loading-logo"
 
 function PageTransitionLoaderInner() {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
+  const [showOverlay, setShowOverlay] = useState(false)
   const [progress, setProgress] = useState(0)
+  
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const timeoutRef = useRef<NodeJS.Timeout>()
-  const intervalRef = useRef<NodeJS.Timeout>()
+
   const isLoadingRef = useRef(false)
+  const overlayTimerRef = useRef<NodeJS.Timeout>()
+  const loaderTimeoutRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<NodeJS.Timeout>()
+  const overlayShownTimeRef = useRef<number>(0)
   const prevPathnameRef = useRef(pathname)
   const prevSearchParamsRef = useRef(searchParams.toString())
-  const loaderTimeoutRef = useRef<NodeJS.Timeout>()
 
-  // Show loader when route changes are detected
-  const showLoader = () => {
-    if (!isLoadingRef.current) {
-      isLoadingRef.current = true
-      setIsVisible(true)
-      setProgress(0)
-
-      // Calculate scrollbar width to prevent layout shift
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-
-      // Lock body scroll and reset scroll position for mobile
-      document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.width = '100%'
-      document.body.style.top = `-${window.scrollY}px`
-      // Add padding to compensate for scrollbar removal
-      if (scrollbarWidth > 0) {
-        document.body.style.paddingRight = `${scrollbarWidth}px`
-      }
-
-      // Safety timeout: force hide loader after 5 seconds if no route change occurs
-      if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
-      loaderTimeoutRef.current = setTimeout(() => {
-        isLoadingRef.current = false
-        setIsVisible(false)
-        setProgress(0)
-
-        // Unlock body scroll
-        const scrollY = document.body.style.top
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.width = ''
-        document.body.style.top = ''
-        document.body.style.paddingRight = ''
-        window.scrollTo(0, parseInt(scrollY || '0') * -1)
-      }, 5000)
+  const unlockScroll = () => {
+    const scrollY = document.body.style.top
+    document.body.style.overflow = ''
+    document.body.style.position = ''
+    document.body.style.width = ''
+    document.body.style.top = ''
+    document.body.style.paddingRight = ''
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || '0') * -1)
     }
   }
 
-  useEffect(() => {
-    // Detect when a link is being clicked by listening to click events
-    const handleClick = (e: MouseEvent) => {
-      // Only handle left-click (button === 0)
-      if (e.button !== 0) return
+  const hideLoader = () => {
+    const now = Date.now()
+    const elapsedOverlayTime = overlayShownTimeRef.current ? now - overlayShownTimeRef.current : 0
+    
+    // Minimum Visible Duration (MVD): 400ms if overlay was shown
+    const remainingMvd = overlayShownTimeRef.current 
+      ? Math.max(0, 400 - elapsedOverlayTime) 
+      : 0
 
-      // Skip double-clicks (detail === 2 means double-click)
-      if (e.detail === 2) return
+    setTimeout(() => {
+      isLoadingRef.current = false
+      setIsNavigating(false)
+      setShowOverlay(false)
+      setProgress(0)
+      overlayShownTimeRef.current = 0
+      unlockScroll()
+    }, remainingMvd)
+  }
+
+  const showLoader = (instantOverlay = false) => {
+    if (isLoadingRef.current) return
+    isLoadingRef.current = true
+    setIsNavigating(true)
+    setProgress(15)
+
+    // Calculate scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
+    // Lock body scroll for mobile
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    document.body.style.top = `-${window.scrollY}px`
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+
+    if (instantOverlay) {
+      // Immediate overlay for explicit actions like Login/Logout
+      overlayShownTimeRef.current = Date.now()
+      setShowOverlay(true)
+    } else {
+      // 200ms Delay Threshold: Only show heavy frosted blur overlay if fetch takes > 200ms
+      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current)
+      overlayTimerRef.current = setTimeout(() => {
+        if (isLoadingRef.current) {
+          overlayShownTimeRef.current = Date.now()
+          setShowOverlay(true)
+        }
+      }, 200)
+    }
+
+    // Safety timeout: force hide loader after 5 seconds if no route change occurs
+    if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
+    loaderTimeoutRef.current = setTimeout(() => {
+      hideLoader()
+    }, 5000)
+  }
+
+  // Detect link clicks
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (e.button !== 0 || e.detail === 2) return
 
       const target = e.target as HTMLElement
       const link = target.closest("a")
 
-      // Check if it's an internal link (not external, not same page)
       if (
         link &&
-        (link instanceof HTMLAnchorElement) &&
+        link instanceof HTMLAnchorElement &&
         link.href &&
         !link.href.startsWith("#") &&
         link.target !== "_blank" &&
@@ -82,28 +113,24 @@ function PageTransitionLoaderInner() {
         if (linkOrigin === currentOrigin) {
           const linkPathname = new URL(link.href, currentOrigin).pathname
           if (linkPathname !== pathname) {
-            // Different page - show loader immediately
-            showLoader()
+            showLoader(false)
           }
         }
       }
     }
 
     document.addEventListener("click", handleClick)
-    return () => {
-      document.removeEventListener("click", handleClick)
-    }
+    return () => document.removeEventListener("click", handleClick)
   }, [pathname])
 
-  // Animate progress bar
+  // Animate progress bar while navigating
   useEffect(() => {
-    if (isVisible) {
+    if (isNavigating) {
       if (intervalRef.current) clearInterval(intervalRef.current)
-
       intervalRef.current = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) return prev
-          return prev + Math.random() * 30
+          return prev + Math.random() * 20
         })
       }, 100)
     } else {
@@ -113,79 +140,54 @@ function PageTransitionLoaderInner() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [isVisible])
+  }, [isNavigating])
 
-  // Listen to custom page-transition-start events to show loader instantly
+  // Custom event listener for instant overlay actions (login/logout)
   useEffect(() => {
     const handleStart = () => {
-      showLoader()
+      showLoader(true)
     }
     window.addEventListener("page-transition-start", handleStart)
-    return () => {
-      window.removeEventListener("page-transition-start", handleStart)
-    }
+    return () => window.removeEventListener("page-transition-start", handleStart)
   }, [])
 
-  // Handle route completion and detect any route changes (including router.push and searchParams changes)
+  // Handle route completion
   useEffect(() => {
-    // Check if route or query actually changed
     const routeChanged = pathname !== prevPathnameRef.current || searchParams.toString() !== prevSearchParamsRef.current
 
     if (routeChanged) {
-      // Clear the safety timeout since route actually changed
+      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current)
       if (loaderTimeoutRef.current) clearTimeout(loaderTimeoutRef.current)
-
-      // If loader wasn't already shown by link click, show it now
-      if (!isLoadingRef.current) {
-        showLoader()
-      }
 
       prevPathnameRef.current = pathname
       prevSearchParamsRef.current = searchParams.toString()
 
-      // Complete the loading animation
       setProgress(100)
-
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => {
-        isLoadingRef.current = false
-        setIsVisible(false)
-        setProgress(0)
-
-        // Unlock body scroll and restore position
-        const scrollY = document.body.style.top
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.width = ''
-        document.body.style.top = ''
-        document.body.style.paddingRight = ''
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY || '0') * -1)
-        }
-      }, 150)
+      hideLoader()
     }
   }, [pathname, searchParams])
 
-  if (!isVisible && progress === 0) return null
+  if (!isNavigating && progress === 0 && !showOverlay) return null
 
   return (
     <>
-      {/* Top Progress Bar - More prominent */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-2 bg-gradient-to-r from-black via-slate-800 to-black origin-left transition-transform duration-300 ease-out"
+      {/* Top Progress Bar - Instant feedback on 0ms */}
+      <div
+        className="fixed top-0 left-0 right-0 z-50 h-1.5 bg-gradient-to-r from-black via-slate-800 to-black origin-left transition-transform duration-200 ease-out"
         style={{
           transform: `scaleX(${progress / 100})`,
-          opacity: isVisible ? 1 : 0,
+          opacity: isNavigating ? 1 : 0,
         }}
       />
 
-      {/* Page Overlay - Frosted faded glass with slight blur */}
+      {/* Frosted Glass Overlay - Rendered ONLY after 200ms delay threshold with MVD */}
       <div
-        className="fixed inset-0 z-40 bg-white/60 backdrop-blur-sm transition-opacity duration-200 pointer-events-none"
-        style={{ opacity: isVisible ? 1 : 0 }}
+        className="fixed inset-0 z-40 bg-white/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-none"
+        style={{ opacity: showOverlay ? 1 : 0 }}
       />
 
-      {/* Center Loader - Single consistent large logo */}
-      {isVisible && (
+      {/* Center Animated Logo */}
+      {showOverlay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
           <LoadingLogo size="lg" />
         </div>
