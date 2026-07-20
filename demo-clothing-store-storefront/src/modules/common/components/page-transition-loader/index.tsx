@@ -178,9 +178,9 @@ function PageTransitionLoaderInner() {
         }}
       />
 
-      {/* Page Overlay - Solid clean white overlay matching route loading screens */}
+      {/* Page Overlay - Frosted faded glass with slight blur */}
       <div
-        className="fixed inset-0 z-40 bg-white transition-opacity duration-200 pointer-events-none"
+        className="fixed inset-0 z-40 bg-white/60 backdrop-blur-sm transition-opacity duration-200 pointer-events-none"
         style={{ opacity: isVisible ? 1 : 0 }}
       />
 

@@ -32,6 +32,7 @@ const Login = ({ setCurrentView }: Props) => {
     try {
       if (typeof window !== "undefined") {
         window.sessionStorage.setItem("google_login_origin", "web")
+        window.dispatchEvent(new CustomEvent("page-transition-start"))
       }
       const res = await fetch(`${backendUrl}/auth/customer/google`)
       const { location } = await res.json()

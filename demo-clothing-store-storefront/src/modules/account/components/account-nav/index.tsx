@@ -21,10 +21,14 @@ const AccountNav = ({
   const { countryCode } = useParams() as { countryCode: string }
 
   const handleLogout = async () => {
-    await signout(countryCode)
-    toast.success("Signed out", {
-      description: "You have been successfully signed out.",
-    })
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("page-transition-start"))
+    }
+    try {
+      await signout(countryCode)
+    } catch {
+      // If signout fails or throws redirect
+    }
   }
 
   return (

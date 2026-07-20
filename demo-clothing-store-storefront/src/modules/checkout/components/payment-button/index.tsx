@@ -146,7 +146,7 @@ const StripePaymentButton = ({
   return (
     <>
       {submitting && typeof window !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm pointer-events-none">
           <LoadingLogo size="lg" />
         </div>,
         document.body
@@ -243,7 +243,7 @@ const SSLCommerzPaymentButton = ({
   return (
     <>
       {submitting && typeof window !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm pointer-events-none">
           <LoadingLogo size="lg" />
         </div>,
         document.body
@@ -288,7 +288,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   return (
     <>
       {submitting && typeof window !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm pointer-events-none">
           <LoadingLogo size="lg" />
         </div>,
         document.body
