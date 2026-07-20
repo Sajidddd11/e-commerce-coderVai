@@ -4,7 +4,8 @@ import { isManual, isStripeLike, isSslCommerz } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import ErrorMessage from "../error-message"
 import LoadingButton from "@modules/common/components/loading-button"
 import LoadingLogo from "@modules/common/components/loading-logo"
@@ -144,13 +145,11 @@ const StripePaymentButton = ({
 
   return (
     <>
-      {submitting && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
-          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
-            <LoadingLogo size="md" />
-          </div>
-        </>
+      {submitting && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+          <LoadingLogo size="lg" />
+        </div>,
+        document.body
       )}
       <LoadingButton
         disabled={disabled || notReady}
@@ -243,13 +242,11 @@ const SSLCommerzPaymentButton = ({
 
   return (
     <>
-      {submitting && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
-          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
-            <LoadingLogo size="md" />
-          </div>
-        </>
+      {submitting && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+          <LoadingLogo size="lg" />
+        </div>,
+        document.body
       )}
       <LoadingButton
         disabled={notReady}
@@ -290,13 +287,11 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 
   return (
     <>
-      {submitting && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
-          <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
-            <LoadingLogo size="md" />
-          </div>
-        </>
+      {submitting && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+          <LoadingLogo size="lg" />
+        </div>,
+        document.body
       )}
       <LoadingButton
         disabled={notReady}

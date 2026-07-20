@@ -178,16 +178,16 @@ function PageTransitionLoaderInner() {
         }}
       />
 
-      {/* Page Overlay - More visible */}
+      {/* Page Overlay - Solid clean white overlay matching route loading screens */}
       <div
-        className="fixed top-0 left-0 right-0 bottom-0 z-40 bg-black/10 backdrop-blur-sm transition-opacity duration-300 pointer-events-none"
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, opacity: isVisible ? 1 : 0 }}
+        className="fixed inset-0 z-40 bg-white transition-opacity duration-200 pointer-events-none"
+        style={{ opacity: isVisible ? 1 : 0 }}
       />
 
-      {/* Center Loader - Show immediately */}
+      {/* Center Loader - Single consistent large logo */}
       {isVisible && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 z-40 flex items-center justify-center pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <LoadingLogo size="md" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <LoadingLogo size="lg" />
         </div>
       )}
     </>

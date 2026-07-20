@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { createPortal } from "react-dom"
 import { useFormStatus } from "react-dom"
 import LoadingButton from "@modules/common/components/loading-button"
 import LoadingLogo from "@modules/common/components/loading-logo"
@@ -19,16 +20,19 @@ export function SubmitButton({
   "data-testid"?: string
 }) {
   const { pending } = useFormStatus()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <>
-      {pending && (
-        <>
-          <div className="fixed top-0 left-0 right-0 bottom-0 z-40 bg-black/10 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }} />
-          <div className="fixed top-0 left-0 right-0 bottom-0 z-40 flex items-center justify-center pointer-events-none" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-            <LoadingLogo size="md" />
-          </div>
-        </>
+      {pending && mounted && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+          <LoadingLogo size="lg" />
+        </div>,
+        document.body
       )}
       <LoadingButton
         size={size}
