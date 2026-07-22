@@ -21,6 +21,7 @@ import {
   Facebook,
   Instagram,
   Youtube,
+  Trash2,
 } from "lucide-react-native"
 import { ThemedText } from "../ui/ThemedText"
 import {
@@ -73,6 +74,11 @@ const LEGAL_LINKS: LinkRow[] = [
     label: "Terms of Service",
     href: "/static/terms-of-service",
     icon: <FileText size={16} color={colors.brand.teal} />,
+  },
+  {
+    label: "Delete Account",
+    href: "/static/delete-account",
+    icon: <Trash2 size={16} color={colors.error} />,
   },
 ]
 

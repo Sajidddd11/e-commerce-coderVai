@@ -8,6 +8,7 @@ import {
   Platform,
 } from "react-native"
 import * as ImagePicker from "expo-image-picker"
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
@@ -49,13 +50,20 @@ export default function ProfileScreen() {
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.7,
-        base64: true,
+        quality: 0.8,
       })
 
-      if (!result.canceled && result.assets?.[0]?.base64) {
-        const base64Uri = `data:image/jpeg;base64,${result.assets[0].base64}`
-        setLocalAvatar(base64Uri)
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        const manipResult = await manipulateAsync(
+          result.assets[0].uri,
+          [{ resize: { width: 200, height: 200 } }],
+          { compress: 0.75, format: SaveFormat.JPEG, base64: true }
+        )
+
+        if (manipResult.base64) {
+          const base64Uri = `data:image/jpeg;base64,${manipResult.base64}`
+          setLocalAvatar(base64Uri)
+        }
       }
     } catch (err) {
       console.error(err)
